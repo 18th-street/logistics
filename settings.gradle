@@ -1,0 +1,3 @@
+rootProject.name = '18th-street-logistics'
+include 'common'
+include 'eureka-server'
