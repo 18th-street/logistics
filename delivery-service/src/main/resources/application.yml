@@ -1,0 +1,36 @@
+server:
+  port: 19100
+
+spring:
+  application:
+    name: delivery-service
+  config:
+    import: optional:file:.env[.properties]
+  profiles:
+    active: local
+
+  # 데이터소스 설정
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  # JPA 관련 설정
+  jpa:
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  sql:
+    init:
+      mode: always
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
