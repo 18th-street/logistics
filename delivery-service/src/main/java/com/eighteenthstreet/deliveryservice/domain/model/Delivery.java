@@ -2,6 +2,7 @@ package com.eighteenthstreet.deliveryservice.domain.model;
 
 import java.util.UUID;
 
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
 
 import com.eighteenthstreet.deliveryservice.domain.exception.InvalidDeliveryException;
@@ -25,6 +26,7 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@SQLRestriction("deleted_at IS NULL")
 @Table(name = "p_delivery")
 public class Delivery extends BaseEntity {
 
@@ -59,7 +61,9 @@ public class Delivery extends BaseEntity {
 
 	public void cancel() {
 		if (this.status == DeliveryStatus.OUT_FOR_DELIVERY || this.status == DeliveryStatus.IN_TRANSIT_TO_VENDOR) {
-			throw new InvalidDeliveryException(ErrorCode.DELIVERY_NOT_FOUND);
+			throw new InvalidDeliveryException(ErrorCode.INVALID_DELIVERY);
 		}
+
+		this.status = DeliveryStatus.CANCELED;
 	}
 }
