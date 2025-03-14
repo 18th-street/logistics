@@ -8,6 +8,7 @@ import com.eighteenthstreet.deliveryservice.domain.exception.DeliveryNotFoundExc
 import com.eighteenthstreet.deliveryservice.domain.model.Delivery;
 import com.eighteenthstreet.deliveryservice.domain.model.DeliveryStatus;
 import com.eighteenthstreet.deliveryservice.domain.repository.DeliveryRepository;
+import com.eighteenthstreet.deliveryservice.presentation.exception.ErrorCode;
 import com.eighteenthstreet.deliveryservice.presentation.request.CreateDeliveryRequest;
 import com.eighteenthstreet.deliveryservice.presentation.request.UpdateStatusDeliveryRequest;
 
@@ -35,7 +36,7 @@ public class DeliveryService {
 	@Transactional
 	public void updateDeliveryStatus(UpdateStatusDeliveryRequest request) {
 		Delivery delivery = deliveryRepository.findById(request.getDeliveryId()).orElseThrow(
-			() -> new DeliveryNotFoundException(request.getDeliveryId())
+			() -> new DeliveryNotFoundException(ErrorCode.DELIVERY_NOT_FOUND)
 		);
 
 		delivery.updateStatus(request.getDeliveryStatus());
