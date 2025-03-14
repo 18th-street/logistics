@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -50,6 +51,13 @@ public class DeliveryController {
 		GetDeliveryResponse response = deliveryService.getDelivery(uuid);
 
 		return ResponseEntity.ok(response);
+	}
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Map<String, String>> deleteDelivery(@PathVariable("id") UUID uuid) {
+		deliveryService.deleteDelivery(uuid);
+
+		return ResponseEntity.ok(Collections.singletonMap("message", "배달이 취소되었습니다."));
 	}
 
 }

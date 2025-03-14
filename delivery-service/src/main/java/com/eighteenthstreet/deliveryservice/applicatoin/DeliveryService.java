@@ -49,7 +49,17 @@ public class DeliveryService {
 	public GetDeliveryResponse getDelivery(UUID uuid) {
 		Delivery delivery = deliveryRepository.findById(uuid)
 			.orElseThrow(() -> new DeliveryNotFoundException(ErrorCode.DELIVERY_NOT_FOUND));
-		
+
 		return GetDeliveryResponse.fromEntity(delivery);
+	}
+
+	@Transactional
+	public void deleteDelivery(UUID uuid) {
+		Delivery delivery = deliveryRepository.findById(uuid)
+			.orElseThrow(() -> new DeliveryNotFoundException(ErrorCode.DELIVERY_NOT_FOUND));
+
+		delivery.cancel();
+
+		deliveryRepository.softDeleteDelivery(uuid);
 	}
 }
