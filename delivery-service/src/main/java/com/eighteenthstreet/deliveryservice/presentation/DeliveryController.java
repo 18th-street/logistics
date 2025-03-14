@@ -2,9 +2,12 @@ package com.eighteenthstreet.deliveryservice.presentation;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.eighteenthstreet.deliveryservice.applicatoin.DeliveryService;
 import com.eighteenthstreet.deliveryservice.applicatoin.dto.CreateDeliveryResponse;
+import com.eighteenthstreet.deliveryservice.applicatoin.dto.GetDeliveryResponse;
 import com.eighteenthstreet.deliveryservice.presentation.request.CreateDeliveryRequest;
 import com.eighteenthstreet.deliveryservice.presentation.request.UpdateStatusDeliveryRequest;
 
@@ -38,6 +42,14 @@ public class DeliveryController {
 		deliveryService.updateDeliveryStatus(request);
 
 		return ResponseEntity.ok(Collections.singletonMap("message", "배달 상태가 변경 됐습니다."));
+	}
+
+	// TODO: 나중에 Response 를 수정, List<routs> 값하고 배달 담당자도 추가해줘야함
+	@GetMapping("/{id}")
+	public ResponseEntity<GetDeliveryResponse> getDelivery(@PathVariable("id") UUID uuid) {
+		GetDeliveryResponse response = deliveryService.getDelivery(uuid);
+
+		return ResponseEntity.ok(response);
 	}
 
 }

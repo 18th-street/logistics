@@ -1,9 +1,12 @@
 package com.eighteenthstreet.deliveryservice.applicatoin;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.eighteenthstreet.deliveryservice.applicatoin.dto.CreateDeliveryResponse;
+import com.eighteenthstreet.deliveryservice.applicatoin.dto.GetDeliveryResponse;
 import com.eighteenthstreet.deliveryservice.domain.exception.DeliveryNotFoundException;
 import com.eighteenthstreet.deliveryservice.domain.model.Delivery;
 import com.eighteenthstreet.deliveryservice.domain.model.DeliveryStatus;
@@ -35,11 +38,18 @@ public class DeliveryService {
 
 	@Transactional
 	public void updateDeliveryStatus(UpdateStatusDeliveryRequest request) {
-		Delivery delivery = deliveryRepository.findById(request.getDeliveryId()).orElseThrow(
-			() -> new DeliveryNotFoundException(ErrorCode.DELIVERY_NOT_FOUND)
-		);
+		Delivery delivery = deliveryRepository.findById(request.getDeliveryId())
+			.orElseThrow(() -> new DeliveryNotFoundException(ErrorCode.DELIVERY_NOT_FOUND));
 
 		delivery.updateStatus(request.getDeliveryStatus());
 		deliveryRepository.save(delivery);
+	}
+
+	//TODO: hubClient 에서 허브경로 받아와서 저장하고, 배달담당자도 받아와야함
+	public GetDeliveryResponse getDelivery(UUID uuid) {
+		Delivery delivery = deliveryRepository.findById(uuid)
+			.orElseThrow(() -> new DeliveryNotFoundException(ErrorCode.DELIVERY_NOT_FOUND));
+		
+		return GetDeliveryResponse.fromEntity(delivery);
 	}
 }
