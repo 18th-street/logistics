@@ -26,7 +26,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "p_delivery")
-public class Delivery {
+public class Delivery extends BaseEntity {
 
 	@Id
 	@UuidGenerator
