@@ -1,6 +1,10 @@
 package com.eighteenthstreet.deliveryservice.presentation;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.eighteenthstreet.deliveryservice.applicatoin.DeliveryService;
 import com.eighteenthstreet.deliveryservice.applicatoin.dto.CreateDeliveryResponse;
 import com.eighteenthstreet.deliveryservice.presentation.request.CreateDeliveryRequest;
+import com.eighteenthstreet.deliveryservice.presentation.request.UpdateStatusDeliveryRequest;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,10 +27,17 @@ public class DeliveryController {
 
 	@PostMapping()
 	public ResponseEntity<CreateDeliveryResponse> createDelivery(
-		@RequestBody CreateDeliveryRequest createDeliveryRequest) {
-		CreateDeliveryResponse response = deliveryService.createDelivery(createDeliveryRequest);
+		@RequestBody CreateDeliveryRequest request) {
+		CreateDeliveryResponse response = deliveryService.createDelivery(request);
 
 		return ResponseEntity.ok(response);
+	}
+
+	@PatchMapping()
+	public ResponseEntity<Map<String, String>> updateDeliveryStatus(@RequestBody UpdateStatusDeliveryRequest request) {
+		deliveryService.updateDeliveryStatus(request);
+
+		return ResponseEntity.ok(Collections.singletonMap("message", "배달 상태가 변경 됐습니다."));
 	}
 
 }

@@ -8,5 +8,4 @@ import com.eighteenthstreet.deliveryservice.domain.model.Delivery;
 import com.eighteenthstreet.deliveryservice.domain.repository.DeliveryRepository;
 
 public interface JpaDeliveryRepository extends JpaRepository<Delivery, UUID>, DeliveryRepository {
-
 }

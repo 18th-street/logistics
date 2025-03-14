@@ -4,6 +4,8 @@ import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
 
+import com.eighteenthstreet.deliveryservice.domain.exception.InvalidDeliveryException;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -49,5 +51,14 @@ public class Delivery {
 
 	@Enumerated(value = EnumType.STRING)
 	private DeliveryStatus status;
-	
+
+	public void updateStatus(DeliveryStatus deliveryStatus) {
+		this.status = deliveryStatus;
+	}
+
+	public void cancel() {
+		if (this.status == DeliveryStatus.OUT_FOR_DELIVERY || this.status == DeliveryStatus.IN_TRANSIT_TO_VENDOR) {
+			throw new InvalidDeliveryException("취소 할 수 없는 상태입니다.");
+		}
+	}
 }
