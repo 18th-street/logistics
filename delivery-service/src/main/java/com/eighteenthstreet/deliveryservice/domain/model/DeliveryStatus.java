@@ -6,5 +6,6 @@ public enum DeliveryStatus {
 	ARRIVED_AT_HUB,       // 목적지 허브 도착
 	OUT_FOR_DELIVERY,     // 배송중
 	IN_TRANSIT_TO_VENDOR, // 업체 이동중
+	CANCELED,
 	DELIVERED;           // 배송완료
 }
