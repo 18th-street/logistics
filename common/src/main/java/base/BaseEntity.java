@@ -14,7 +14,6 @@ import jakarta.persistence.MappedSuperclass;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @EntityListeners(AuditingEntityListener.class)
 @MappedSuperclass
@@ -37,11 +36,11 @@ public class BaseEntity {
 	@Column(name = "modified_at")
 	private LocalDateTime modifiedAt;
 
-	@Setter
-	@Column(name = "deleted_by")
-	private String deletedBy;
-
-	@Setter
-	@Column(name = "deleted_at")
-	private LocalDateTime deletedAt;
+	// @Setter
+	// @Column(name = "deleted_by")
+	// private String deletedBy;
+	//
+	// @Setter
+	// @Column(name = "deleted_at")
+	// private LocalDateTime deletedAt;
 }
