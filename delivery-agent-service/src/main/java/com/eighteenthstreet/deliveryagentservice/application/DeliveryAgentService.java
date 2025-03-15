@@ -1,12 +1,17 @@
 package com.eighteenthstreet.deliveryagentservice.application;
 
 import com.eighteenthstreet.deliveryagentservice.application.dto.CreateDeliveryAgentResponse;
+import com.eighteenthstreet.deliveryagentservice.application.dto.GetDeliveryAgentResponse;
+import com.eighteenthstreet.deliveryagentservice.domain.exception.DeliveryAgentNotFoundException;
 import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgent;
 import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgentStatus;
 import com.eighteenthstreet.deliveryagentservice.domain.repository.DeliveryAgentRepository;
+import com.eighteenthstreet.deliveryagentservice.presentation.exception.ErrorCode;
 import com.eighteenthstreet.deliveryagentservice.presentation.request.CreateDeliveryAgentRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +35,16 @@ public class DeliveryAgentService {
 
         return CreateDeliveryAgentResponse.fromEntity(deliveryAgentRepository.save(deliveryAgent));
     }
+
+
+    public GetDeliveryAgentResponse getDeliveryAgent(UUID id) {
+        DeliveryAgent deliveryAgent = deliveryAgentRepository.findById(id).orElseThrow(
+                () -> new DeliveryAgentNotFoundException(ErrorCode.DELIVERY_AGENT_NOT_FOUND)
+        );
+
+        return GetDeliveryAgentResponse.fromEntity(deliveryAgent);
+    }
+
 
     //TODO: 적당한 담당자 찾는 로직 구현
     public void handleRouteCreated() {

@@ -2,13 +2,13 @@ package com.eighteenthstreet.deliveryagentservice.infrastructure;
 
 import com.eighteenthstreet.deliveryagentservice.application.DeliveryAgentService;
 import com.eighteenthstreet.deliveryagentservice.application.dto.CreateDeliveryAgentResponse;
+import com.eighteenthstreet.deliveryagentservice.application.dto.GetDeliveryAgentResponse;
 import com.eighteenthstreet.deliveryagentservice.presentation.request.CreateDeliveryAgentRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/vi/delivery-agents")
@@ -21,6 +21,14 @@ public class DeliveryAgentController {
     @PostMapping
     public ResponseEntity<CreateDeliveryAgentResponse> createDeliveryAgent(@RequestBody CreateDeliveryAgentRequest request) {
         CreateDeliveryAgentResponse response = deliveryAgentService.createDeliveryAgent(request);
+
+        return ResponseEntity.ok(response);
+    }
+
+
+    @GetMapping("{id}")
+    public ResponseEntity<GetDeliveryAgentResponse> getDeliveryAgent(@PathVariable(name = "id") UUID id) {
+        GetDeliveryAgentResponse response = deliveryAgentService.getDeliveryAgent(id);
 
         return ResponseEntity.ok(response);
     }
