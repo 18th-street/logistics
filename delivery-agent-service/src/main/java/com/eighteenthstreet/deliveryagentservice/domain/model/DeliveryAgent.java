@@ -39,7 +39,7 @@ public class DeliveryAgent extends BaseEntity {
     // 초기엔 배달가능한 상태로 설정
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private AgentStatus status = AgentStatus.AVAILABLE;
+    private DeliveryAgentStatus deliveryAgentTypeStatus = DeliveryAgentStatus.AVAILABLE;
 
 
     // 추후 GPS 등 이용해서 추적을 위한 필드
@@ -50,9 +50,5 @@ public class DeliveryAgent extends BaseEntity {
 
     @Column(name = "slack_id")
     private String slackId;
-
-    public enum AgentStatus {
-        AVAILABLE, IN_DELIVERY, OFFLINE
-    }
 
 }
