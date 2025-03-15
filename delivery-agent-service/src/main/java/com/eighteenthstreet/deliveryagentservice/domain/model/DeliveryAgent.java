@@ -51,4 +51,7 @@ public class DeliveryAgent extends BaseEntity {
     @Column(name = "slack_id")
     private String slackId;
 
+    public void updateDeliveryAgentType(DeliveryAgentType deliveryAgentStatus) {
+        this.deliveryAgentType = deliveryAgentStatus;
+    }
 }

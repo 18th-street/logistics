@@ -4,10 +4,13 @@ import com.eighteenthstreet.deliveryagentservice.application.DeliveryAgentServic
 import com.eighteenthstreet.deliveryagentservice.application.dto.CreateDeliveryAgentResponse;
 import com.eighteenthstreet.deliveryagentservice.application.dto.GetDeliveryAgentResponse;
 import com.eighteenthstreet.deliveryagentservice.presentation.request.CreateDeliveryAgentRequest;
+import com.eighteenthstreet.deliveryagentservice.presentation.request.UpdateDeliveryTypeRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -31,6 +34,13 @@ public class DeliveryAgentController {
         GetDeliveryAgentResponse response = deliveryAgentService.getDeliveryAgent(id);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping()
+    public ResponseEntity<Map<String, String>> updateDeliveryAgentType(@RequestBody UpdateDeliveryTypeRequest request) {
+        deliveryAgentService.updateDeliveryAgentType(request);
+
+        return ResponseEntity.ok(Collections.singletonMap("message", "배달담당자 타입이 변경되었습니다."));
     }
 
 

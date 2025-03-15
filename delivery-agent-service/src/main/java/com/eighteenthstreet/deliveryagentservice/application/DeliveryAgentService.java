@@ -8,8 +8,10 @@ import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgentStatu
 import com.eighteenthstreet.deliveryagentservice.domain.repository.DeliveryAgentRepository;
 import com.eighteenthstreet.deliveryagentservice.presentation.exception.ErrorCode;
 import com.eighteenthstreet.deliveryagentservice.presentation.request.CreateDeliveryAgentRequest;
+import com.eighteenthstreet.deliveryagentservice.presentation.request.UpdateDeliveryTypeRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -52,5 +54,14 @@ public class DeliveryAgentService {
         // 2. 배차정보 set
         // 3. DB저장
         // 4. Delivery로 이벤트 발행 --> 그러면 Delivery 상태 변경
+    }
+
+    @Transactional
+    public void updateDeliveryAgentType(UpdateDeliveryTypeRequest request) {
+        DeliveryAgent deliveryAgent = deliveryAgentRepository.findById(request.getDeliveryAgentId()).orElseThrow(
+                () -> new DeliveryAgentNotFoundException(ErrorCode.DELIVERY_AGENT_NOT_FOUND)
+        );
+
+        deliveryAgent.updateDeliveryAgentType(request.getDeliveryAgentType());
     }
 }
