@@ -30,4 +30,12 @@ public class DeliveryAgentService {
 
         return CreateDeliveryAgentResponse.fromEntity(deliveryAgentRepository.save(deliveryAgent));
     }
+
+    //TODO: 적당한 담당자 찾는 로직 구현
+    public void handleRouteCreated() {
+        // 1. 적당한 담당자 찾기
+        // 2. 배차정보 set
+        // 3. DB저장
+        // 4. Delivery로 이벤트 발행 --> 그러면 Delivery 상태 변경
+    }
 }
