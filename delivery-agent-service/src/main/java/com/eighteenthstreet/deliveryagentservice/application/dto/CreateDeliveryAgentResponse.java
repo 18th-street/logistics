@@ -30,7 +30,7 @@ public class CreateDeliveryAgentResponse {
                 .userId(deliveryAgent.getUserId())
                 .slackId(deliveryAgent.getSlackId())
                 .agentType(deliveryAgent.getDeliveryAgentType())
-                .agentStatus(deliveryAgent.getDeliveryAgentTypeStatus())
+                .agentStatus(deliveryAgent.getDeliveryAgentStatus())
                 .build();
     }
 }
