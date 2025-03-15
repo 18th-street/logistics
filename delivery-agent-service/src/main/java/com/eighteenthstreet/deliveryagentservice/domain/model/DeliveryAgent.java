@@ -38,8 +38,8 @@ public class DeliveryAgent extends BaseEntity {
     // 배달 담당자가 배달 가능하지 확인하기 위한 타입
     // 초기엔 배달가능한 상태로 설정
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private DeliveryAgentStatus deliveryAgentTypeStatus = DeliveryAgentStatus.AVAILABLE;
+    @Column(name = "status")
+    private DeliveryAgentStatus deliveryAgentTypeStatus;
 
 
     // 추후 GPS 등 이용해서 추적을 위한 필드

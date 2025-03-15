@@ -2,6 +2,7 @@ package com.eighteenthstreet.deliveryagentservice.application;
 
 import com.eighteenthstreet.deliveryagentservice.application.dto.CreateDeliveryAgentResponse;
 import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgent;
+import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgentStatus;
 import com.eighteenthstreet.deliveryagentservice.domain.repository.DeliveryAgentRepository;
 import com.eighteenthstreet.deliveryagentservice.presentation.request.CreateDeliveryAgentRequest;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +19,12 @@ public class DeliveryAgentService {
     public CreateDeliveryAgentResponse createDeliveryAgent(CreateDeliveryAgentRequest request) {
 
         // 1. 추후 hubService 에서 ID 검증을 해봐야함
+        // 2. useService 에서도 ID 검증을 해봐야함
         DeliveryAgent deliveryAgent = DeliveryAgent.builder()
                 .hubId(request.getHubId())
                 .userId(request.getUserId())
                 .deliveryAgentType(request.getDeliveryAgentType())
+                .deliveryAgentTypeStatus(DeliveryAgentStatus.AVAILABLE)
                 .slackId(request.getSlackId())
                 .build();
 
