@@ -31,3 +31,11 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:19090/eureka/
+
+service:
+  jwt:
+    secret-key: ${JWT_SECRET_KEY}
+    access-expiration: 3600000  # 1시간
+    refresh-expiration: 604800000  # 7일
+
+status-code: dydrkagkstkagudwp
