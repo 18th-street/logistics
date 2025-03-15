@@ -44,4 +44,9 @@ public class BaseEntity {
 	@Setter
 	@Column(name = "deleted_at")
 	private LocalDateTime deletedAt;
+
+	protected void softDelete() {
+		this.deletedAt = LocalDateTime.now();
+		// todo. deletedBy
+	}
 }
