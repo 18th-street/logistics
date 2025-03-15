@@ -3,6 +3,7 @@ package com.eighteenthstreet.deliveryagentservice.domain.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ import java.util.UUID;
 @Builder
 @Getter
 @Setter
+@SQLRestriction("deleted_at IS NULL")
 @Table(name = "p_delivery_agent")
 public class DeliveryAgent extends BaseEntity {
 

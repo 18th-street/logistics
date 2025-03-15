@@ -3,6 +3,7 @@ package com.eighteenthstreet.deliveryagentservice.application;
 import com.eighteenthstreet.deliveryagentservice.application.dto.CreateDeliveryAgentResponse;
 import com.eighteenthstreet.deliveryagentservice.application.dto.GetDeliveryAgentResponse;
 import com.eighteenthstreet.deliveryagentservice.domain.exception.DeliveryAgentNotFoundException;
+import com.eighteenthstreet.deliveryagentservice.domain.exception.InvalidDeliveryAgentException;
 import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgent;
 import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgentStatus;
 import com.eighteenthstreet.deliveryagentservice.domain.repository.DeliveryAgentRepository;
@@ -31,7 +32,7 @@ public class DeliveryAgentService {
                 .hubId(request.getHubId())
                 .userId(request.getUserId())
                 .deliveryAgentType(request.getDeliveryAgentType())
-                .deliveryAgentTypeStatus(DeliveryAgentStatus.AVAILABLE)
+                .deliveryAgentStatus(DeliveryAgentStatus.AVAILABLE)
                 .slackId(request.getSlackId())
                 .build();
 
@@ -63,5 +64,18 @@ public class DeliveryAgentService {
         );
 
         deliveryAgent.updateDeliveryAgentType(request.getDeliveryAgentType());
+    }
+
+    @Transactional
+    public void deleteDeliveryAgent(UUID id) {
+        DeliveryAgent deliveryAgent = deliveryAgentRepository.findById(id).orElseThrow(
+                () -> new DeliveryAgentNotFoundException(ErrorCode.DELIVERY_AGENT_NOT_FOUND)
+        );
+
+        if (deliveryAgent.getDeliveryAgentStatus() == DeliveryAgentStatus.IN_DELIVERY) {
+            throw new InvalidDeliveryAgentException(ErrorCode.INVALID_DELIVERY_AGENT_STATUS);
+        }
+
+        deliveryAgent.onPreRemove();
     }
 }

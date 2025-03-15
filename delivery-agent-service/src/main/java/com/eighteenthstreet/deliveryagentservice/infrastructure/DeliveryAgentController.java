@@ -43,5 +43,12 @@ public class DeliveryAgentController {
         return ResponseEntity.ok(Collections.singletonMap("message", "배달담당자 타입이 변경되었습니다."));
     }
 
+    @DeleteMapping("{id}")
+    public ResponseEntity<Map<String, String>> deleteDeliveryAgent(@PathVariable("id") UUID id) {
+        deliveryAgentService.deleteDeliveryAgent(id);
+
+        return ResponseEntity.ok(Collections.singletonMap("message", "배달담당자가 삭제되었습니다."));
+    }
+
 
 }
