@@ -19,12 +19,14 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+import util.JwtUtil;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter implements GlobalFilter {
 	private final RedisTemplate<String, String> redisTemplate;
+	private final JwtUtil jwtUtil;
 
 	@Value("${service.jwt.secret-key}")
 	private String secretKey;
@@ -43,9 +45,11 @@ public class JwtAuthenticationFilter implements GlobalFilter {
 			return exchange.getResponse().setComplete();
 		}
 
-		String userId = getUserIdFromToken(token);
-		String role = getRoleFromToken(token);
-		String username = getUsernameFromToken(token);
+		String userId = jwtUtil.getUserIdFromToken(token);
+		String role = jwtUtil.getRoleFromToken(token);
+		String username = jwtUtil.getUsernameFromToken(token);
+
+		log.info("userId = " + userId + ", role = " + role + ", username = " + username);
 
 		ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
 			.header("X-User-Id", userId)
@@ -82,38 +86,4 @@ public class JwtAuthenticationFilter implements GlobalFilter {
 			return false;
 		}
 	}
-
-	private String getUserIdFromToken(String token) {
-		SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
-		Claims claims = Jwts.parser()
-			.verifyWith(key)
-			.build()
-			.parseSignedClaims(token)
-			.getBody();
-
-		return claims.get("userId", String.class);
-	}
-
-	private String getRoleFromToken(String token) {
-		SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
-		Claims claims = Jwts.parser()
-			.verifyWith(key)
-			.build()
-			.parseSignedClaims(token)
-			.getBody();
-
-		return claims.get("role", String.class);
-	}
-
-	private String getUsernameFromToken(String token) {
-		SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
-		Claims claims = Jwts.parser()
-			.verifyWith(key)
-			.build()
-			.parseSignedClaims(token)
-			.getBody();
-
-		return claims.get("username", String.class);
-	}
-
 }
