@@ -30,6 +30,25 @@ spring:
     init:
       mode: always
 
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+
+message:
+  exchange: delivery
+  queue:
+    delivery: delivery.delivery
+    route: delivery.route
+  err:
+    exchange: delivery.err
+    queue:
+      err:
+        delivery: delivery.err.delivery
+
+
 eureka:
   client:
     service-url:

@@ -2,6 +2,7 @@ package com.eighteenthstreet.deliveryservice.application;
 
 import com.eighteenthstreet.deliveryservice.application.dto.CreateDeliveryResponse;
 import com.eighteenthstreet.deliveryservice.application.dto.GetDeliveryResponse;
+import com.eighteenthstreet.deliveryservice.domain.event.DeliveryCreatedEvent;
 import com.eighteenthstreet.deliveryservice.domain.exception.DeliveryNotFoundException;
 import com.eighteenthstreet.deliveryservice.domain.model.Delivery;
 import com.eighteenthstreet.deliveryservice.domain.repository.DeliveryRepository;
@@ -9,18 +10,30 @@ import com.eighteenthstreet.deliveryservice.presentation.exception.ErrorCode;
 import com.eighteenthstreet.deliveryservice.presentation.request.CreateDeliveryRequest;
 import com.eighteenthstreet.deliveryservice.presentation.request.UpdateStatusDeliveryRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class DeliveryService {
     private final DeliveryRepository deliveryRepository;
+    private final RabbitTemplate rabbitTemplate;
+
+    @Value("${message.queue.delivery}")
+    private String queueDelivery;
 
     public CreateDeliveryResponse createDelivery(CreateDeliveryRequest createDeliveryRequest) {
         Delivery delivery = Delivery.createDelivery(createDeliveryRequest);
+
+        DeliveryCreatedEvent event = new DeliveryCreatedEvent(createDeliveryRequest.getStartHubId(), createDeliveryRequest.getEndHubId());
+        log.info("######### Send Message[Delivery] : {}", event);
+        rabbitTemplate.convertAndSend(queueDelivery, event);
 
         return CreateDeliveryResponse.fromEntity(deliveryRepository.save(delivery));
     }
