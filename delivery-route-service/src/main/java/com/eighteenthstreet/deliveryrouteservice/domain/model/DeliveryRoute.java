@@ -29,14 +29,14 @@ public class DeliveryRoute {
     private UUID endHubId; // 종료 허브 ID
 
     @Column(name = "estimated_distance")
-    private String estimatedDistance; // 예상 거리 (예: "50km")
+    private Double estimatedDistance; // 예상 거리
 
     @Column(name = "estimated_time")
-    private String estimatedTime; // 예상 소요 시간 (예: "2h 30m")
+    private Integer estimatedTime; // 예상 소요 시간
 
     @Column(name = "actual_distance")
-    private String actualDistance; // 실제 거리 (추후 업데이트 가능)
+    private Double actualDistance; // 실제 거리 (추후 업데이트 가능)
 
     @Column(name = "actual_time")
-    private String actualTime; // 실제 소요 시간 (추후 업데이트 가능)
+    private Integer actualTime; // 실제 소요 시간 (추후 업데이트 가능)
 }
