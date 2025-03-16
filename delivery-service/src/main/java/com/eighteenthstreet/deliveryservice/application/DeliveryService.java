@@ -31,11 +31,12 @@ public class DeliveryService {
     public CreateDeliveryResponse createDelivery(CreateDeliveryRequest createDeliveryRequest) {
         Delivery delivery = Delivery.createDelivery(createDeliveryRequest);
 
-        DeliveryCreatedEvent event = new DeliveryCreatedEvent(createDeliveryRequest.getStartHubId(), createDeliveryRequest.getEndHubId());
+        delivery = deliveryRepository.save(delivery);
+
+        DeliveryCreatedEvent event = new DeliveryCreatedEvent(createDeliveryRequest.getStartHubId(), createDeliveryRequest.getEndHubId(), delivery.getDeliveryId());
         log.info("######### Send Message[Delivery] : {}", event);
         rabbitTemplate.convertAndSend(queueDelivery, event);
-
-        return CreateDeliveryResponse.fromEntity(deliveryRepository.save(delivery));
+        return CreateDeliveryResponse.fromEntity(delivery);
     }
 
     @Transactional
