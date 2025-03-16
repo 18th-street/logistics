@@ -8,8 +8,9 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum CompanyType {
-	SUPPLIER("공급 업체"),
-	MANUFACTURER("생산 업체");
+	RECEIVER("수령 업체"),
+	SUPPLIER("생산 업체"),
+	NONE("타입 오류");
 
 	private final String name;
 
@@ -17,6 +18,6 @@ public enum CompanyType {
 		System.out.println("type = " + type);
 		return Arrays.stream(values()).filter(t -> t.name.equals(type))
 			.findFirst()
-			.orElse(null);
+			.orElse(NONE);
 	}
 }
