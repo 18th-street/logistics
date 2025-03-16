@@ -73,7 +73,7 @@ public class UserController {
 	@Description(
 		"권한 조회"
 	)
-	@GetMapping("/{userId}/role")
+	@PreAuthorize("hasRole('MASTER')")
 	public ResponseEntity<Role> getUserRole(@PathVariable("userId") Long userId) {
 		Role role = userService.getUserRole(userId);
 		return ResponseEntity.ok(role);
@@ -83,7 +83,7 @@ public class UserController {
 		"사용자 정보 전체 조회 (마스터용)"
 	)
 	@GetMapping
-	@PreAuthorize("hasAnyAuthority('MASTER')")
+	@PreAuthorize("hasRole('MASTER')")
 	public ResponseEntity<Page<UserResponseDto>> getAllUsers(Pageable pageable) {
 		return ResponseEntity.ok(userService.getAllUsers(pageable));
 	}
@@ -92,7 +92,7 @@ public class UserController {
 		"사용자 정보 검색 (마스터용)"
 	)
 	@GetMapping("/search")
-	@PreAuthorize("hasAnyAuthority('MASTER')")
+	@PreAuthorize("hasRole('MASTER')")
 	public ResponseEntity<Page<UserResponseDto>> searchUsers(
 		@RequestParam(name = "name", defaultValue = "") String name,
 		@RequestParam(name = "size", defaultValue = "10") int size,
@@ -126,7 +126,7 @@ public class UserController {
 		"사용자 정보 수정 (마스터용)"
 	)
 	@PatchMapping("/{userId}")
-	@PreAuthorize("hasAnyAuthority('MASTER')")
+	@PreAuthorize("hasRole('MASTER')")
 	public ResponseEntity<UserResponseDto> updateUserInfo(
 		@PathVariable("userId") Long userId,
 		@Valid @RequestBody UpdateUserRequestDto request
@@ -138,7 +138,7 @@ public class UserController {
 		"사용자 비밀번호 수정 (마스터용)"
 	)
 	@PatchMapping("/{userId}/change-password")
-	@PreAuthorize("hasAnyAuthority('MASTER')")
+	@PreAuthorize("hasRole('MASTER')")
 	public ResponseEntity<Void> changePassword(
 		@PathVariable("userId") Long userId,
 		@Valid @RequestBody ChangePasswordRequestDto request
@@ -160,7 +160,7 @@ public class UserController {
 		"사용자 정보 삭제"
 	)
 	@DeleteMapping("/{userId}")
-	@PreAuthorize("hasAnyAuthority('MASTER')")
+	@PreAuthorize("hasRole('MASTER')")
 	public ResponseEntity<Void> deleteUser(@PathVariable("userId") Long userId) {
 		userService.deleteUser(userId);
 		return ResponseEntity.ok().build();
