@@ -9,7 +9,7 @@ public interface UserRepository {
 	void save(User user);
 
 	boolean isExistUsername(String username);
-	
+
 	Page<User> findActiveUsers(String name, Pageable pageable);
 
 	User findByUsername(String username);
