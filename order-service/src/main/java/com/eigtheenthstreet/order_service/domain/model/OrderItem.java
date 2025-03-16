@@ -2,6 +2,8 @@ package com.eigtheenthstreet.order_service.domain.model;
 
 import java.util.UUID;
 
+import com.eigtheenthstreet.order_service.presentation.request.UpdateOrderRequest;
+
 import base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -50,5 +52,10 @@ public class OrderItem extends BaseEntity {
 
 	private static int calculateTotalPrice(Integer productQuantity, Integer productPrice) {
 		return productQuantity * productPrice;
+	}
+
+	public void update(UpdateOrderRequest.UpdateOrderItemRequest orderItemRequest, Integer productPrice) {
+		this.quantity += orderItemRequest.productQuantity();
+		this.totalPrice = this.quantity * productPrice;
 	}
 }

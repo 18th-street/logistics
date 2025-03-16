@@ -1,5 +1,6 @@
 package com.eigtheenthstreet.order_service.domain.model;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.eigtheenthstreet.order_service.presentation.request.CreateOrderRequest;
@@ -70,6 +71,19 @@ public class Order extends BaseEntity {
 	// }
 
 	public void addOrderTotalQuantityAndTotalAmount(int totalQuantity, Integer totalAmount) {
+		this.quantity = totalQuantity;
+		this.totalAmount = totalAmount;
+	}
+
+	public void updateOrderQuantityAndTotalPrice(List<OrderItem> updatedOrderItems) {
+		int totalQuantity = updatedOrderItems.stream()
+			.mapToInt(OrderItem::getQuantity)
+			.sum();
+
+		int totalAmount = updatedOrderItems.stream()
+			.mapToInt(OrderItem::getTotalPrice)
+			.sum();
+
 		this.quantity = totalQuantity;
 		this.totalAmount = totalAmount;
 	}

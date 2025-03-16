@@ -14,4 +14,8 @@ public enum OrderStatus {
 	FAILED("주문 실패");         // 재고 부족 등 이유로 실패
 
 	private final String description;
+
+	public static boolean isUpdateOrderStatusNotAllowed(OrderStatus orderStatus) {
+		return orderStatus != CREATED;
+	}
 }
