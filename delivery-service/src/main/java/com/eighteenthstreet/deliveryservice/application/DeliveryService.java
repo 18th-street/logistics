@@ -4,7 +4,6 @@ import com.eighteenthstreet.deliveryservice.application.dto.CreateDeliveryRespon
 import com.eighteenthstreet.deliveryservice.application.dto.GetDeliveryResponse;
 import com.eighteenthstreet.deliveryservice.domain.exception.DeliveryNotFoundException;
 import com.eighteenthstreet.deliveryservice.domain.model.Delivery;
-import com.eighteenthstreet.deliveryservice.domain.model.DeliveryStatus;
 import com.eighteenthstreet.deliveryservice.domain.repository.DeliveryRepository;
 import com.eighteenthstreet.deliveryservice.presentation.exception.ErrorCode;
 import com.eighteenthstreet.deliveryservice.presentation.request.CreateDeliveryRequest;
@@ -21,15 +20,7 @@ public class DeliveryService {
     private final DeliveryRepository deliveryRepository;
 
     public CreateDeliveryResponse createDelivery(CreateDeliveryRequest createDeliveryRequest) {
-        Delivery delivery = Delivery.builder()
-                .startHubId(createDeliveryRequest.getStartHubId())
-                .endHubId(createDeliveryRequest.getEndHubId())
-                .orderId(createDeliveryRequest.getOrderId())
-                .recipient(createDeliveryRequest.getRecipient())
-                .destinationAddress(createDeliveryRequest.getDestinationAddress())
-                .slackId(createDeliveryRequest.getRecipientSlackId())
-                .status(DeliveryStatus.PENDING_AT_HUB)
-                .build();
+        Delivery delivery = Delivery.createDelivery(createDeliveryRequest);
 
         return CreateDeliveryResponse.fromEntity(deliveryRepository.save(delivery));
     }
