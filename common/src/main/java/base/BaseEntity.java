@@ -45,14 +45,6 @@ public class BaseEntity {
 	@Column(name = "deleted_at")
 	private LocalDateTime deletedAt;
 
-	public String getDeletedBy() {
-		return deletedBy;
-	}
-
-	public LocalDateTime getDeletedAt() {
-		return deletedAt;
-	}
-
 	protected void softDelete(String username) {
 		this.deletedAt = LocalDateTime.now();
 		this.deletedBy = username;
