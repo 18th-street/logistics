@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class JwtUtil {
+public class JwtProvider {
 	private final RedisTemplate<String, String> redisTemplate;
 
 	@Value("${service.jwt.secret-key}")
