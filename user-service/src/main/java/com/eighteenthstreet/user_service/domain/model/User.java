@@ -1,7 +1,5 @@
 package com.eighteenthstreet.user_service.domain.model;
 
-import java.time.LocalDateTime;
-
 import com.eighteenthstreet.user_service.presentation.dto.UpdateUserRequestDto;
 
 import base.BaseEntity;
@@ -18,12 +16,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
-@ToString
-@Getter
 @Entity
 @Builder
+@Getter
 @AllArgsConstructor
 @Table(name = "p_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -55,12 +51,6 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
-	@Column(name = "deleted_by")
-	private String deletedBy;
-
-	@Column(name = "deleted_at")
-	private LocalDateTime deletedAt;
-
 	public void update(UpdateUserRequestDto request) {
 		this.slackId = request.slackId();
 		this.name = request.name();
@@ -77,8 +67,7 @@ public class User extends BaseEntity {
 		this.status = Status.COMPLETE;
 	}
 
-	public void delete(User loginUser) {
-		this.deletedAt = LocalDateTime.now();
-		this.deletedBy = loginUser.getUsername();
+	public void performSoftDelete(String username) {
+		this.softDelete(username);
 	}
 }

@@ -18,7 +18,7 @@ import com.eighteenthstreet.user_service.domain.model.Role;
 import com.eighteenthstreet.user_service.domain.model.Status;
 import com.eighteenthstreet.user_service.domain.model.User;
 import com.eighteenthstreet.user_service.domain.repository.UserRepository;
-import com.eighteenthstreet.user_service.infrastructure.security.JwtUtil;
+import com.eighteenthstreet.user_service.infrastructure.security.JwtProvider;
 import com.eighteenthstreet.user_service.presentation.dto.ChangePasswordRequestDto;
 import com.eighteenthstreet.user_service.presentation.dto.SignInRequestDto;
 import com.eighteenthstreet.user_service.presentation.dto.SignUpRequestDto;
@@ -38,7 +38,7 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final RedisTemplate<String, String> redisTemplate;
-	private final JwtUtil jwtUtil;
+	private final JwtProvider jwtUtil;
 	private final UserMapper userMapper;
 
 	@Value("${status-code}")
@@ -58,8 +58,6 @@ public class UserService {
 			.phone(request.phone())
 			.role(request.role())
 			.status(Status.WAITING)
-			.deletedBy(null)
-			.deletedAt(null)
 			.build();
 		userRepository.save(user);
 	}
@@ -153,7 +151,7 @@ public class UserService {
 	public void deleteUser(Long userId) {
 		User loginUser = loginUser();
 		User targetUser = userRepository.findById(userId);
-		targetUser.delete(loginUser);
+		targetUser.performSoftDelete(loginUser.getUsername());
 	}
 
 	private User loginUser() {
