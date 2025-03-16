@@ -1,14 +1,14 @@
 package com.eighteenthstreet.deliveryservice.domain.repository;
 
+import com.eighteenthstreet.deliveryservice.domain.model.Delivery;
+
 import java.util.Optional;
 import java.util.UUID;
 
-import com.eighteenthstreet.deliveryservice.domain.model.Delivery;
-
 public interface DeliveryRepository {
-	Delivery save(Delivery delivery);
+    Delivery save(Delivery delivery);
 
-	Optional<Delivery> findById(UUID uuid);
+    Optional<Delivery> findById(UUID uuid);
 
-	void softDeleteDelivery(UUID uuid);
+    void softDeleteDelivery(UUID uuid);
 }
