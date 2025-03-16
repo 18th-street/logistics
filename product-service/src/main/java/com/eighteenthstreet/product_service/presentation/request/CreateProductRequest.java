@@ -7,6 +7,7 @@ public record CreateProductRequest(
 	UUID hubId,
 	String name,
 	String description,
-	Integer quantity
+	Integer quantity,
+	Integer price
 ) {
 }
