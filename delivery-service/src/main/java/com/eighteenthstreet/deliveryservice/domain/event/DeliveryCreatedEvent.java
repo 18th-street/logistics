@@ -13,4 +13,5 @@ import java.util.UUID;
 public class DeliveryCreatedEvent {
     private UUID startHubId;
     private UUID endHubId;
+    private UUID deliveryId;
 }
