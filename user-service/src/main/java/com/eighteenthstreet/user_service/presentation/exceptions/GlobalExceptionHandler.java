@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -52,9 +53,9 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.badRequest().body(errors);
 	}
 
-	@ExceptionHandler(AccessDeniedException.class)
-	public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
-		log.error(" 접근 거부 (Access Denied) 발생: {}", ex.getMessage());
+	@ExceptionHandler({AccessDeniedException.class, AuthorizationDeniedException.class})
+	public ResponseEntity<ErrorResponse> handleAccessDeniedExceptions(Exception ex) {
+		log.error("권한 관련 예외 발생: {}", ex.getMessage());
 		return ResponseEntity
 			.status(ErrorCode.ACCESS_DENIED.getHttpStatus())
 			.body(new ErrorResponse(ErrorCode.ACCESS_DENIED));
