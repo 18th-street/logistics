@@ -2,8 +2,12 @@ package com.eigtheenthstreet.order_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"exception", "base", "com.eigtheenthstreet.order_service"})
+@EnableFeignClients
+@EnableJpaAuditing
 public class OrderServiceApplication {
 
 	public static void main(String[] args) {
