@@ -9,7 +9,9 @@ public record SelectProductResponse(
 	UUID companyId,
 	String name,
 	String description,
-	Integer quantity
+	Integer quantity,
+	Integer price,
+	Boolean isSold
 ) {
 	public static SelectProductResponse from(Product foundProduct) {
 		return new SelectProductResponse(
@@ -17,7 +19,9 @@ public record SelectProductResponse(
 			foundProduct.getCompanyId(),
 			foundProduct.getName(),
 			foundProduct.getDescription(),
-			foundProduct.getQuantity()
+			foundProduct.getQuantity(),
+			foundProduct.getPrice(),
+			foundProduct.isSold()
 		);
 	}
 }

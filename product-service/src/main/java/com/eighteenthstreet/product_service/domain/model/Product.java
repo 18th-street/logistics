@@ -44,6 +44,13 @@ public class Product extends BaseEntity {
 	@Column(name = "product_quantity")
 	private Integer quantity;
 
+	@Column(name = "product_price")
+	private Integer price;
+
+	@Builder.Default
+	@Column(name = "product_isSold")
+	private boolean isSold = Boolean.TRUE;
+
 	@Column(name = "company_id")
 	private UUID companyId;
 
@@ -56,6 +63,7 @@ public class Product extends BaseEntity {
 			.name(request.name())
 			.description(request.description())
 			.quantity(request.quantity())
+			.price(request.price())
 			.companyId(request.companyId())
 			.build();
 	}
