@@ -3,6 +3,9 @@ package com.eigtheenthstreet.order_service.domain.model;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 import com.eigtheenthstreet.order_service.presentation.request.CreateOrderRequest;
 
 import base.BaseEntity;
@@ -26,6 +29,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
+@SQLDelete(sql = "UPDATE p_orders SET order_is_deleted = true WHERE order_id = ?")
+@SQLRestriction("order_is_deleted = false")
 public class Order extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -56,6 +61,10 @@ public class Order extends BaseEntity {
 	@Column(name = "consumer_company_id")
 	private UUID consumerCompanyId;
 
+	@Builder.Default
+	@Column(name = "order_is_deleted")
+	private Boolean isDeleted = Boolean.FALSE;
+
 	public static Order create(CreateOrderRequest request, Long userId) {
 		return Order.builder()
 			.supplierCompanyId(request.supplierCompanyId())
@@ -68,6 +77,10 @@ public class Order extends BaseEntity {
 
 	// public void addDelivery(UUID deliveryId) {
 	// 	this.deliveryId = deliveryId;
+	// }
+
+	// public void changeOrderStatusFailed() {
+	// 	this.orderStatus = OrderStatus.DELIVERY_FAILED;
 	// }
 
 	public void addOrderTotalQuantityAndTotalAmount(int totalQuantity, Integer totalAmount) {
@@ -88,7 +101,9 @@ public class Order extends BaseEntity {
 		this.totalAmount = totalAmount;
 	}
 
-	// public void changeOrderStatusFailed() {
-	// 	this.orderStatus = OrderStatus.DELIVERY_FAILED;
-	// }
+	public void performSoftDelete() {
+		this.isDeleted = Boolean.TRUE;
+		this.orderStatus = OrderStatus.CANCELLED;
+		this.softDelete();
+	}
 }

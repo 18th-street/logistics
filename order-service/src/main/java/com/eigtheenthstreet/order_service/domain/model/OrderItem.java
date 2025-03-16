@@ -2,6 +2,9 @@ package com.eigtheenthstreet.order_service.domain.model;
 
 import java.util.UUID;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 import com.eigtheenthstreet.order_service.presentation.request.UpdateOrderRequest;
 
 import base.BaseEntity;
@@ -23,6 +26,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
+@SQLDelete(sql = "UPDATE p_oder_item SET order_item_is_deleted = true WHERE order_item_id = ?")
+@SQLRestriction("order_item_is_deleted = false")
 public class OrderItem extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -41,6 +46,10 @@ public class OrderItem extends BaseEntity {
 	@Column(name = "order_id")
 	private UUID orderId;
 
+	@Builder.Default
+	@Column(name = "orderItem_is_deleted")
+	private Boolean isDeleted = Boolean.FALSE;
+
 	public static OrderItem create(UUID orderId, UUID productId, Integer productQuantity, Integer productPrice) {
 		return OrderItem.builder()
 			.orderId(orderId)
@@ -57,5 +66,10 @@ public class OrderItem extends BaseEntity {
 	public void update(UpdateOrderRequest.UpdateOrderItemRequest orderItemRequest, Integer productPrice) {
 		this.quantity += orderItemRequest.productQuantity();
 		this.totalPrice = this.quantity * productPrice;
+	}
+
+	public void performSoftDelete() {
+		this.isDeleted = Boolean.TRUE;
+		this.softDelete();
 	}
 }

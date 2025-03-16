@@ -179,6 +179,44 @@ public class OrderService {
 		return UpdateOrderResponse.of(foundOrder, updateOrderItems);
 	}
 
+	@Transactional
+	public void deleteOrder(UUID orderId, Long userId) {
+		// todo. 주문 삭제 권한 확인
+
+		// 주문 조회
+		Order foundOrder = orderRepository.findById(orderId)
+			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.ORDER_NOT_FOUND.getMessage()));
+
+		// 주문 상태 확인
+		if (OrderStatus.isDeleteOrderStatusNotAllowed(foundOrder.getOrderStatus())) {
+			throw new IllegalArgumentException("주문을 삭제할 수 없습니다.");
+		}
+
+		// 주문 상품 목록 조회
+		List<OrderItem> foundOrderItems = orderItemRepository.findByOrderId(orderId);
+
+		// 주문 상품 삭제
+		for (OrderItem foundOrderItem : foundOrderItems) {
+			foundOrderItem.performSoftDelete();
+
+			// try {
+			// 	//productServiceClient.restoreStock(foundOrderItem.getProductId(), foundOrderItem.getQuantity());
+			// } catch (Exception e) {
+			// 	throw new IllegalStateException("상품 재고 복구에 실패했습니다.", e);
+			// }
+		}
+
+		// 배송 삭제
+		// try {
+		// 	deliveryServiceFeignClient.deleteDelivery(orderId); // DeliveryServiceClient 호출
+		// } catch (Exception e) {
+		// 	throw new IllegalStateException("배송 정보 삭제에 실패했습니다.", e);
+		// }
+
+		// 주문 삭제
+		foundOrder.performSoftDelete();
+	}
+
 	@Transactional(readOnly = true)
 	public SelectOrderResponse getOrder(UUID orderId) {
 		// 주문 조회
@@ -203,5 +241,4 @@ public class OrderService {
 
 		return SelectOrderResponse.from(foundOrder, orderItemsDto);
 	}
-
 }

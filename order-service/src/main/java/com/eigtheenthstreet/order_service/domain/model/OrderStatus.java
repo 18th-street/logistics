@@ -18,4 +18,8 @@ public enum OrderStatus {
 	public static boolean isUpdateOrderStatusNotAllowed(OrderStatus orderStatus) {
 		return orderStatus != CREATED;
 	}
+
+	public static boolean isDeleteOrderStatusNotAllowed(OrderStatus orderStatus) {
+		return orderStatus != CREATED;
+	}
 }
