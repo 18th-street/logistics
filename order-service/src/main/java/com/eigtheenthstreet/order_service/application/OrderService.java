@@ -1,5 +1,9 @@
 package com.eigtheenthstreet.order_service.application;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -7,6 +11,7 @@ import com.eigtheenthstreet.order_service.application.dto.CompanyType;
 import com.eigtheenthstreet.order_service.application.dto.CreateCompanyResponse;
 import com.eigtheenthstreet.order_service.application.dto.CreateOrderResponse;
 import com.eigtheenthstreet.order_service.application.dto.CreateProductResponse;
+import com.eigtheenthstreet.order_service.application.dto.SelectOrderResponse;
 import com.eigtheenthstreet.order_service.domain.model.Order;
 import com.eigtheenthstreet.order_service.domain.model.OrderItem;
 import com.eigtheenthstreet.order_service.domain.repository.OrderItemRepository;
@@ -15,6 +20,7 @@ import com.eigtheenthstreet.order_service.infrastructure.client.CompanyServiceCl
 import com.eigtheenthstreet.order_service.infrastructure.client.ProductServiceClient;
 import com.eigtheenthstreet.order_service.presentation.request.CreateOrderRequest;
 
+import exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -98,9 +104,34 @@ public class OrderService {
 		return CreateOrderResponse.from(order.getId());
 	}
 
+	@Transactional(readOnly = true)
+	public SelectOrderResponse getOrder(UUID orderId) {
+		// 주문 조회
+		Order foundOrder = orderRepository.findById(orderId)
+			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.ORDER_NOT_FOUND.getMessage()));
+
+		// 주문 상품 조회
+		List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+
+		// 주문 상품 응답 dto 생성
+		List<SelectOrderResponse.SelectOrderRequest> orderItemsDto = new ArrayList<>();
+
+		for (OrderItem orderItem : orderItems) {
+			SelectOrderResponse.SelectOrderRequest selectOrderRequest = SelectOrderResponse.SelectOrderRequest.from(
+				orderItem
+			);
+			orderItemsDto.add(selectOrderRequest);
+		}
+
+		// 배송 및 배송 경로 정보 조회
+		//DeliveryResponse delivery = deliveryServiceFeignClient.getDeliveryInfo(orderId);
+
+		return SelectOrderResponse.from(foundOrder, orderItemsDto);
+	}
+
 	// @Transactional
 	// public UpdateOrderResponse updateOrder(UpdateOrderRequest request) {
 	// 	return null;
 	// }
-	//
+
 }

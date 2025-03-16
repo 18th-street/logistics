@@ -1,7 +1,11 @@
 package com.eigtheenthstreet.order_service.presentation;
 
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.eigtheenthstreet.order_service.application.OrderService;
 import com.eigtheenthstreet.order_service.application.dto.CreateOrderResponse;
+import com.eigtheenthstreet.order_service.application.dto.SelectOrderResponse;
 import com.eigtheenthstreet.order_service.presentation.request.CreateOrderRequest;
 
 import lombok.RequiredArgsConstructor;
@@ -26,5 +31,11 @@ public class OrderController {
 	) {
 		CreateOrderResponse response = orderService.registerOrder(createOrderRequest, userId);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
+
+	@GetMapping("/{orderId}")
+	public ResponseEntity<SelectOrderResponse> getOrder(@PathVariable UUID orderId) {
+		SelectOrderResponse response = orderService.getOrder(orderId);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 }

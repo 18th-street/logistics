@@ -19,7 +19,10 @@ public enum ErrorCode {
 
 	// Product
 	PRODUCT_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "이미 등록된 상품입니다.", 6000),
-	PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않은 상품입니다.", 6001);
+	PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않은 상품입니다.", 6001),
+
+	// Order
+	ORDER_NOT_FOUND(HttpStatus.BAD_REQUEST, "주문을 찾을 수 없습니다.", 7000);
 
 	private final HttpStatus httpStatus;
 	private final String message;
