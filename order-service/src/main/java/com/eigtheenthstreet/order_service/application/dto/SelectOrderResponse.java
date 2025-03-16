@@ -10,10 +10,13 @@ import com.eigtheenthstreet.order_service.domain.model.OrderStatus;
 public record SelectOrderResponse(
 	UUID orderId,
 	//UUID ordererId,
-	OrderStatus orderStatus,
 	UUID supplierCompanyId,
 	UUID consumerCompanyId,
-	List<SelectOrderItemRequest> orderItems
+	Integer orderTotalQuantity,
+	Integer orderTotalAmount,
+	List<SelectOrderItemRequest> orderItems,
+	//UUID deliveryId,
+	OrderStatus orderStatus
 ) {
 	public static SelectOrderResponse from(
 		Order order,
@@ -21,10 +24,12 @@ public record SelectOrderResponse(
 	) {
 		return new SelectOrderResponse(
 			order.getId(),
-			order.getOrderStatus(),
 			order.getSupplierCompanyId(),
 			order.getConsumerCompanyId(),
-			orderItem
+			order.getQuantity(),
+			order.getTotalAmount(),
+			orderItem,
+			order.getOrderStatus()
 		);
 	}
 
