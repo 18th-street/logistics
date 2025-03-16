@@ -5,33 +5,36 @@ import java.util.UUID;
 
 import com.eigtheenthstreet.order_service.domain.model.Order;
 import com.eigtheenthstreet.order_service.domain.model.OrderItem;
+import com.eigtheenthstreet.order_service.domain.model.OrderStatus;
 
 public record SelectOrderResponse(
 	UUID orderId,
 	//UUID ordererId,
+	OrderStatus orderStatus,
 	UUID supplierCompanyId,
 	UUID consumerCompanyId,
-	List<SelectOrderRequest> orderItems
+	List<SelectOrderItemRequest> orderItems
 ) {
 	public static SelectOrderResponse from(
 		Order order,
-		List<SelectOrderRequest> orderItem
+		List<SelectOrderItemRequest> orderItem
 	) {
 		return new SelectOrderResponse(
 			order.getId(),
+			order.getOrderStatus(),
 			order.getSupplierCompanyId(),
 			order.getConsumerCompanyId(),
 			orderItem
 		);
 	}
 
-	public record SelectOrderRequest(
+	public record SelectOrderItemRequest(
 		UUID productId,
 		Integer productQuantity,
 		Integer productTotalPrice
 	) {
-		public static SelectOrderRequest from(OrderItem orderItem) {
-			return new SelectOrderRequest(
+		public static SelectOrderItemRequest from(OrderItem orderItem) {
+			return new SelectOrderItemRequest(
 				orderItem.getProductId(),
 				orderItem.getQuantity(),
 				orderItem.getTotalPrice()

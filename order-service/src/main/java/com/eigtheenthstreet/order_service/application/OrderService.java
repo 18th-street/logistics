@@ -114,13 +114,13 @@ public class OrderService {
 		List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
 
 		// 주문 상품 응답 dto 생성
-		List<SelectOrderResponse.SelectOrderRequest> orderItemsDto = new ArrayList<>();
+		List<SelectOrderResponse.SelectOrderItemRequest> orderItemsDto = new ArrayList<>();
 
 		for (OrderItem orderItem : orderItems) {
-			SelectOrderResponse.SelectOrderRequest selectOrderRequest = SelectOrderResponse.SelectOrderRequest.from(
+			SelectOrderResponse.SelectOrderItemRequest selectOrderItemRequest = SelectOrderResponse.SelectOrderItemRequest.from(
 				orderItem
 			);
-			orderItemsDto.add(selectOrderRequest);
+			orderItemsDto.add(selectOrderItemRequest);
 		}
 
 		// 배송 및 배송 경로 정보 조회
