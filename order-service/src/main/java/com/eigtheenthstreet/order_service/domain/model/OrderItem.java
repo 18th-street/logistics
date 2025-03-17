@@ -37,7 +37,7 @@ public class OrderItem extends BaseEntity {
 	@Column(name = "orderItem_quantity")
 	private Integer quantity;
 
-	@Column(name = "orderItem_totalPrcie")
+	@Column(name = "orderItem_totalPrice")
 	private Integer totalPrice;
 
 	@Column(name = "product_id")

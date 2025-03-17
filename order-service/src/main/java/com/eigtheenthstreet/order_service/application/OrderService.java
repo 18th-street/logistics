@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -265,18 +269,40 @@ public class OrderService {
 		List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
 
 		// 주문 상품 응답 dto 생성
-		List<SelectOrderResponse.SelectOrderItemRequest> orderItemsDto = new ArrayList<>();
+		List<SelectOrderResponse.SelectOrderItemResponse> orderItemsDto = new ArrayList<>();
 
 		for (OrderItem orderItem : orderItems) {
-			SelectOrderResponse.SelectOrderItemRequest selectOrderItemRequest = SelectOrderResponse.SelectOrderItemRequest.from(
+			SelectOrderResponse.SelectOrderItemResponse selectOrderItemResponse = SelectOrderResponse.SelectOrderItemResponse.from(
 				orderItem
 			);
-			orderItemsDto.add(selectOrderItemRequest);
+			orderItemsDto.add(selectOrderItemResponse);
 		}
 
 		// 배송 및 배송 경로 정보 조회
 		//DeliveryResponse delivery = deliveryServiceFeignClient.getDeliveryInfo(orderId);
 
 		return SelectOrderResponse.from(foundOrder, orderItemsDto);
+	}
+
+	@Transactional(readOnly = true)
+	public PagedModel<SelectOrderResponse> getAllOrders(String query, Pageable pageable) {
+		Page<Order> orders = orderRepository.searchByOrders(pageable);
+		// todo. 배송 정보도 함께 조회?
+		List<SelectOrderResponse> content = orders.stream().map(order -> {
+			List<OrderItem> foundOrderItem = orderItemRepository.findByOrderId(order.getId());
+
+			List<SelectOrderResponse.SelectOrderItemResponse> orderItemsResponse = SelectOrderResponse.SelectOrderItemResponse.of(
+				foundOrderItem);
+
+			return SelectOrderResponse.from(order, orderItemsResponse);
+		}).toList();
+
+		Page<SelectOrderResponse> pageResult = new PageImpl<>(
+			content,
+			pageable,
+			orders.getTotalElements()
+		);
+
+		return new PagedModel<>(pageResult);
 	}
 }

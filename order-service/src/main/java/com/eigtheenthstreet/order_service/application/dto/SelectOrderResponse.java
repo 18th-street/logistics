@@ -14,13 +14,13 @@ public record SelectOrderResponse(
 	UUID consumerCompanyId,
 	Integer orderTotalQuantity,
 	Integer orderTotalAmount,
-	List<SelectOrderItemRequest> orderItems,
+	List<SelectOrderItemResponse> orderItems,
 	//UUID deliveryId,
 	OrderStatus orderStatus
 ) {
 	public static SelectOrderResponse from(
 		Order order,
-		List<SelectOrderItemRequest> orderItem
+		List<SelectOrderItemResponse> orderItem
 	) {
 		return new SelectOrderResponse(
 			order.getId(),
@@ -33,17 +33,23 @@ public record SelectOrderResponse(
 		);
 	}
 
-	public record SelectOrderItemRequest(
+	public record SelectOrderItemResponse(
 		UUID productId,
 		Integer productQuantity,
 		Integer productTotalPrice
 	) {
-		public static SelectOrderItemRequest from(OrderItem orderItem) {
-			return new SelectOrderItemRequest(
+		public static SelectOrderItemResponse from(OrderItem orderItem) {
+			return new SelectOrderItemResponse(
 				orderItem.getProductId(),
 				orderItem.getQuantity(),
 				orderItem.getTotalPrice()
 			);
+		}
+
+		public static List<SelectOrderItemResponse> of(List<OrderItem> orderItems) {
+			return orderItems.stream()
+				.map(SelectOrderItemResponse::from)
+				.toList();
 		}
 	}
 }
