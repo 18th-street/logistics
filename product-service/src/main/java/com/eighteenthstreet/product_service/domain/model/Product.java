@@ -27,8 +27,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
-@SQLDelete(sql = "UPDATE p_product SET product_is_deleted = true WHERE product_id = ?")
-@SQLRestriction("product_is_deleted = false")
+@SQLDelete(sql = "UPDATE p_product SET is_deleted = true, deleted_at = now() WHERE product_id = ?")
+@SQLRestriction("is_deleted = false")
 public class Product extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -53,10 +53,6 @@ public class Product extends BaseEntity {
 
 	@Column(name = "company_id")
 	private UUID companyId;
-
-	@Builder.Default
-	@Column(name = "product_is_deleted")
-	private Boolean isDeleted = Boolean.FALSE;
 
 	public static Product create(CreateProductRequest request) {
 		return Product.builder()
@@ -94,7 +90,7 @@ public class Product extends BaseEntity {
 	}
 
 	public void performSoftDelete() {
-		this.isDeleted = Boolean.TRUE;
+		this.isSold = Boolean.FALSE;
 		this.softDelete();
 	}
 }
