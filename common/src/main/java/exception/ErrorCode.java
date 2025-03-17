@@ -15,7 +15,11 @@ public enum ErrorCode {
     INVALID_DELIVERY(HttpStatus.NOT_FOUND, "해당 배달은 취소를 할 수 없습니다.", "D002"),
 
     // 배달 경로 서비스
-    DELIVERY_ROUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 배달경로을 찾을 수 없습니다.", "DR001");
+    DELIVERY_ROUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 배달경로을 찾을 수 없습니다.", "DR001"),
+
+    // 배달 담당자 서비스
+    DELIVERY_AGENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 배달담당자를 찾을 수 없습니다.", "D001"),
+    INVALID_DELIVERY_AGENT_STATUS(HttpStatus.BAD_REQUEST, "배달 담당자가 배송 중이므로 삭제할 수 없습니다.", "D002");
 
 
     private final HttpStatus httpStatus;

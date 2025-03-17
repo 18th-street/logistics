@@ -1,6 +1,6 @@
 package com.eighteenthstreet.deliveryagentservice.presentation.exception.error;
 
-import com.eighteenthstreet.deliveryagentservice.presentation.exception.ErrorCode;
+import exception.ErrorCode;
 import lombok.Getter;
 
 @Getter

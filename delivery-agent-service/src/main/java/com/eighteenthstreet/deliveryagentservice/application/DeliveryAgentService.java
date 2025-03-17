@@ -7,9 +7,9 @@ import com.eighteenthstreet.deliveryagentservice.domain.exception.InvalidDeliver
 import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgent;
 import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgentStatus;
 import com.eighteenthstreet.deliveryagentservice.domain.repository.DeliveryAgentRepository;
-import com.eighteenthstreet.deliveryagentservice.presentation.exception.ErrorCode;
 import com.eighteenthstreet.deliveryagentservice.presentation.request.CreateDeliveryAgentRequest;
 import com.eighteenthstreet.deliveryagentservice.presentation.request.UpdateDeliveryTypeRequest;
+import exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
