@@ -45,6 +45,10 @@ public class HubService {
 		Hub hub = hubRepository.findById(hubId)
 			.orElseThrow(() -> new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND));
 
+		if (hub.getIsDeleted()) {
+			throw new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND);
+		}
+
 		return GetHubResponse.from(hub);
 	}
 
