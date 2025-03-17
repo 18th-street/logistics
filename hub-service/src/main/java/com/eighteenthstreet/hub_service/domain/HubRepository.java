@@ -7,4 +7,6 @@ import java.util.UUID;
 import com.eighteenthstreet.hub_service.domain.model.Hub;
 
 public interface HubRepository {
+
+	Optional<Hub> findById(UUID hubId);
 }
