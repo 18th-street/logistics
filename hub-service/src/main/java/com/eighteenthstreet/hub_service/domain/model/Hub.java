@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 import com.eighteenthstreet.hub_service.presentation.request.CreateHubRequest;
+import com.eighteenthstreet.hub_service.presentation.request.UpdateHubRequest;
 
 import base.BaseEntity;
 import jakarta.persistence.Column;
@@ -46,5 +47,12 @@ public class Hub extends BaseEntity {
 			.latitude(request.getLatitude())
 			.longitude(request.getLongitude())
 			.build();
+	}
+
+	public void update(UpdateHubRequest request) {
+		this.setName(request.getName());
+		this.setAddress(request.getAddress());
+		this.setLatitude(request.getLatitude());
+		this.setLongitude(request.getLongitude());
 	}
 }

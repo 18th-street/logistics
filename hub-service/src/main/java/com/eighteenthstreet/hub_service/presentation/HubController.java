@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,8 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.eighteenthstreet.hub_service.application.HubService;
 import com.eighteenthstreet.hub_service.application.dto.CreateHubResponse;
 import com.eighteenthstreet.hub_service.application.dto.GetHubResponse;
+import com.eighteenthstreet.hub_service.application.dto.UpdateHubResponse;
 import com.eighteenthstreet.hub_service.domain.model.Hub;
 import com.eighteenthstreet.hub_service.presentation.request.CreateHubRequest;
+import com.eighteenthstreet.hub_service.presentation.request.UpdateHubRequest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +47,14 @@ public class HubController {
 	@GetMapping("/{hubId}")
 	public ResponseEntity<GetHubResponse> getHub(@PathVariable UUID hubId) {
 		GetHubResponse response = hubService.getHub(hubId);
+
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+
+	@PutMapping("/{hubId}")
+	public ResponseEntity<UpdateHubResponse> updateHub(@PathVariable UUID hubId, @RequestBody UpdateHubRequest request)
+	{
+		UpdateHubResponse response = hubService.updateHub(hubId, request);
 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
