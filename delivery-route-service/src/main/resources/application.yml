@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: delivery-agent-service
+    name: delivery-route-service
   config:
     import: optional:file:.env[.properties]
   profiles:
@@ -53,3 +53,4 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:19090/eureka/
+
