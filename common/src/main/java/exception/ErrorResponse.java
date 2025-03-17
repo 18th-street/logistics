@@ -18,12 +18,4 @@ public class ErrorResponse {
 		this.code = errorCode.getCode();
 		this.message = errorCode.getMessage();
 	}
-
-	public Integer getCode() {
-		return code;
-	}
-
-	public String getMessage() {
-		return message;
-	}
 }
