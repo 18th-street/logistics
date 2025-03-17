@@ -13,9 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import com.eighteenthstreet.slack_service.presentation.dto.SendMessageByEmailRequestDto;
-import com.eighteenthstreet.slack_service.presentation.dto.SendMessageRequestDto;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,26 +30,7 @@ public class SlackClient {
 	@Value("${slack.bot.token}")
 	private String slackToken;
 
-	/**
-	 * Slack ID를 이용해 Slack 메시지 전송
-	 */
-	public boolean sendMessage(SendMessageRequestDto request) {
-		return sendSlackMessage(request.receiverId(), request.message());
-	}
-
-	/**
-	 * 이메일을 이용해 Slack 사용자에게 메시지 전송
-	 */
-	public boolean sendMessageByEmail(SendMessageByEmailRequestDto request) {
-		String slackId = getSlackIdByEmail(request.receiverEmail());
-		if (slackId == null) {
-			log.error("Slack ID 조회 실패: {}", request.receiverEmail());
-			return false;
-		}
-		return sendSlackMessage(slackId, request.message());
-	}
-
-	private boolean sendSlackMessage(String receiverId, String message) {
+	public boolean sendMessage(String receiverId, String message) {
 		HttpHeaders headers = createHeaders();
 		JSONObject payload = new JSONObject();
 		payload.put("channel", receiverId);
@@ -64,7 +42,7 @@ public class SlackClient {
 		return handleSlackResponse(responseEntity);
 	}
 
-	private String getSlackIdByEmail(String email) {
+	public String getSlackIdByEmail(String email) {
 		HttpHeaders headers = createHeaders();
 		String url = LOOKUP_BY_EMAIL + "?email=" + email;
 

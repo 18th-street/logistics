@@ -23,16 +23,9 @@ public class SlackService {
 
 	@Transactional
 	public void sendSlackMessage(SendMessageRequestDto request) {
-		// Slack Bot을 통해 메시지 전송
-		boolean isSent = slackClient.sendMessage(request);
-
-		// 메시지 전송 성공 시, DB에 저장
+		boolean isSent = slackClient.sendMessage(request.receiverId(), request.message());
 		if (isSent) {
-			SlackMessage slackMessage = SlackMessage.builder()
-				.receiverId(request.receiverId())
-				.message(request.message())
-				.build();
-			slackMessageRepository.save(slackMessage);
+			saveSlackMessage(request.receiverId(), request.message());
 		} else {
 			log.error(" Slack 메시지 전송 실패: receiverId={}, message={}", request.receiverId(), request.message());
 			throw new CustomException(ErrorCode.SLACK_SEND_FAILED);
@@ -41,19 +34,27 @@ public class SlackService {
 
 	@Transactional
 	public void sendSlackMessageByEmail(SendMessageByEmailRequestDto request) {
-		// Slack Bot을 통해 메시지 전송
-		boolean isSent = slackClient.sendMessageByEmail(request);
-
-		// 메시지 전송 성공 시, DB에 저장
+		String receiverId = slackClient.getSlackIdByEmail(request.receiverEmail());
+		if (receiverId == null) {
+			throw new CustomException(ErrorCode.EXTRACT_ID_FAILED);
+		}
+		boolean isSent = slackClient.sendMessage(receiverId, request.message());
 		if (isSent) {
+			saveSlackMessage(receiverId, request.message());
+		} else {
+			throw new CustomException(ErrorCode.SLACK_SEND_FAILED);
+		}
+	}
+
+	private void saveSlackMessage(String receiverId, String message) {
+		try {
 			SlackMessage slackMessage = SlackMessage.builder()
-				.receiverId(request.receiverEmail())
-				.message(request.message())
+				.receiverId(receiverId)
+				.message(message)
 				.build();
 			slackMessageRepository.save(slackMessage);
-		} else {
-			log.error(" Slack 메시지 전송 실패: receiverId={}, message={}", request.receiverEmail(), request.message());
-			throw new CustomException(ErrorCode.SLACK_SEND_FAILED);
+		} catch (CustomException e) {
+			throw new CustomException(ErrorCode.SL_TRANSACTION_FAILED);
 		}
 	}
 
