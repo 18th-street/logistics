@@ -23,6 +23,14 @@ import com.eigtheenthstreet.order_service.domain.model.OrderItem;
 import com.eigtheenthstreet.order_service.domain.model.OrderStatus;
 import com.eigtheenthstreet.order_service.domain.repository.OrderItemRepository;
 import com.eigtheenthstreet.order_service.domain.repository.OrderRepository;
+import com.eigtheenthstreet.order_service.exception.CustomCompanyNotReceiverException;
+import com.eigtheenthstreet.order_service.exception.CustomCompanyNotSupplierException;
+import com.eigtheenthstreet.order_service.exception.CustomInsufficientStockException;
+import com.eigtheenthstreet.order_service.exception.CustomOrderDeleteNotAllowedException;
+import com.eigtheenthstreet.order_service.exception.CustomOrderNotFoundException;
+import com.eigtheenthstreet.order_service.exception.CustomOrderStatusUpdateNotAllowedException;
+import com.eigtheenthstreet.order_service.exception.CustomProductNotForSaleException;
+import com.eigtheenthstreet.order_service.exception.OrderCancelNotAllowedException;
 import com.eigtheenthstreet.order_service.infrastructure.client.CompanyServiceClient;
 import com.eigtheenthstreet.order_service.infrastructure.client.ProductServiceClient;
 import com.eigtheenthstreet.order_service.presentation.request.CreateOrderRequest;
@@ -47,10 +55,11 @@ public class OrderService {
 		CreateCompanyResponse consumerCompany = companyServiceClient.getCompany(request.consumerCompanyId());
 
 		if (!CompanyType.SUPPLIER.getName().equals(supplierCompany.companyType())) {
-			throw new IllegalArgumentException("해당 생산 업체가 아닙니다.");
+			throw new CustomCompanyNotSupplierException(ErrorCode.ORDER_COMPANY_NOT_SUPPLIER);
 		}
+
 		if (!CompanyType.RECEIVER.getName().equals(consumerCompany.companyType())) {
-			throw new IllegalArgumentException("해당 수령 업체가 아닙니다.");
+			throw new CustomCompanyNotReceiverException(ErrorCode.ORDER_COMPANY_NOT_RECEIVER);
 		}
 
 		// Order 생성
@@ -66,11 +75,12 @@ public class OrderService {
 			CreateProductResponse product = productServiceClient.getProduct(orderItem.productId());
 
 			if (!product.isSold()) {
-				throw new IllegalArgumentException("판매 중인 상품이 아닙니다.");
+				throw new CustomProductNotForSaleException(ErrorCode.ORDER_PRODUCT_NOT_FOR_SALE);
+
 			}
 
 			if (product.stockQuantity() < orderItem.productQuantity()) {
-				throw new IllegalArgumentException("재고가 부족합니다. 주문 상품 수량을 변경해주세요.");
+				throw new CustomInsufficientStockException(ErrorCode.ORDER_INSUFFICIENT_STOCK);
 			}
 
 			// 주문 항목 생성
@@ -115,11 +125,11 @@ public class OrderService {
 	public UpdateOrderResponse updateOrder(UpdateOrderRequest request, UUID orderId) {
 		// 주문 조회
 		Order foundOrder = orderRepository.findById(orderId)
-			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.ORDER_NOT_FOUND.getMessage()));
+			.orElseThrow(() -> new CustomOrderNotFoundException(ErrorCode.ORDER_NOT_FOUND));
 
 		// 주문 상태 확인
 		if (OrderStatus.isUpdateOrderStatusNotAllowed(foundOrder.getOrderStatus())) {
-			throw new IllegalArgumentException("배송 전 주문만 수정 가능합니다.");
+			throw new CustomOrderStatusUpdateNotAllowedException(ErrorCode.ORDER_STATUS_UPDATE_NOT_ALLOWED);
 		}
 
 		// 기존 주문 상품 목록 조회
@@ -136,11 +146,11 @@ public class OrderService {
 
 			// 상품 검사
 			if (!productClientResponse.isSold()) {
-				throw new IllegalArgumentException("판매 중인 상품이 아닙니다.");
+				throw new CustomProductNotForSaleException(ErrorCode.ORDER_PRODUCT_NOT_FOR_SALE);
 			}
 
 			if (productClientResponse.stockQuantity() < orderItemRequest.productQuantity()) {
-				throw new IllegalArgumentException("재고가 부족합니다. 주문 상품 수량을 변경해주세요.");
+				throw new CustomInsufficientStockException(ErrorCode.ORDER_INSUFFICIENT_STOCK);
 			}
 
 			// 변경된 주문 상품 목록 생성
@@ -189,11 +199,11 @@ public class OrderService {
 
 		// 주문 조회
 		Order foundOrder = orderRepository.findById(orderId)
-			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.ORDER_NOT_FOUND.getMessage()));
+			.orElseThrow(() -> new CustomOrderNotFoundException(ErrorCode.ORDER_NOT_FOUND));
 
 		// 주문 상태 확인
 		if (OrderStatus.isDeleteOrderStatusNotAllowed(foundOrder.getOrderStatus())) {
-			throw new IllegalArgumentException("주문을 삭제할 수 없습니다.");
+			throw new CustomOrderDeleteNotAllowedException(ErrorCode.ORDER_DELETE_NOT_ALLOWED);
 		}
 
 		// 주문 상품 목록 조회
@@ -227,10 +237,10 @@ public class OrderService {
 
 		// 주문 조회
 		Order foundOrder = orderRepository.findById(orderId)
-			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.ORDER_NOT_FOUND.getMessage()));
+			.orElseThrow(() -> new CustomOrderNotFoundException(ErrorCode.ORDER_NOT_FOUND));
 
 		if (OrderStatus.isCancelOrderStatusNotAllowed(foundOrder.getOrderStatus())) {
-			throw new IllegalArgumentException("해당 주문은 취소할 수 없습니다.");
+			throw new OrderCancelNotAllowedException(ErrorCode.ORDER_CANCEL_NOT_ALLOWED);
 		}
 
 		// 주문 항목 조회
@@ -263,7 +273,7 @@ public class OrderService {
 	public SelectOrderResponse getOrder(UUID orderId) {
 		// 주문 조회
 		Order foundOrder = orderRepository.findById(orderId)
-			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.ORDER_NOT_FOUND.getMessage()));
+			.orElseThrow(() -> new CustomOrderNotFoundException(ErrorCode.ORDER_NOT_FOUND));
 
 		// 주문 상품 조회
 		List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
