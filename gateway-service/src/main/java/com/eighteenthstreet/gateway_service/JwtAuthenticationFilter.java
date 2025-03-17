@@ -11,6 +11,8 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
+import auth.JwtUtil;
+import auth.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -19,11 +21,10 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
-import util.JwtUtil;
 
-@Slf4j
-@Component
 @RequiredArgsConstructor
+@Component
+@Slf4j
 public class JwtAuthenticationFilter implements GlobalFilter {
 	private final RedisTemplate<String, String> redisTemplate;
 	private final JwtUtil jwtUtil;
@@ -45,16 +46,16 @@ public class JwtAuthenticationFilter implements GlobalFilter {
 			return exchange.getResponse().setComplete();
 		}
 
-		String userId = jwtUtil.getUserIdFromToken(token);
-		String role = jwtUtil.getRoleFromToken(token);
+		Long userId = jwtUtil.getUserIdFromToken(token);
+		Role role = jwtUtil.getRoleFromToken(token);
 		String username = jwtUtil.getUsernameFromToken(token);
 
-		log.info("userId = " + userId + ", role = " + role + ", username = " + username);
+		log.info("userId = " + userId + ", role = " + role.name() + ", username = " + username);
 
 		ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
-			.header("X-User-Id", userId)
+			.header("X-User-Id", String.valueOf(userId))
 			.header("X-User-Username", username)
-			.header("X-User-Role", role)
+			.header("X-User-Role", role.name())
 			.build();
 
 		return chain.filter(exchange.mutate().request(modifiedRequest).build());
