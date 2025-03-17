@@ -76,6 +76,6 @@ public class DeliveryAgentService {
             throw new InvalidDeliveryAgentException(ErrorCode.INVALID_DELIVERY_AGENT_STATUS);
         }
 
-        deliveryAgent.onPreRemove();
+        deliveryAgent.softDelete();
     }
 }

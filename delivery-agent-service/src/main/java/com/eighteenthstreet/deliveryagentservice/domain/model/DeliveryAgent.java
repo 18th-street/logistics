@@ -1,6 +1,7 @@
 package com.eighteenthstreet.deliveryagentservice.domain.model;
 
 
+import base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
