@@ -35,14 +35,17 @@ public class User extends BaseEntity {
 	@Column(length = 300, nullable = false)
 	private String password;
 
-	@Column(length = 30, nullable = false)
-	private String slackId;
-
 	@Column(length = 10, nullable = false)
 	private String name;
 
+	@Column(length = 50, nullable = false)
+	private String email;
+
 	@Column(length = 30, nullable = false)
 	private String phone;
+
+	@Column(length = 30, name = "slack_id")
+	private String slackId;
 
 	@Column(length = 20, nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -53,6 +56,7 @@ public class User extends BaseEntity {
 	private Status status;
 
 	public void update(UpdateUserRequestDto request) {
+		this.email = request.email();
 		this.slackId = request.slackId();
 		this.name = request.name();
 		this.phone = request.phone();

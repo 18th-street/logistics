@@ -57,6 +57,7 @@ public class UserService {
 			.slackId(request.slackId())
 			.name(request.name())
 			.phone(request.phone())
+			.email(request.email())
 			.role(request.role())
 			.status(Status.WAITING)
 			.build();
