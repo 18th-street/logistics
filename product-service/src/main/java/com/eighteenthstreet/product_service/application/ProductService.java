@@ -13,6 +13,8 @@ import com.eighteenthstreet.product_service.application.dto.SelectProductRespons
 import com.eighteenthstreet.product_service.application.dto.UpdateProductResponse;
 import com.eighteenthstreet.product_service.domain.model.Product;
 import com.eighteenthstreet.product_service.domain.repository.ProductRepository;
+import com.eighteenthstreet.product_service.exception.CustomProductAlreadyExistException;
+import com.eighteenthstreet.product_service.exception.CustomProductNotFoundException;
 import com.eighteenthstreet.product_service.presentation.request.CreateProductRequest;
 import com.eighteenthstreet.product_service.presentation.request.UpdateProductRequest;
 
@@ -41,7 +43,7 @@ public class ProductService {
 
 		// 4. 상품 존재 여부 확인 (중복 상품 검열)
 		if (productRepository.existsByName(request.name())) {
-			throw new IllegalArgumentException(ErrorCode.PRODUCT_ALREADY_EXIST.getMessage());
+			throw new CustomProductAlreadyExistException(ErrorCode.PRODUCT_ALREADY_EXIST);
 		}
 
 		// 상품 생성
@@ -59,7 +61,7 @@ public class ProductService {
 	public UpdateProductResponse updateProduct(UUID productId, UpdateProductRequest request) {
 		// id로 등록된 상품 조회
 		Product foundProduct = productRepository.findById(productId)
-			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.PRODUCT_NOT_FOUND.getMessage()));
+			.orElseThrow(() -> new CustomProductNotFoundException(ErrorCode.PRODUCT_NOT_FOUND));
 
 		// 상품을 수정할 수 있는 유저 권한 체크 (마스터, 허브 관리자, 업체 관리자)
 		// - 해당 상품이 속한 회사 정보 가져오기
@@ -81,7 +83,7 @@ public class ProductService {
 	public void deleteProduct(UUID productId) {
 		// id로 등록된 상품 조회
 		Product foundProduct = productRepository.findById(productId)
-			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.PRODUCT_NOT_FOUND.getMessage()));
+			.orElseThrow(() -> new CustomProductNotFoundException(ErrorCode.PRODUCT_NOT_FOUND));
 
 		// 상품을 삭제할 수 있는 유저 권한 체크 (마스터, 허브 관리자)
 		// - 해당 상품이 속한 회사 정보 가져오기
@@ -99,7 +101,7 @@ public class ProductService {
 	public SelectProductResponse getProduct(UUID productId) {
 		// id로 등록된 상품 조회
 		Product foundProduct = productRepository.findById(productId)
-			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.PRODUCT_NOT_FOUND.getMessage()));
+			.orElseThrow(() -> new CustomProductNotFoundException(ErrorCode.PRODUCT_NOT_FOUND));
 
 		// 응답 반환
 		return SelectProductResponse.from(foundProduct);
@@ -129,7 +131,7 @@ public class ProductService {
 	public void decreaseStock(UUID productId, int quantity) {
 		// 상품 조회
 		Product foundProduct = productRepository.findById(productId)
-			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.PRODUCT_NOT_FOUND.getMessage()));
+			.orElseThrow(() -> new CustomProductNotFoundException(ErrorCode.PRODUCT_NOT_FOUND));
 
 		// 주문 수량 만큼 상품 재고 차감
 		foundProduct.decreaseStock(quantity);
@@ -139,7 +141,7 @@ public class ProductService {
 	public void restoreStock(UUID productId, int quantity) {
 		// 상품 조회
 		Product foundProduct = productRepository.findById(productId)
-			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.PRODUCT_NOT_FOUND.getMessage()));
+			.orElseThrow(() -> new CustomProductNotFoundException(ErrorCode.PRODUCT_NOT_FOUND));
 
 		// 상품 재고 복원
 		foundProduct.restoreStock(quantity);
