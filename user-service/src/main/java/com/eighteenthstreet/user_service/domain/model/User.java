@@ -2,6 +2,7 @@ package com.eighteenthstreet.user_service.domain.model;
 
 import com.eighteenthstreet.user_service.presentation.dto.UpdateUserRequestDto;
 
+import auth.Role;
 import base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -67,7 +68,7 @@ public class User extends BaseEntity {
 		this.status = Status.COMPLETE;
 	}
 
-	public void performSoftDelete(String username) {
-		this.softDelete(username);
+	public void performSoftDelete() {
+		this.softDelete();
 	}
 }

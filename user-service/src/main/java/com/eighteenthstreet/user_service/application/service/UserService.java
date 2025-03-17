@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.eighteenthstreet.user_service.application.dto.TokenDto;
 import com.eighteenthstreet.user_service.application.dto.UserResponseDto;
-import com.eighteenthstreet.user_service.domain.model.Role;
 import com.eighteenthstreet.user_service.domain.model.Status;
 import com.eighteenthstreet.user_service.domain.model.User;
 import com.eighteenthstreet.user_service.domain.repository.UserRepository;
@@ -26,8 +25,9 @@ import com.eighteenthstreet.user_service.presentation.dto.UpdateStatusRequestDto
 import com.eighteenthstreet.user_service.presentation.dto.UpdateUserRequestDto;
 import com.eighteenthstreet.user_service.presentation.exceptions.BusinessException;
 
+import auth.JwtUtil;
+import auth.Role;
 import exception.ErrorCode;
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,11 +35,12 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-	private final UserRepository userRepository;
-	private final PasswordEncoder passwordEncoder;
 	private final RedisTemplate<String, String> redisTemplate;
-	private final JwtProvider jwtUtil;
+	private final PasswordEncoder passwordEncoder;
+	private final UserRepository userRepository;
+	private final JwtProvider jwtProvider;
 	private final UserMapper userMapper;
+	private final JwtUtil jwtUtil;
 
 	@Value("${status-code}")
 	private String statusCode;
@@ -71,8 +72,14 @@ public class UserService {
 		if (!passwordEncoder.matches(request.password(), user.getPassword())) {
 			throw new BusinessException(ErrorCode.INVALID_PASSWORD);
 		}
-		String accessToken = jwtUtil.createAccessToken(user);
-		String refreshToken = jwtUtil.createRefreshToken(user);
+		String accessToken = jwtProvider.createAccessToken(user);
+		String refreshToken = jwtProvider.createRefreshToken(user);
+
+		// Redis에 토큰 저장 ( key : "refresh_token:<userId>" )
+		redisTemplate.opsForValue()
+			.set("refresh_token:" + user.getUserId(), refreshToken, jwtProvider.getRefreshExpiration(),
+				TimeUnit.MILLISECONDS);
+
 		return new TokenDto(accessToken, refreshToken);
 	}
 
@@ -84,15 +91,11 @@ public class UserService {
 		String accessToken = authorization.replace("Bearer ", "");
 
 		// 블랙리스트 추가
-		Claims claims = jwtUtil.getClaims(accessToken);
-		Long userId = Long.valueOf(claims.getSubject());
-
-		Long expirationTimeMillis = claims.getExpiration().getTime(); // 만료 시간 (밀리초)
-		Long ttl = (expirationTimeMillis - System.currentTimeMillis()) / 1000; // Redis TTL (초 단위)
-
-		redisTemplate.opsForValue().set("blacklist:" + accessToken, "expired", ttl, TimeUnit.SECONDS);
+		redisTemplate.opsForValue()
+			.set("blacklist:" + accessToken, "expired", jwtProvider.getAccessExpiration(), TimeUnit.SECONDS);
 
 		// 기존 Redis 저장된 Refresh Token 삭제
+		Long userId = jwtUtil.getUserIdFromToken(authorization);
 		redisTemplate.delete("refresh:" + userId);
 	}
 
@@ -115,7 +118,7 @@ public class UserService {
 		}
 
 		User targetUser = userRepository.findById(userId);
-		if (targetUser.getDeletedAt() != null && targetUser.getDeletedBy() != null) {
+		if (targetUser.getDeletedAt() != null && targetUser.getIsDeleted()) {
 			throw new BusinessException(ErrorCode.DELETED_INFORMATION);
 		}
 		return userMapper.toUserResponseDto(targetUser);
@@ -149,9 +152,7 @@ public class UserService {
 
 	@Transactional
 	public void deleteUser(Long userId) {
-		User loginUser = loginUser();
-		User targetUser = userRepository.findById(userId);
-		targetUser.performSoftDelete(loginUser.getUsername());
+		userRepository.findById(userId).performSoftDelete();
 	}
 
 	private User loginUser() {
