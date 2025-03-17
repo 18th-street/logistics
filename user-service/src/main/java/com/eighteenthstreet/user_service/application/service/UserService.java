@@ -45,6 +45,17 @@ public class UserService {
 	@Value("${status-code}")
 	private String statusCode;
 
+	public Boolean validation(String username) {
+		User user = userRepository.findByUsername(username);
+		if (user == null) {
+			return false;
+		}
+		if (user.getDeletedAt() != null && user.getIsDeleted()) {
+			return false;
+		}
+		return true;
+	}
+
 	public boolean isExistUsername(String username) {
 		return userRepository.isExistUsername(username);
 	}

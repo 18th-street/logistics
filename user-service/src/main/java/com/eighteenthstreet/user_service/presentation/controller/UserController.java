@@ -41,10 +41,10 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController {
 	private final UserService userService;
 
-	@Description("사용자 정보 확인")
+	@Description("사용자 유효성 검증")
 	@GetMapping("/valid")
-	public ResponseEntity<Boolean> valid(@RequestParam String username) {
-		return ResponseEntity.ok(userService.isExistUsername(username));
+	public ResponseEntity<Boolean> validation(@RequestParam String username) {
+		return ResponseEntity.ok(userService.validation(username));
 	}
 
 	@Description("회원가입")
