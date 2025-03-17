@@ -166,7 +166,7 @@ public class OrderService {
 			//productServiceClient.decreaseStock(orderItem.productId(), orderItem.productQuantity());
 		}
 
-		//orderItemRepository.saveAll(updatedOrderItems); -> saveAll 오류 발생
+		//orderItemRepository.saveAll(updatedOrderItems); //-> saveAll 오류 발생
 		updatedOrderItems.forEach(orderItemRepository::save);
 
 		// order의 수량과 가격 업데이트
@@ -215,6 +215,44 @@ public class OrderService {
 
 		// 주문 삭제
 		foundOrder.performSoftDelete();
+	}
+
+	@Transactional
+	public void cancelOrder(UUID orderId, Long userId) {
+		// 주문 취소 권한
+
+		// 주문 조회
+		Order foundOrder = orderRepository.findById(orderId)
+			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.ORDER_NOT_FOUND.getMessage()));
+
+		if (OrderStatus.isCancelOrderStatusNotAllowed(foundOrder.getOrderStatus())) {
+			throw new IllegalArgumentException("해당 주문은 취소할 수 없습니다.");
+		}
+
+		// 주문 항목 조회
+		List<OrderItem> foundOrderItems = orderItemRepository.findByOrderId(orderId);
+
+		// 주문 상품 삭제
+		for (OrderItem foundOrderItem : foundOrderItems) {
+			foundOrderItem.performSoftDelete();
+
+			// 주문 상품 재고 복구
+			// try {
+			// 	//productServiceClient.restoreStock(foundOrderItem.getProductId(), foundOrderItem.getQuantity());
+			// } catch (Exception e) {
+			// 	throw new IllegalStateException("상품 재고 복구에 실패했습니다.", e);
+			// }
+		}
+
+		// 배송 정보 삭제
+		// try {
+		// 	deliveryServiceFeignClient.deleteDelivery(orderId); // DeliveryServiceClient 호출
+		// } catch (Exception e) {
+		// 	throw new IllegalStateException("배송 정보 삭제에 실패했습니다.", e);
+		// }
+
+		// 주문 상태 변경
+		foundOrder.cancel();
 	}
 
 	@Transactional(readOnly = true)

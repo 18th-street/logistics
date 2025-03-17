@@ -22,4 +22,8 @@ public enum OrderStatus {
 	public static boolean isDeleteOrderStatusNotAllowed(OrderStatus orderStatus) {
 		return orderStatus != CREATED;
 	}
+
+	public static boolean isCancelOrderStatusNotAllowed(OrderStatus orderStatus) {
+		return orderStatus == DELIVERY_FAILED || orderStatus == FAILED;
+	}
 }

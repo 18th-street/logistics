@@ -28,6 +28,8 @@ import lombok.RequiredArgsConstructor;
 public class OrderController {
 	private final OrderService orderService;
 
+	// todo. JWTUtils 사용해서 권한 체크
+
 	@PostMapping()
 	public ResponseEntity<CreateOrderResponse> createOrder(
 		@RequestBody CreateOrderRequest createOrderRequest,
@@ -49,6 +51,12 @@ public class OrderController {
 	@DeleteMapping("/{orderId}")
 	public ResponseEntity<Void> deleteOrder(@PathVariable UUID orderId, Long userId) {
 		orderService.deleteOrder(orderId, userId);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+
+	@DeleteMapping("/{orderId}/cancel")
+	public ResponseEntity<Void> cancelOrder(@PathVariable UUID orderId, Long userId) {
+		orderService.cancelOrder(orderId, userId);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 

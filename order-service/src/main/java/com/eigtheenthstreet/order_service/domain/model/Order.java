@@ -106,4 +106,8 @@ public class Order extends BaseEntity {
 		this.orderStatus = OrderStatus.CANCELLED;
 		this.softDelete();
 	}
+
+	public void cancel() {
+		performSoftDelete();
+	}
 }
