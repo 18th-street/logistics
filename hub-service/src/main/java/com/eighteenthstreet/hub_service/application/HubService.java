@@ -58,4 +58,13 @@ public class HubService {
 
 		return UpdateHubResponse.from(foundHub);
 	}
+
+	@Transactional
+	public void deleteHub(UUID hubId) {
+		// 권한 체크 (Master만 삭제 가능)
+		Hub foundHub = hubRepository.findById(hubId)
+			.orElseThrow(() -> new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND));
+
+		foundHub.performSoftDelete();
+	}
 }

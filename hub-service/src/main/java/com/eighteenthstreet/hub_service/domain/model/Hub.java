@@ -55,4 +55,8 @@ public class Hub extends BaseEntity {
 		this.setLatitude(request.getLatitude());
 		this.setLongitude(request.getLongitude());
 	}
+
+	public void performSoftDelete() {
+		this.softDelete();
+	}
 }
