@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface DeliveryRouteRepository {
-    void save(DeliveryRoute deliveryRoute);
+    DeliveryRoute save(DeliveryRoute deliveryRoute);
 
     Optional<DeliveryRoute> findById(UUID deliveryAgentId);
 }
