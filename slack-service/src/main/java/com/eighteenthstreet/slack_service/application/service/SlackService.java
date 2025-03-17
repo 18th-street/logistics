@@ -88,4 +88,11 @@ public class SlackService {
 		slackMessage.update(request);
 		return slackMessageMapper.toDto(slackMessage);
 	}
+
+	@Transactional
+	public void deleteSlackMessage(UUID id) {
+		SlackMessage slackMessage = slackMessageRepository.findById(id).orElseThrow(
+			() -> new CustomException(ErrorCode.SLACK_NOT_FOUND));
+		slackMessage.performSoftDelete();
+	}
 }

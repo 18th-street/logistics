@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -90,6 +91,13 @@ public class SlackController {
 		@RequestBody UpdateSlackMessageRequestDto request
 	) {
 		return ResponseEntity.ok(slackService.updateSlackMessage(id, request));
+	}
+
+	@Description("슬랙 메시지 소프트 삭제")
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> deleteSlackMessage(@PathVariable("id") UUID id) {
+		slackService.deleteSlackMessage(id);
+		return ResponseEntity.ok().build();
 	}
 
 }

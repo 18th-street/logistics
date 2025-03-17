@@ -47,4 +47,8 @@ public class SlackMessage extends BaseEntity {
 	public void update(UpdateSlackMessageRequestDto request) {
 		this.message = request.message();
 	}
+
+	public void performSoftDelete() {
+		this.softDelete();
+	}
 }
