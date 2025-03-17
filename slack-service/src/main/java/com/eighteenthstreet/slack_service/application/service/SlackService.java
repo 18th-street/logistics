@@ -1,10 +1,12 @@
 package com.eighteenthstreet.slack_service.application.service;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.eighteenthstreet.slack_service.application.dto.SlackMessageResponseDto;
 import com.eighteenthstreet.slack_service.domain.model.SlackMessage;
 import com.eighteenthstreet.slack_service.domain.repository.SlackMessageRepository;
 import com.eighteenthstreet.slack_service.infrastructure.slack.SlackClient;
@@ -22,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SlackService {
 	private final SlackClient slackClient;
 	private final SlackMessageRepository slackMessageRepository;
+	private final SlackMessageMapper slackMessageMapper;
 
 	@Transactional
 	public void sendSlackMessage(SendMessageRequestDto request) {
@@ -60,7 +63,15 @@ public class SlackService {
 		}
 	}
 
-	public List<SlackMessage> getAllSlackMessages() {
-		return slackMessageRepository.findAll();
+	public List<SlackMessageResponseDto> getAllSlackMessages() {
+		return slackMessageRepository.findAll().stream()
+			.map(slackMessageMapper::toDto).toList();
 	}
+
+	public SlackMessageResponseDto getSlackMessages(UUID id) {
+		SlackMessage slack = slackMessageRepository.findById(id).orElseThrow(
+			() -> new CustomException(ErrorCode.SLACK_NOT_FOUND));
+		return slackMessageMapper.toDto(slack);
+	}
+
 }

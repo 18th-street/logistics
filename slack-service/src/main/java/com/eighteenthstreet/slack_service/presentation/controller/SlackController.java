@@ -1,17 +1,19 @@
 package com.eighteenthstreet.slack_service.presentation.controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.context.annotation.Description;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.eighteenthstreet.slack_service.application.dto.SlackMessageResponseDto;
 import com.eighteenthstreet.slack_service.application.service.SlackService;
-import com.eighteenthstreet.slack_service.domain.model.SlackMessage;
 import com.eighteenthstreet.slack_service.presentation.dto.SendMessageByEmailRequestDto;
 import com.eighteenthstreet.slack_service.presentation.dto.SendMessageRequestDto;
 
@@ -41,8 +43,14 @@ public class SlackController {
 
 	@Description("슬랙 메시지 전체 조회")
 	@GetMapping
-	public ResponseEntity<List<SlackMessage>> getAllSlackMessages() {
+	public ResponseEntity<List<SlackMessageResponseDto>> getAllSlackMessages() {
 		return ResponseEntity.ok(slackService.getAllSlackMessages());
+	}
+
+	@Description("슬랙 메시지 상세 조회")
+	@GetMapping("/{id}")
+	public ResponseEntity<SlackMessageResponseDto> getSlackMessages(@PathVariable("id") UUID id) {
+		return ResponseEntity.ok(slackService.getSlackMessages(id));
 	}
 
 }
