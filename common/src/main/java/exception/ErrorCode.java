@@ -5,8 +5,8 @@ import org.springframework.http.HttpStatus;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@Getter
 @RequiredArgsConstructor
+@Getter
 public enum ErrorCode {
 	// 클라이언트 오류
 	INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다.", "C001"),
