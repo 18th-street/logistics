@@ -26,7 +26,7 @@ import com.eighteenthstreet.user_service.presentation.dto.SignInRequestDto;
 import com.eighteenthstreet.user_service.presentation.dto.SignUpRequestDto;
 import com.eighteenthstreet.user_service.presentation.dto.UpdateStatusRequestDto;
 import com.eighteenthstreet.user_service.presentation.dto.UpdateUserRequestDto;
-import com.eighteenthstreet.user_service.presentation.exceptions.BusinessException;
+import com.eighteenthstreet.user_service.presentation.exceptions.CustomException;
 
 import auth.Role;
 import exception.ErrorCode;
@@ -40,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/users")
 public class UserController {
 	private final UserService userService;
-	
+
 	@Description("사용자 정보 확인")
 	@GetMapping("/valid")
 	public ResponseEntity<Boolean> valid(@RequestParam String username) {
@@ -51,7 +51,7 @@ public class UserController {
 	@PostMapping("/signUp")
 	public ResponseEntity<Void> signUp(@Valid @RequestBody SignUpRequestDto request) {
 		if (userService.isExistUsername(request.username())) {
-			throw new BusinessException(ErrorCode.DUPLICATE_USERNAME);
+			throw new CustomException(ErrorCode.DUPLICATE_USERNAME);
 		}
 		userService.signUp(request);
 		return ResponseEntity.ok().build();

@@ -20,8 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 public class GlobalExceptionHandler {
 
 	// 커스텀 비즈니스 예외 (서비스에서 발생하는 예외)
-	@ExceptionHandler(BusinessException.class)
-	public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
+	@ExceptionHandler(CustomException.class)
+	public ResponseEntity<ErrorResponse> handleBusinessException(CustomException e) {
 		log.error(" BusinessException 발생: {}", e.getMessage());
 		ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode());
 		return new ResponseEntity<>(errorResponse, e.getErrorCode().getHttpStatus());

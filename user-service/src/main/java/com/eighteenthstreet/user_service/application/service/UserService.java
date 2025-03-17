@@ -23,7 +23,7 @@ import com.eighteenthstreet.user_service.presentation.dto.SignInRequestDto;
 import com.eighteenthstreet.user_service.presentation.dto.SignUpRequestDto;
 import com.eighteenthstreet.user_service.presentation.dto.UpdateStatusRequestDto;
 import com.eighteenthstreet.user_service.presentation.dto.UpdateUserRequestDto;
-import com.eighteenthstreet.user_service.presentation.exceptions.BusinessException;
+import com.eighteenthstreet.user_service.presentation.exceptions.CustomException;
 
 import auth.JwtUtil;
 import auth.Role;
@@ -68,10 +68,10 @@ public class UserService {
 	public TokenDto signIn(SignInRequestDto request) {
 		User user = userRepository.findByUsername(request.username());
 		if (user == null) {
-			throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
 		}
 		if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-			throw new BusinessException(ErrorCode.INVALID_PASSWORD);
+			throw new CustomException(ErrorCode.INVALID_PASSWORD);
 		}
 		String accessToken = jwtProvider.createAccessToken(user);
 		String refreshToken = jwtProvider.createRefreshToken(user);
@@ -87,7 +87,7 @@ public class UserService {
 	@Transactional
 	public void signOut(String authorization) {
 		if (authorization == null || !authorization.startsWith("Bearer ")) {
-			throw new BusinessException(ErrorCode.INVALID_TOKEN);
+			throw new CustomException(ErrorCode.INVALID_TOKEN);
 		}
 		String accessToken = authorization.replace("Bearer ", "");
 
@@ -115,12 +115,12 @@ public class UserService {
 	public UserResponseDto getUserDetail(Long userId) {
 		User user = loginUser();
 		if (!user.getRole().equals(Role.MASTER) && !user.getUserId().equals(userId)) {
-			throw new BusinessException(ErrorCode.UNAUTHORIZED_ACCESS);
+			throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
 		}
 
 		User targetUser = userRepository.findById(userId);
 		if (targetUser.getDeletedAt() != null && targetUser.getIsDeleted()) {
-			throw new BusinessException(ErrorCode.DELETED_INFORMATION);
+			throw new CustomException(ErrorCode.DELETED_USER);
 		}
 		return userMapper.toUserResponseDto(targetUser);
 	}
@@ -136,7 +136,7 @@ public class UserService {
 	public void changePassword(Long userId, ChangePasswordRequestDto request) {
 		User user = userRepository.findById(userId);
 		if (passwordEncoder.matches(request.password(), user.getPassword())) {
-			throw new BusinessException(ErrorCode.SAME_PASSWORD_NOT_ALLOWED);
+			throw new CustomException(ErrorCode.SAME_PASSWORD_NOT_ALLOWED);
 		}
 		String newPassword = passwordEncoder.encode(request.password());
 		user.updatePassword(newPassword);
@@ -146,7 +146,7 @@ public class UserService {
 	public void updateStatus(UpdateStatusRequestDto request) {
 		User user = loginUser();
 		if (!statusCode.equals(request.code())) {
-			throw new BusinessException(ErrorCode.INVALID_AUTHENTICATION);
+			throw new CustomException(ErrorCode.INVALID_AUTHENTICATION);
 		}
 		user.updateStatus();
 	}
@@ -159,7 +159,7 @@ public class UserService {
 	private User loginUser() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication == null || !authentication.isAuthenticated()) {
-			throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+			throw new CustomException(ErrorCode.AUTHENTICATION_REQUIRED);
 		}
 		Long userId = Long.valueOf(authentication.getName());
 		return userRepository.findById(userId);
