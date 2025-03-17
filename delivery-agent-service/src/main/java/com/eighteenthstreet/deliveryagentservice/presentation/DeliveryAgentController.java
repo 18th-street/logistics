@@ -1,4 +1,4 @@
-package com.eighteenthstreet.deliveryagentservice.infrastructure;
+package com.eighteenthstreet.deliveryagentservice.presentation;
 
 import com.eighteenthstreet.deliveryagentservice.application.DeliveryAgentService;
 import com.eighteenthstreet.deliveryagentservice.application.dto.CreateDeliveryAgentResponse;
