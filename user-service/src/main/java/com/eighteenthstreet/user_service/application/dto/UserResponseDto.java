@@ -1,6 +1,5 @@
 package com.eighteenthstreet.user_service.application.dto;
 
-import com.eighteenthstreet.user_service.domain.model.Role;
 import com.eighteenthstreet.user_service.domain.model.Status;
 
 public record UserResponseDto(

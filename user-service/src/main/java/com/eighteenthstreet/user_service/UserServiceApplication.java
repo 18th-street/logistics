@@ -9,7 +9,7 @@ import org.springframework.data.web.config.EnableSpringDataWebSupport;
 
 @EnableFeignClients
 @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
-@SpringBootApplication(scanBasePackages = {"exception", "base", "com.eighteenthstreet.user_service"})
+@SpringBootApplication(scanBasePackages = {"exception", "base", "auth", "com.eighteenthstreet.user_service"})
 public class UserServiceApplication {
 
 	public static void main(String[] args) {

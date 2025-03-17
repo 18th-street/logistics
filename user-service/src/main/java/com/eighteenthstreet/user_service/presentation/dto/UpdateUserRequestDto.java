@@ -1,8 +1,8 @@
 package com.eighteenthstreet.user_service.presentation.dto;
 
-import com.eighteenthstreet.user_service.domain.model.Role;
 import com.eighteenthstreet.user_service.domain.model.Status;
 
+import auth.Role;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
