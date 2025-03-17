@@ -43,7 +43,6 @@ public class DeliveryRouteService {
                 () -> new DeliveryRouteNotFoundException(ErrorCode.DELIVERY_ROUTE_NOT_FOUND)
         );
 
-        deliveryRoute.onPreRemove();
-        deliveryRouteRepository.save(deliveryRoute);
+        deliveryRoute.softDelete();
     }
 }

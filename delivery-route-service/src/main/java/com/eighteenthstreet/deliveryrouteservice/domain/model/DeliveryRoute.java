@@ -1,6 +1,7 @@
 package com.eighteenthstreet.deliveryrouteservice.domain.model;
 
 
+import base.BaseEntity;
 import com.eighteenthstreet.deliveryrouteservice.domain.event.DeliveryCreatedEvent;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
