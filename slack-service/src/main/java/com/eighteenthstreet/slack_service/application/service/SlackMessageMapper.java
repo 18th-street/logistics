@@ -8,6 +8,7 @@ import com.eighteenthstreet.slack_service.domain.model.SlackMessage;
 
 @Mapper(componentModel = "spring")
 public interface SlackMessageMapper {
+	@Mapping(target = "id", source = "id")
 	@Mapping(target = "receiverId", source = "receiverId")
 	@Mapping(target = "message", source = "message")
 	SlackMessageResponseDto toDto(SlackMessage slackMessage);
