@@ -74,6 +74,25 @@ public class Product extends BaseEntity {
 		this.quantity = request.quantity();
 	}
 
+	public void decreaseStock(int quantity) {
+		if (quantity <= 0) {
+			throw new IllegalArgumentException("주문 수량이 0 이하일 수 없습니다.");
+		}
+
+		if (this.quantity < quantity) {
+			throw new IllegalArgumentException("상품 재고가 부족합니다.");
+		}
+		this.quantity -= quantity;
+	}
+
+	public void restoreStock(int quantity) {
+		if (quantity <= 0) {
+			throw new IllegalArgumentException("복원 수량이 0 이하일 수 없습니다.");
+		}
+
+		this.quantity += quantity;
+	}
+
 	public void performSoftDelete() {
 		this.isDeleted = Boolean.TRUE;
 		this.softDelete();

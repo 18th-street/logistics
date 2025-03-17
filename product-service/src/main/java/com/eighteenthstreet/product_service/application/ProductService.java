@@ -124,4 +124,24 @@ public class ProductService {
 		// 응답 데이터 PagedModel로 변환
 		return new PagedModel<>(content);
 	}
+
+	@Transactional
+	public void decreaseStock(UUID productId, int quantity) {
+		// 상품 조회
+		Product foundProduct = productRepository.findById(productId)
+			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.PRODUCT_NOT_FOUND.getMessage()));
+
+		// 주문 수량 만큼 상품 재고 차감
+		foundProduct.decreaseStock(quantity);
+	}
+
+	@Transactional
+	public void restoreStock(UUID productId, int quantity) {
+		// 상품 조회
+		Product foundProduct = productRepository.findById(productId)
+			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.PRODUCT_NOT_FOUND.getMessage()));
+
+		// 상품 재고 복원
+		foundProduct.restoreStock(quantity);
+	}
 }
