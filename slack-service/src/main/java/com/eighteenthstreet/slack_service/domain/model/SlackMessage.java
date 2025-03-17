@@ -2,6 +2,8 @@ package com.eighteenthstreet.slack_service.domain.model;
 
 import java.util.UUID;
 
+import org.hibernate.annotations.SQLRestriction;
+
 import base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,6 +23,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "p_slack_massage")
+@SQLRestriction("is_deleted = false")
 public class SlackMessage extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)

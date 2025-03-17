@@ -1,5 +1,7 @@
 package com.eighteenthstreet.slack_service.application.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,4 +60,7 @@ public class SlackService {
 		}
 	}
 
+	public List<SlackMessage> getAllSlackMessages() {
+		return slackMessageRepository.findAll();
+	}
 }
