@@ -4,6 +4,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +47,22 @@ public class HubService {
 		return CreateHubResponse.from(hub);
 	}
 
+	@Transactional(readOnly = true)
+	public PagedModel<GetHubResponse> searchHubs(PageRequest pageable, String keyword) {
+		Page<Hub> hubPage;
+
+		if (keyword == null || keyword.trim().isEmpty()) {
+			hubPage = hubRepository.findAll(pageable);
+		} else {
+			hubPage = hubRepository.findByNameContaining(keyword, pageable);
+		}
+
+		Page<GetHubResponse> responses = hubPage.map(GetHubResponse::from);
+
+		return new PagedModel<>(responses);
+	}
+
+	@Transactional(readOnly = true)
 	public GetHubResponse getHub(UUID hubId) {
 		Hub hub = hubRepository.findById(hubId)
 			.orElseThrow(() -> new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND));
