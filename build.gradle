@@ -32,6 +32,25 @@ subprojects {
 
 }
 
+project(":delivery-service") {
+    dependencies {
+        implementation project(":common")
+    }
+}
+
+project(":delivery-agent-service") {
+    dependencies {
+        implementation project(":common")
+    }
+}
+
+project(":delivery-route-service") {
+    dependencies {
+        implementation project(":common")
+    }
+}
+
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
