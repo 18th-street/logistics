@@ -7,6 +7,10 @@ spring:
   config:
     import: optional:file:.env[.properties]
 
+  sql:
+    init:
+      mode: always
+
   # Database
   datasource:
     url: ${SPRING_DATASOURCE_URL}
