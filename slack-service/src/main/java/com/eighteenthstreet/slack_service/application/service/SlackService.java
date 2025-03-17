@@ -3,6 +3,8 @@ package com.eighteenthstreet.slack_service.application.service;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,4 +76,7 @@ public class SlackService {
 		return slackMessageMapper.toDto(slack);
 	}
 
+	public Page<SlackMessageResponseDto> searchSlackMessages(String word, Pageable customPageable) {
+		return slackMessageRepository.findAllByMessageContains(word, customPageable).map(slackMessageMapper::toDto);
+	}
 }

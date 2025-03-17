@@ -4,12 +4,17 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.context.annotation.Description;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.eighteenthstreet.slack_service.application.dto.SlackMessageResponseDto;
@@ -51,6 +56,29 @@ public class SlackController {
 	@GetMapping("/{id}")
 	public ResponseEntity<SlackMessageResponseDto> getSlackMessages(@PathVariable("id") UUID id) {
 		return ResponseEntity.ok(slackService.getSlackMessages(id));
+	}
+
+	@Description("슬랙 메시지 검색")
+	@GetMapping("/search")
+	public ResponseEntity<Page<SlackMessageResponseDto>> searchSlackMessages(
+		@RequestParam(name = "word", defaultValue = "") String word,
+		@RequestParam(name = "size", defaultValue = "10") int size,
+		@RequestParam(name = "sort", defaultValue = "createdAt") String sortField,
+		@RequestParam(name = "direction", defaultValue = "DESC") String direction,
+		Pageable pageable
+	) {
+		if (size != 10 && size != 30 && size != 50) {
+			size = 10;
+		}
+		Sort.Direction sortDirection = direction.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+		Pageable customPageable = PageRequest.of(
+			pageable.getPageNumber(),
+			size,
+			Sort.by(sortDirection, sortField)
+		);
+
+		return ResponseEntity.ok(slackService.searchSlackMessages(word, customPageable));
 	}
 
 }
