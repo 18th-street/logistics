@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +22,7 @@ import com.eighteenthstreet.slack_service.application.dto.SlackMessageResponseDt
 import com.eighteenthstreet.slack_service.application.service.SlackService;
 import com.eighteenthstreet.slack_service.presentation.dto.SendMessageByEmailRequestDto;
 import com.eighteenthstreet.slack_service.presentation.dto.SendMessageRequestDto;
+import com.eighteenthstreet.slack_service.presentation.dto.UpdateSlackMessageRequestDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -79,6 +81,15 @@ public class SlackController {
 		);
 
 		return ResponseEntity.ok(slackService.searchSlackMessages(word, customPageable));
+	}
+
+	@Description("슬랙 메시지 수정")
+	@PatchMapping("/{id}")
+	public ResponseEntity<SlackMessageResponseDto> updateSlackMessage(
+		@PathVariable("id") UUID id,
+		@RequestBody UpdateSlackMessageRequestDto request
+	) {
+		return ResponseEntity.ok(slackService.updateSlackMessage(id, request));
 	}
 
 }

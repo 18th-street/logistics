@@ -4,6 +4,8 @@ import java.util.UUID;
 
 import org.hibernate.annotations.SQLRestriction;
 
+import com.eighteenthstreet.slack_service.presentation.dto.UpdateSlackMessageRequestDto;
+
 import base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,5 +42,9 @@ public class SlackMessage extends BaseEntity {
 		if (id == null) {
 			id = UUID.randomUUID();
 		}
+	}
+
+	public void update(UpdateSlackMessageRequestDto request) {
+		this.message = request.message();
 	}
 }

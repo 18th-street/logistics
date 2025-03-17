@@ -14,6 +14,7 @@ import com.eighteenthstreet.slack_service.domain.repository.SlackMessageReposito
 import com.eighteenthstreet.slack_service.infrastructure.slack.SlackClient;
 import com.eighteenthstreet.slack_service.presentation.dto.SendMessageByEmailRequestDto;
 import com.eighteenthstreet.slack_service.presentation.dto.SendMessageRequestDto;
+import com.eighteenthstreet.slack_service.presentation.dto.UpdateSlackMessageRequestDto;
 import com.eighteenthstreet.slack_service.presentation.exception.CustomException;
 
 import exception.ErrorCode;
@@ -78,5 +79,13 @@ public class SlackService {
 
 	public Page<SlackMessageResponseDto> searchSlackMessages(String word, Pageable customPageable) {
 		return slackMessageRepository.findAllByMessageContains(word, customPageable).map(slackMessageMapper::toDto);
+	}
+
+	@Transactional
+	public SlackMessageResponseDto updateSlackMessage(UUID id, UpdateSlackMessageRequestDto request) {
+		SlackMessage slackMessage = slackMessageRepository.findById(id).orElseThrow(
+			() -> new CustomException(ErrorCode.SLACK_NOT_FOUND));
+		slackMessage.update(request);
+		return slackMessageMapper.toDto(slackMessage);
 	}
 }
