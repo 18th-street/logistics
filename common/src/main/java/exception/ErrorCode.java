@@ -9,9 +9,9 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum ErrorCode {
 	// 클라이언트 오류
-	INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다.", "C001"),
-	UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "인증되지 않은 접근입니다.", "C002"),
-	FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "접근이 금지되었습니다.", "C003"),
+	INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다.", "4001"),
+	UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "인증되지 않은 접근입니다.", "4002"),
+	FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "접근이 금지되었습니다.", "4003"),
 
 	// 로그인 및 인증 관련 오류
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.", "U001"),
