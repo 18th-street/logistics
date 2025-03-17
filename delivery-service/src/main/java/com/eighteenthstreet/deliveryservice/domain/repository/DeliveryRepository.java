@@ -10,5 +10,4 @@ public interface DeliveryRepository {
 
     Optional<Delivery> findById(UUID uuid);
 
-    void softDeleteDelivery(UUID uuid);
 }

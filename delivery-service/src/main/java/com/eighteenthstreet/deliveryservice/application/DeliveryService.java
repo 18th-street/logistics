@@ -62,7 +62,6 @@ public class DeliveryService {
                 .orElseThrow(() -> new DeliveryNotFoundException(ErrorCode.DELIVERY_NOT_FOUND));
 
         delivery.cancel();
-
-        deliveryRepository.softDeleteDelivery(uuid);
+        delivery.softDelete();
     }
 }

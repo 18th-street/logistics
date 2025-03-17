@@ -1,5 +1,7 @@
 package com.eighteenthstreet.deliveryservice.domain.model;
 
+
+import base.BaseEntity;
 import com.eighteenthstreet.deliveryservice.domain.exception.InvalidDeliveryException;
 import com.eighteenthstreet.deliveryservice.presentation.exception.ErrorCode;
 import com.eighteenthstreet.deliveryservice.presentation.request.CreateDeliveryRequest;
