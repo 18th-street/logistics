@@ -62,7 +62,7 @@ public class Company extends BaseEntity {
 			.name(request.name())
 			.type(CompanyType.from(request.type()))
 			.address(request.address())
-			//.hubId(request.hubId())
+			.hubId(request.hubId())
 			//.managerId(userId)
 			.build();
 	}
