@@ -3,6 +3,8 @@ package com.eighteenthstreet.hub_service.domain.model;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import com.eighteenthstreet.hub_service.presentation.request.CreateHubRequest;
+
 import base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,4 +38,13 @@ public class Hub extends BaseEntity {
 
 	@Column(precision = 11, scale = 8, nullable = false)
 	private BigDecimal longitude;
+
+	public static Hub create(CreateHubRequest request) {
+		return Hub.builder()
+			.name(request.getName())
+			.address(request.getAddress())
+			.latitude(request.getLatitude())
+			.longitude(request.getLongitude())
+			.build();
+	}
 }

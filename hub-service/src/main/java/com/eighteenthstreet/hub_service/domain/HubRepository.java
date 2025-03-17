@@ -8,5 +8,9 @@ import com.eighteenthstreet.hub_service.domain.model.Hub;
 
 public interface HubRepository {
 
+	boolean existsByName(String name);
+
+	Hub save(Hub hub);
+
 	Optional<Hub> findById(UUID hubId);
 }
