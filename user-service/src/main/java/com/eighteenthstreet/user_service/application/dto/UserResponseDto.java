@@ -2,6 +2,8 @@ package com.eighteenthstreet.user_service.application.dto;
 
 import com.eighteenthstreet.user_service.domain.model.Status;
 
+import auth.Role;
+
 public record UserResponseDto(
 	Long userId,
 	String username,
