@@ -2,6 +2,7 @@ package com.eighteenthstreet.user_service.domain.model;
 
 import com.eighteenthstreet.user_service.presentation.dto.UpdateUserRequestDto;
 
+import auth.Role;
 import base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,14 +35,17 @@ public class User extends BaseEntity {
 	@Column(length = 300, nullable = false)
 	private String password;
 
-	@Column(length = 30, nullable = false)
-	private String slackId;
-
 	@Column(length = 10, nullable = false)
 	private String name;
 
+	@Column(length = 50, nullable = false)
+	private String email;
+
 	@Column(length = 30, nullable = false)
 	private String phone;
+
+	@Column(length = 30, name = "slack_id")
+	private String slackId;
 
 	@Column(length = 20, nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -52,6 +56,7 @@ public class User extends BaseEntity {
 	private Status status;
 
 	public void update(UpdateUserRequestDto request) {
+		this.email = request.email();
 		this.slackId = request.slackId();
 		this.name = request.name();
 		this.phone = request.phone();
@@ -67,7 +72,7 @@ public class User extends BaseEntity {
 		this.status = Status.COMPLETE;
 	}
 
-	public void performSoftDelete(String username) {
-		this.softDelete(username);
+	public void performSoftDelete() {
+		this.softDelete();
 	}
 }

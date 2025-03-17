@@ -13,6 +13,6 @@ public interface UserJpaRepository extends JpaRepository<User, Long> {
 
 	@Query(value = "SELECT u FROM User u "
 		+ "WHERE (COALESCE(:name, '') = '' OR LOWER(u.username) LIKE LOWER(CONCAT('%', :name, '%'))) "
-		+ "AND u.deletedBy IS NULL AND u.deletedAt IS NULL")
+		+ "AND u.isDeleted IS FALSE AND u.deletedAt IS NULL")
 	Page<User> findActiveUsers(@Param("name") String name, Pageable pageable);
 }

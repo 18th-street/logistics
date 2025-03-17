@@ -1,4 +1,4 @@
-package com.eighteenthstreet.user_service.domain.model;
+package auth;
 
 import lombok.Getter;
 

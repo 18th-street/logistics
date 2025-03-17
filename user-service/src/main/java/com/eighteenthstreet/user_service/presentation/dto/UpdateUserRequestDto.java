@@ -1,13 +1,19 @@
 package com.eighteenthstreet.user_service.presentation.dto;
 
-import com.eighteenthstreet.user_service.domain.model.Role;
 import com.eighteenthstreet.user_service.domain.model.Status;
 
+import auth.Role;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record UpdateUserRequestDto(
+	@NotBlank(message = "이메일을 입력해주세요.")
+	@Email(message = "유효한 이메일 형식이 아닙니다.")
+	@Size(max = 50, message = "이메일은 최대 50자까지 입력할 수 있습니다.")
+	String email,
+
 	@NotBlank(message = "빈 값이 될 수 없습니다. 슬랙 아이디를 입력해주세요.")
 	@Size(max = 30, message = "슬랙 아이디는 30글자 이하로 구성되어야 합니다.")
 	String slackId,
