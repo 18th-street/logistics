@@ -82,7 +82,7 @@ public class CompanyService {
 		System.out.println("companyId = " + companyId);
 		// company 조회
 		Company foundCompany = companyRepository.findById(companyId)
-			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.COMPANY_ALREADY_EXIST.getMessage()));
+			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.COMPANY_NOT_FOUND.getMessage()));
 
 		return SelectCompanyResponse.from(foundCompany);
 	}
