@@ -5,7 +5,7 @@ import com.eighteenthstreet.deliveryrouteservice.domain.event.DeliveryCreatedEve
 import com.eighteenthstreet.deliveryrouteservice.domain.exception.DeliveryRouteNotFoundException;
 import com.eighteenthstreet.deliveryrouteservice.domain.model.DeliveryRoute;
 import com.eighteenthstreet.deliveryrouteservice.domain.repository.DeliveryRouteRepository;
-import com.eighteenthstreet.deliveryrouteservice.presentation.exception.ErrorCode;
+import exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
