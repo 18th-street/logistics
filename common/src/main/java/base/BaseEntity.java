@@ -37,11 +37,15 @@ public class BaseEntity {
 	@Column(name = "modified_at")
 	private LocalDateTime modifiedAt;
 
-	@Setter
-	@Column(name = "deleted_by")
-	private String deletedBy;
+	@Column(name = "is_deleted")
+	private Boolean isDeleted = Boolean.FALSE;
 
 	@Setter
 	@Column(name = "deleted_at")
 	private LocalDateTime deletedAt;
+
+	protected void softDelete() {
+		this.isDeleted = Boolean.TRUE;
+		this.deletedAt = LocalDateTime.now();
+	}
 }
