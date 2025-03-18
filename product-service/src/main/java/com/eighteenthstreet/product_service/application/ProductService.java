@@ -9,47 +9,54 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.eighteenthstreet.product_service.application.dto.CreateProductResponse;
+import com.eighteenthstreet.product_service.application.dto.SelectCompanyResponse;
 import com.eighteenthstreet.product_service.application.dto.SelectProductResponse;
 import com.eighteenthstreet.product_service.application.dto.UpdateProductResponse;
 import com.eighteenthstreet.product_service.domain.model.Product;
 import com.eighteenthstreet.product_service.domain.repository.ProductRepository;
+import com.eighteenthstreet.product_service.exception.CustomGetCompanyApiFailException;
+import com.eighteenthstreet.product_service.exception.CustomMismatchHubIdException;
 import com.eighteenthstreet.product_service.exception.CustomProductAlreadyExistException;
 import com.eighteenthstreet.product_service.exception.CustomProductNotFoundException;
+import com.eighteenthstreet.product_service.infrastructure.client.CompanyServiceClient;
 import com.eighteenthstreet.product_service.presentation.request.CreateProductRequest;
 import com.eighteenthstreet.product_service.presentation.request.UpdateProductRequest;
 
 import exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductService {
 	private final ProductRepository productRepository;
-	//private final HubServiceClient hubServiceClient;
-	//private final CompanyServiceClient companyServiceClient;
+	private final CompanyServiceClient companyServiceClient;
 
 	@Transactional
 	public CreateProductResponse registerProduct(CreateProductRequest request) {
-		// todo.허브 검사 -> 허브 존재 여부 확인 => 상품 관리 허브ID는 업체 엔티티에서 관리하므로 업체 검사
-		// 1. 업체 정보 조회
-		// SelectCompanyResponse company = companyServiceClient.getCompany(foundProduct.getCompanyId());
+		// 업체 정보 조회
+		UUID hubId = null;
+		try {
+			SelectCompanyResponse companyResponse = companyServiceClient.getCompany(request.companyId());
+			hubId = companyResponse.hubId();
+		} catch (Exception e) {
+			log.error("업체 정보 조회 API 호출 실패: {}", e.getMessage());
+			throw new CustomGetCompanyApiFailException(ErrorCode.PRODUCT_NOT_FOUND_COMPANY);
+		}
 
-		// 2. 요청된 hubId와 업체의 hubId 비교
-		// if (!company.getHubId().equals(request.hubId())) {
-		// 	throw new IllegalArgumentException()
-		// }
+		// 요청된 hubId와 업체의 hubId 비교
+		if (!hubId.equals(request.hubId())) {
+			throw new CustomMismatchHubIdException(ErrorCode.PRODUCT_MISMATCH_HUB_ID);
+		}
 
-		// 3. 상품을 생성할 수 있는 유저 권한 체크 (마스터, 허브 관리자, 업체 관리자)
-
-		// 4. 상품 존재 여부 확인 (중복 상품 검열)
+		// 상품 존재 여부 확인 (중복 상품 검열)
 		if (productRepository.existsByName(request.name())) {
 			throw new CustomProductAlreadyExistException(ErrorCode.PRODUCT_ALREADY_EXIST);
 		}
 
-		// 상품 생성
+		// 상품 생성 및 저장
 		Product product = Product.create(request);
-
-		// 상품 DB에 저장
 		productRepository.save(product);
 
 		// 응답 반환
@@ -62,14 +69,6 @@ public class ProductService {
 		// id로 등록된 상품 조회
 		Product foundProduct = productRepository.findById(productId)
 			.orElseThrow(() -> new CustomProductNotFoundException(ErrorCode.PRODUCT_NOT_FOUND));
-
-		// 상품을 수정할 수 있는 유저 권한 체크 (마스터, 허브 관리자, 업체 관리자)
-		// - 해당 상품이 속한 회사 정보 가져오기
-		//SelectCompanyResponse company = companyServiceClient.getCompany(foundProduct.getCompanyId());
-
-		// if (!company.getManagerId().equals(authenticatedUserId)) {
-		// 	throw new UnauthorizedAccessException("해당 권한자는 등록된 상품을 수정할 수 없습니다.");
-		// }
 
 		// 상품 수정
 		foundProduct.update(request);
@@ -84,14 +83,6 @@ public class ProductService {
 		// id로 등록된 상품 조회
 		Product foundProduct = productRepository.findById(productId)
 			.orElseThrow(() -> new CustomProductNotFoundException(ErrorCode.PRODUCT_NOT_FOUND));
-
-		// 상품을 삭제할 수 있는 유저 권한 체크 (마스터, 허브 관리자)
-		// - 해당 상품이 속한 회사 정보 가져오기
-		//SelectCompanyResponse company = companyServiceClient.getCompany(foundProduct.getCompanyId());
-
-		// if (!company.getManagerId().equals(authenticatedUserId)) {
-		// 	throw new UnauthorizedAccessException("해당 권한자는 등록된 상품을 삭제할 수 없습니다.");
-		// }
 
 		// 상품 soft delete
 		foundProduct.performSoftDelete();
@@ -109,21 +100,11 @@ public class ProductService {
 
 	@Transactional(readOnly = true)
 	public PagedModel<SelectProductResponse> getAllProducts(String query, PageRequest pageable) {
-		//todo.허브 검사 -> 허브 존재 여부 확인 => 상품 관리 허브ID는 업체 엔티티에서 관리하므로 업체 검사
-		//1. 업체 정보 조회
-		//SelectCompanyResponse company = companyServiceClient.getCompany(foundProduct.getCompanyId());
-
-		//2. 요청된 hubId와 업체의 hubId 비교
-		//if (!company.getHubId().equals(request.hubId())) {
-		//	throw new IllegalArgumentException()
-		//}
-
-		// 상품 조회 -> 특정 허브와 특정 업체에 해당하는 상품 목록 조회
+		// 상품 조회 -> query: 상품명
 		Page<Product> products = productRepository.searchByProducts(query, pageable);
 
 		Page<SelectProductResponse> content = products.map(SelectProductResponse::from);
-
-		// 응답 데이터 PagedModel로 변환
+		
 		return new PagedModel<>(content);
 	}
 

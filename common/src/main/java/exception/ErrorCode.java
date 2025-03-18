@@ -30,6 +30,8 @@ public enum ErrorCode {
 	PRODUCT_POST_ROLE_DENIED(HttpStatus.FORBIDDEN, "권한이 DELIVERY인 사용자는 상품을 등록할 수 없습니다.", "P003"),
 	PRODUCT_UPDATE_ROLE_DENIED(HttpStatus.FORBIDDEN, "권한이 DELIVERY인 사용자는 상품을 수정할 수 없습니다.", "P004"),
 	PRODUCT_DELETE_ROLE_DENIED(HttpStatus.FORBIDDEN, "권한이 MASTER 또는 HUB인 사용자만 상품을 삭제할 수 있습니다.", "P005"),
+	PRODUCT_NOT_FOUND_COMPANY(HttpStatus.BAD_REQUEST, "업체 조회 API 호출을 실패했습니다.", "P006"),
+	PRODUCT_MISMATCH_HUB_ID(HttpStatus.BAD_REQUEST, "요청 허브 ID와 응답 허브 ID가 다릅니다.", "P007"),
 
 	// Order
 	ORDER_NOT_FOUND(HttpStatus.BAD_REQUEST, "주문을 찾을 수 없습니다.", "O001"),
@@ -51,10 +53,6 @@ public enum ErrorCode {
 	// 배달 담당자 서비스
 	DELIVERY_AGENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 배달담당자를 찾을 수 없습니다.", "D001"),
 	INVALID_DELIVERY_AGENT_STATUS(HttpStatus.BAD_REQUEST, "배달 담당자가 배송 중이므로 삭제할 수 없습니다.", "D002"),
-	// 클라이언트 오류
-	INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다.", "U001"),
-	UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "인증되지 않은 접근입니다.", "U002"),
-	FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "접근이 금지되었습니다.", "U003"),
 
 	// 허브 오류
 	HUB_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 허브입니다.", "H001"),
