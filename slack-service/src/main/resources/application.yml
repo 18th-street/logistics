@@ -37,6 +37,7 @@ slack:
     url: ${SLACK_URL}
   bot:
     token: ${SLACK_BOT_TOKEN}
+
 service:
   jwt:
     secret-key: ${JWT_SECRET_KEY}

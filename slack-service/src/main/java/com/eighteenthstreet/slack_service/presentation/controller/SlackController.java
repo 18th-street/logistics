@@ -31,37 +31,47 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/slacks")
+@RequestMapping("/api/v1/slacks")
 public class SlackController {
 	private final SlackService slackService;
 
-	@Description("슬랙 멤버 ID로 슬랙 메시지 전송")
+	@Description(
+		"슬랙 멤버 ID로 슬랙 메시지 전송"
+	)
 	@PostMapping
 	public ResponseEntity<Void> sendMessageToId(@RequestBody SendMessageRequestDto request) {
 		slackService.sendSlackMessage(request);
 		return ResponseEntity.ok().build();
 	}
 
-	@Description("email로 슬랙 메시지 전송")
+	@Description(
+		"email로 슬랙 메시지 전송"
+	)
 	@PostMapping("/email")
 	public ResponseEntity<Void> sendMessageByEmail(@RequestBody SendMessageByEmailRequestDto request) {
 		slackService.sendSlackMessageByEmail(request);
 		return ResponseEntity.ok().build();
 	}
 
-	@Description("슬랙 메시지 전체 조회")
+	@Description(
+		"슬랙 메시지 전체 조회"
+	)
 	@GetMapping
 	public ResponseEntity<List<SlackMessageResponseDto>> getAllSlackMessages() {
 		return ResponseEntity.ok(slackService.getAllSlackMessages());
 	}
 
-	@Description("슬랙 메시지 상세 조회")
+	@Description(
+		"슬랙 메시지 상세 조회"
+	)
 	@GetMapping("/{id}")
 	public ResponseEntity<SlackMessageResponseDto> getSlackMessages(@PathVariable("id") UUID id) {
 		return ResponseEntity.ok(slackService.getSlackMessages(id));
 	}
 
-	@Description("슬랙 메시지 검색")
+	@Description(
+		"슬랙 메시지 검색"
+	)
 	@GetMapping("/search")
 	public ResponseEntity<Page<SlackMessageResponseDto>> searchSlackMessages(
 		@RequestParam(name = "word", defaultValue = "") String word,
@@ -84,7 +94,9 @@ public class SlackController {
 		return ResponseEntity.ok(slackService.searchSlackMessages(word, customPageable));
 	}
 
-	@Description("슬랙 메시지 수정")
+	@Description(
+		"슬랙 메시지 수정"
+	)
 	@PatchMapping("/{id}")
 	public ResponseEntity<SlackMessageResponseDto> updateSlackMessage(
 		@PathVariable("id") UUID id,
@@ -93,7 +105,9 @@ public class SlackController {
 		return ResponseEntity.ok(slackService.updateSlackMessage(id, request));
 	}
 
-	@Description("슬랙 메시지 소프트 삭제")
+	@Description(
+		"슬랙 메시지 소프트 삭제"
+	)
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteSlackMessage(@PathVariable("id") UUID id) {
 		slackService.deleteSlackMessage(id);
