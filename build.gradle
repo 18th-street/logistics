@@ -38,6 +38,12 @@ project(":hub-service") {
     }
 }
 
+project(":hub-route-service") {
+    dependencies {
+        implementation project(":common")
+    }
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
