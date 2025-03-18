@@ -34,7 +34,7 @@ public class SlackMessage extends BaseEntity {
 	@Column(nullable = false, length = 30)
 	private String receiverId;
 
-	@Column(nullable = false)
+	@Column(nullable = false, columnDefinition = "TEXT")
 	private String message;
 
 	@PrePersist
