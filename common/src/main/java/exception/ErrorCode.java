@@ -25,6 +25,7 @@ public enum ErrorCode {
 	COMPANY_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당하는 업체를 찾을 수 없습니다.", "C002"),
 	COMPANY_UPDATE_ROLE_DENIED(HttpStatus.FORBIDDEN, "권한이 MASTER 또는 HUB 또는 COMPANY인 사용자여야 합니다.", "C003"),
 	COMPANY_POST_ROLE_DENIED(HttpStatus.FORBIDDEN, "권한이 MASTER 또는 HUB인 사용자여야 합니다.", "C004"),
+	COMPANY_HUB_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 업체가 소속된 Hub를 찾을 수 없습니다.", "C005"),
 
 	// Product
 	PRODUCT_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "이미 등록된 상품입니다.", "P001"),

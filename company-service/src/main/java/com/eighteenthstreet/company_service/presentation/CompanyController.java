@@ -44,11 +44,11 @@ public class CompanyController {
 	public ResponseEntity<CreateCompanyResponse> registerCompany(
 		@RequestBody CreateCompanyRequest request,
 		@RequestHeader("Authorization") String token
-		//Long userId
 	) {
 		Role role = jwtUtil.getRoleFromToken(token);
+		Long userId = jwtUtil.getUserIdFromToken(token);
 		hasValidRegisterRole(role);
-		CreateCompanyResponse response = companyService.registerCompany(request);
+		CreateCompanyResponse response = companyService.registerCompany(request, userId);
 		return ResponseEntity.ok(response);
 	}
 
@@ -74,6 +74,7 @@ public class CompanyController {
 	) {
 		Role role = jwtUtil.getRoleFromToken(token);
 		hasValidDeleterRole(role);
+		
 		companyService.deleteCompany(companyId);
 		return ResponseEntity.noContent().build();
 	}

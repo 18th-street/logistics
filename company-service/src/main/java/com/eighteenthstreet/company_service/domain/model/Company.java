@@ -53,13 +53,13 @@ public class Company extends BaseEntity {
 	@Column(name = "company_manager_id")
 	private Long managerId;
 
-	public static Company create(CreateCompanyRequest request) {
+	public static Company create(CreateCompanyRequest request, Long userId) {
 		return Company.builder()
 			.name(request.name())
 			.type(CompanyType.from(request.type()))
 			.address(request.address())
 			.hubId(request.hubId())
-			//.managerId(userId)
+			.managerId(userId)
 			.build();
 	}
 

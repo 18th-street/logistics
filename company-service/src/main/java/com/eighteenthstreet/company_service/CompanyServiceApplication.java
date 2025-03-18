@@ -2,9 +2,11 @@ package com.eighteenthstreet.company_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication(scanBasePackages = {"exception", "base", "auth", "com.eighteenthstreet.company_service"})
+@EnableFeignClients
 @EnableJpaAuditing
 public class CompanyServiceApplication {
 
