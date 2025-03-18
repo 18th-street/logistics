@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
-@SpringBootApplication(scanBasePackages = {"exception", "base", "com.eighteenthstreet.hub_route_service"})
+@SpringBootApplication(scanBasePackages = {"exception", "base", "com.eighteenthstreet.hub_service", "com.eighteenthstreet.hub_route_service"})
 @EnableDiscoveryClient
 public class HubRouteServiceApplication {
 

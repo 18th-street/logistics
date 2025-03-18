@@ -41,6 +41,7 @@ project(":hub-service") {
 project(":hub-route-service") {
     dependencies {
         implementation project(":common")
+        implementation project(":hub-service")
     }
 }
 
