@@ -6,8 +6,8 @@ import lombok.Getter;
 @Data
 @Getter
 public class ErrorResponse {
-	private String code;
-	private String message;
+    private String code;
+    private String message;
 
 	public ErrorResponse(ErrorCode errorCode) {
 		this.code = errorCode.getCode();
