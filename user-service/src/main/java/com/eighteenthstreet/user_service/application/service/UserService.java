@@ -126,7 +126,7 @@ public class UserService {
 	public UserResponseDto getUserDetail(Long userId) {
 		User user = loginUser();
 		if (!user.getRole().equals(Role.MASTER) && !user.getUserId().equals(userId)) {
-			throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+			throw new CustomException(ErrorCode.ACCESS_DENIED);
 		}
 
 		User targetUser = userRepository.findById(userId);

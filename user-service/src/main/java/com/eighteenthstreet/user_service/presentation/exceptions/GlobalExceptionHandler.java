@@ -31,8 +31,8 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(IllegalArgumentException.class)
 	public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
 		log.error(" 잘못된 요청: {}", e.getMessage());
-		ErrorResponse errorResponse = new ErrorResponse(ErrorCode.INVALID_REQUEST);
-		return new ResponseEntity<>(errorResponse, ErrorCode.INVALID_REQUEST.getHttpStatus());
+		ErrorResponse errorResponse = new ErrorResponse(ErrorCode.INTERNAL_SERVER_ERROR);
+		return new ResponseEntity<>(errorResponse, ErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus());
 	}
 
 	// NullPointerException 등 예기치 못한 예외 처리
