@@ -47,7 +47,15 @@ public enum ErrorCode {
 
     // 배달 담당자 서비스
     DELIVERY_AGENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 배달담당자를 찾을 수 없습니다.", "D001"),
-    INVALID_DELIVERY_AGENT_STATUS(HttpStatus.BAD_REQUEST, "배달 담당자가 배송 중이므로 삭제할 수 없습니다.", "D002");
+    INVALID_DELIVERY_AGENT_STATUS(HttpStatus.BAD_REQUEST, "배달 담당자가 배송 중이므로 삭제할 수 없습니다.", "D002"),
+    // 클라이언트 오류
+    INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다.", "U001"),
+    UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "인증되지 않은 접근입니다.", "U002"),
+    FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "접근이 금지되었습니다.", "U003"),
+
+    // 허브 오류
+    HUB_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 허브입니다.", "H001"),
+    HUB_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "이미 존재하는 허브입니다.", "H002");
 
     private final HttpStatus httpStatus;
     private final String message;
