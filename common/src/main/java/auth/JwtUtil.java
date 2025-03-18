@@ -1,5 +1,7 @@
 package auth;
 
+import java.util.UUID;
+
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -11,13 +13,13 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Component
+@Slf4j
 public class JwtUtil {
 	@Value("${service.jwt.secret-key}")
 	private String secretKey;
 
-	public Long getUserIdFromToken(String authorization) {
+	public UUID getUserIdFromToken(String authorization) {
 		String token = getToken(authorization);
 
 		if (token == null) {
@@ -31,7 +33,7 @@ public class JwtUtil {
 			.parseSignedClaims(token)
 			.getBody();
 
-		return Long.valueOf(claims.get("userId", String.class));
+		return UUID.fromString(claims.get("userId", String.class));
 	}
 
 	public Role getRoleFromToken(String authorization) {

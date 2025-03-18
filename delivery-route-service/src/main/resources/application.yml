@@ -1,0 +1,64 @@
+server:
+  port: 19101
+
+spring:
+  application:
+    name: delivery-route-service
+  config:
+    import: optional:file:.env[.properties]
+  profiles:
+    active: local
+
+  # 데이터소스 설정
+  datasource:
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  # JPA 관련 설정
+  jpa:
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  sql:
+    init:
+      mode: always
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+
+message:
+  exchange: delivery
+  queue:
+    delivery: delivery.delivery
+    route: delivery.route
+  err:
+    exchange: delivery.err
+    queue:
+      err:
+        delivery: delivery.err.delivery
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
+
+
+management:
+  zipkin:
+    tracing:
+      endpoint: "http://localhost:9411/api/v2/spans"
+  tracing:
+    sampling:
+      probability: 1.0

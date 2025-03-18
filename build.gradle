@@ -32,6 +32,67 @@ subprojects {
 
 }
 
+project(':gateway-service') {
+    dependencies {
+        implementation project(':common')
+    }
+}
+
+project(':user-service') {
+    dependencies {
+        implementation project(':common')
+    }
+}
+
+project(':company-service') {
+    dependencies {
+        implementation project(':common')
+    }
+}
+
+project(":product-service") {
+    dependencies {
+        implementation project(":common")
+    }
+}
+
+project(":order-service") {
+    dependencies {
+        implementation project(":common")
+    }
+}
+
+project(":delivery-service") {
+    dependencies {
+        implementation project(":common")
+    }
+}
+
+project(":delivery-agent-service") {
+    dependencies {
+        implementation project(":common")
+    }
+}
+
+project(":delivery-route-service") {
+    dependencies {
+        implementation project(":common")
+    }
+}
+
+project(":hub-service") {
+    dependencies {
+        implementation project(":common")
+    }
+}
+
+project(":hub-route-service") {
+    dependencies {
+        implementation project(":common")
+        implementation project(":hub-service")
+    }
+}
+
 project(':slack-service') {
     dependencies {
         implementation project(':common')
