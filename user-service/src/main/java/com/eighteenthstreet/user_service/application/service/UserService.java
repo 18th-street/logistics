@@ -102,7 +102,7 @@ public class UserService {
 
 		// 기존 Redis 저장된 Refresh Token 삭제
 		Long userId = jwtUtil.getUserIdFromToken(authorization);
-		redisTemplate.delete("refresh:" + userId);
+		redisTemplate.delete("refresh_token:" + userId);
 	}
 
 	public Role getUserRole(Long userId) {
