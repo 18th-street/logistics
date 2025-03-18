@@ -47,13 +47,7 @@ public class UserService {
 
 	public Boolean validation(String username) {
 		User user = userRepository.findByUsername(username);
-		if (user == null) {
-			return false;
-		}
-		if (user.getDeletedAt() != null && user.getIsDeleted()) {
-			return false;
-		}
-		return true;
+		return user != null;
 	}
 
 	public boolean isExistUsername(String username) {
