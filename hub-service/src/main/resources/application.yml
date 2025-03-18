@@ -6,6 +6,9 @@ spring:
     name: hub-service
   config:
     import: optional:file:.env[.properties]
+  profiles:
+    active: local
+
 
   sql:
     init:

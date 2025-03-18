@@ -6,6 +6,8 @@ spring:
     name: hub-route-service
   config:
     import: optional:file:.env[.properties]
+  profiles:
+    active: local
 
   sql:
     init:
