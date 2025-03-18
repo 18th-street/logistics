@@ -27,8 +27,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
-@SQLDelete(sql = "UPDATE p_product SET product_is_deleted = true WHERE product_id = ?")
-@SQLRestriction("product_is_deleted = false")
+@SQLDelete(sql = "UPDATE p_product SET is_deleted = true, deleted_at = now() WHERE product_id = ?")
+@SQLRestriction("is_deleted = false")
 public class Product extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -54,10 +54,6 @@ public class Product extends BaseEntity {
 	@Column(name = "company_id")
 	private UUID companyId;
 
-	@Builder.Default
-	@Column(name = "product_is_deleted")
-	private Boolean isDeleted = Boolean.FALSE;
-
 	public static Product create(CreateProductRequest request) {
 		return Product.builder()
 			.name(request.name())
@@ -74,8 +70,27 @@ public class Product extends BaseEntity {
 		this.quantity = request.quantity();
 	}
 
+	public void decreaseStock(int quantity) {
+		if (quantity <= 0) {
+			throw new IllegalArgumentException("주문 수량이 0 이하일 수 없습니다.");
+		}
+
+		if (this.quantity < quantity) {
+			throw new IllegalArgumentException("상품 재고가 부족합니다.");
+		}
+		this.quantity -= quantity;
+	}
+
+	public void restoreStock(int quantity) {
+		if (quantity <= 0) {
+			throw new IllegalArgumentException("복원 수량이 0 이하일 수 없습니다.");
+		}
+
+		this.quantity += quantity;
+	}
+
 	public void performSoftDelete() {
-		this.isDeleted = Boolean.TRUE;
+		this.isSold = Boolean.FALSE;
 		this.softDelete();
 	}
 }

@@ -29,8 +29,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
-@SQLDelete(sql = "UPDATE p_company SET company_is_deleted = true WHERE company_id = ?")
-@SQLRestriction("company_is_deleted = false")
+@SQLDelete(sql = "UPDATE p_company SET is_deleted = true, deleted_at = now() WHERE company_id = ?")
+@SQLRestriction("is_deleted = false")
 public class Company extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -53,16 +53,12 @@ public class Company extends BaseEntity {
 	@Column(name = "company_manager_id")
 	private Long managerId;
 
-	@Builder.Default
-	@Column(name = "company_is_deleted")
-	private Boolean isDeleted = Boolean.FALSE;
-
 	public static Company create(CreateCompanyRequest request) {
 		return Company.builder()
 			.name(request.name())
 			.type(CompanyType.from(request.type()))
 			.address(request.address())
-			//.hubId(request.hubId())
+			.hubId(request.hubId())
 			//.managerId(userId)
 			.build();
 	}
@@ -74,7 +70,6 @@ public class Company extends BaseEntity {
 	}
 
 	public void performSoftDelete() {
-		this.isDeleted = Boolean.TRUE;
 		this.softDelete();
 	}
 }

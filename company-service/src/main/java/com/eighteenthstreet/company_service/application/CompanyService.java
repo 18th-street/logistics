@@ -13,6 +13,8 @@ import com.eighteenthstreet.company_service.application.dto.SelectCompanyRespons
 import com.eighteenthstreet.company_service.application.dto.UpdateCompanyResponse;
 import com.eighteenthstreet.company_service.domain.model.Company;
 import com.eighteenthstreet.company_service.domain.repository.CompanyRepository;
+import com.eighteenthstreet.company_service.exception.CustomCompanyAlreadyExistException;
+import com.eighteenthstreet.company_service.exception.CustomCompanyNotFoundException;
 import com.eighteenthstreet.company_service.presentation.request.CreateCompanyRequest;
 import com.eighteenthstreet.company_service.presentation.request.UpdateCompanyRequest;
 
@@ -33,7 +35,7 @@ public class CompanyService {
 		// hubService.findHub(request.hubId());
 
 		if (companyRepository.existsByName(request.name())) {
-			throw new IllegalArgumentException(ErrorCode.COMPANY_ALREADY_EXIST.getMessage());
+			throw new CustomCompanyAlreadyExistException(ErrorCode.COMPANY_ALREADY_EXIST);
 		}
 
 		Company company = Company.create(request);
@@ -54,7 +56,7 @@ public class CompanyService {
 
 		// company 조회
 		Company foundCompany = companyRepository.findById(companyId)
-			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.COMPANY_ALREADY_EXIST.getMessage()));
+			.orElseThrow(() -> new CustomCompanyNotFoundException(ErrorCode.COMPANY_NOT_FOUND));
 
 		// todo. 업체 담당자만 수정 가능
 		//if (role.equals("COMPANY_MANAGER") && !Objects.equals(foundCompany.getManagerId(), userId)) {}
@@ -69,7 +71,7 @@ public class CompanyService {
 	public void deleteCompany(UUID companyId) {
 		// company 조회
 		Company foundCompany = companyRepository.findById(companyId)
-			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.COMPANY_ALREADY_EXIST.getMessage()));
+			.orElseThrow(() -> new CustomCompanyNotFoundException(ErrorCode.COMPANY_NOT_FOUND));
 
 		// company soft delete
 		foundCompany.performSoftDelete();
@@ -79,11 +81,9 @@ public class CompanyService {
 
 	@Transactional(readOnly = true)
 	public SelectCompanyResponse getCompany(UUID companyId) {
-		System.out.println("companyId = " + companyId);
 		// company 조회
 		Company foundCompany = companyRepository.findById(companyId)
-			.orElseThrow(() -> new IllegalArgumentException(ErrorCode.COMPANY_NOT_FOUND.getMessage()));
-
+			.orElseThrow(() -> new CustomCompanyNotFoundException(ErrorCode.COMPANY_NOT_FOUND));
 		return SelectCompanyResponse.from(foundCompany);
 	}
 
