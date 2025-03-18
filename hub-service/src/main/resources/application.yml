@@ -6,6 +6,9 @@ spring:
     name: hub-service
   config:
     import: optional:file:.env[.properties]
+  profiles:
+    active: local
+
 
   sql:
     init:
@@ -13,9 +16,9 @@ spring:
 
   # Database
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   # JPA
