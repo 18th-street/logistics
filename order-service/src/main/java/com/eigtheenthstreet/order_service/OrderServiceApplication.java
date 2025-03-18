@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-@SpringBootApplication(scanBasePackages = {"exception", "base", "com.eigtheenthstreet.order_service"})
+@SpringBootApplication(scanBasePackages = {"exception", "base", "auth", "com.eigtheenthstreet.order_service"})
 @EnableFeignClients
 @EnableJpaAuditing
 public class OrderServiceApplication {
