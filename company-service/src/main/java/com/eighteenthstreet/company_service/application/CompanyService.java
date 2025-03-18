@@ -84,7 +84,6 @@ public class CompanyService {
 		// company 조회
 		Company foundCompany = companyRepository.findById(companyId)
 			.orElseThrow(() -> new CustomCompanyNotFoundException(ErrorCode.COMPANY_NOT_FOUND));
-
 		return SelectCompanyResponse.from(foundCompany);
 	}
 

@@ -56,6 +56,12 @@ project(":product-service") {
     }
 }
 
+project(":order-service") {
+    dependencies {
+        implementation project(":common")
+    }
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
