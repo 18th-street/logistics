@@ -6,6 +6,8 @@ spring:
     name: product-service
   config:
     import: optional:file:.env[.properties]
+  profiles:
+    active: local
   datasource:
     url: jdbc:postgresql://localhost:5432/${POSTGRES_DB}
     username: ${POSTGRES_USER}
