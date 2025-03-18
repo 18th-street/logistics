@@ -32,6 +32,36 @@ subprojects {
 
 }
 
+project(':gateway-service') {
+    dependencies {
+        implementation project(':common')
+    }
+}
+
+project(':user-service') {
+    dependencies {
+        implementation project(':common')
+    }
+}
+
+project(':company-service') {
+    dependencies {
+        implementation project(':common')
+    }
+}
+
+project(":product-service") {
+    dependencies {
+        implementation project(":common")
+    }
+}
+
+project(":order-service") {
+    dependencies {
+        implementation project(":common")
+    }
+}
+
 project(":delivery-service") {
     dependencies {
         implementation project(":common")
@@ -49,7 +79,6 @@ project(":delivery-route-service") {
         implementation project(":common")
     }
 }
-
 
 java {
     toolchain {
