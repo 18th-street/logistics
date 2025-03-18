@@ -38,8 +38,8 @@ public class SecurityConfig {
 			)
 			.authorizeHttpRequests(
 				authorize -> authorize
-					.requestMatchers("/api/users/signUp").permitAll()
-					.requestMatchers("/api/users/signIn").permitAll()
+					.requestMatchers("/api/v1/users/signUp").permitAll()
+					.requestMatchers("/api/v1/users/signIn").permitAll()
 					.anyRequest().authenticated()
 			)
 			.addFilterBefore(new UserAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
