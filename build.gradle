@@ -80,6 +80,19 @@ project(":delivery-route-service") {
     }
 }
 
+project(":hub-service") {
+    dependencies {
+        implementation project(":common")
+    }
+}
+
+project(":hub-route-service") {
+    dependencies {
+        implementation project(":common")
+        implementation project(":hub-service")
+    }
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)

@@ -6,6 +6,7 @@ services:
   db:
     container_name: db
     image: postgis/postgis
+    platform: linux/amd64
     volumes:
       - postgres-data:/var/lib/postgresql/data
     env_file:
