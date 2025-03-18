@@ -1,5 +1,7 @@
 package com.eighteenthstreet.user_service.domain.model;
 
+import org.hibernate.annotations.SQLRestriction;
+
 import com.eighteenthstreet.user_service.presentation.dto.UpdateUserRequestDto;
 
 import auth.Role;
@@ -24,6 +26,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Table(name = "p_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("is_deleted = false")
 public class User extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

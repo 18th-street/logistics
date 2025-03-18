@@ -12,7 +12,6 @@ public interface UserJpaRepository extends JpaRepository<User, Long> {
 	User findByUsername(String username);
 
 	@Query(value = "SELECT u FROM User u "
-		+ "WHERE (COALESCE(:name, '') = '' OR LOWER(u.username) LIKE LOWER(CONCAT('%', :name, '%'))) "
-		+ "AND u.isDeleted IS FALSE AND u.deletedAt IS NULL")
+		+ "WHERE (COALESCE(:name, '') = '' OR LOWER(u.username) LIKE LOWER(CONCAT('%', :name, '%')))")
 	Page<User> findActiveUsers(@Param("name") String name, Pageable pageable);
 }

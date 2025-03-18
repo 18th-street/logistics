@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
 import auth.JwtUtil;
-import auth.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -36,7 +35,7 @@ public class JwtAuthenticationFilter implements GlobalFilter {
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 		String path = exchange.getRequest().getURI().getPath();
 
-		if (path.equals("/api/users/signUp") || path.equals("/api/users/signIn")) {
+		if (path.equals("/api/v1/users/signUp") || path.equals("/api/v1/users/signIn")) {
 			return chain.filter(exchange);
 		}
 
@@ -46,16 +45,16 @@ public class JwtAuthenticationFilter implements GlobalFilter {
 			return exchange.getResponse().setComplete();
 		}
 
-		Long userId = jwtUtil.getUserIdFromToken(token);
-		Role role = jwtUtil.getRoleFromToken(token);
-		String username = jwtUtil.getUsernameFromToken(token);
+		String userId = extractUserId(token);
+		String username = extractUsername(token);
+		String role = extractRole(token);
 
-		log.info("userId = " + userId + ", role = " + role.name() + ", username = " + username);
+		log.info("userId = " + userId + ", role = " + role + ", username = " + username);
 
 		ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
-			.header("X-User-Id", String.valueOf(userId))
+			.header("X-User-Id", userId)
 			.header("X-User-Username", username)
-			.header("X-User-Role", role.name())
+			.header("X-User-Role", role)
 			.build();
 
 		return chain.filter(exchange.mutate().request(modifiedRequest).build());
@@ -71,6 +70,7 @@ public class JwtAuthenticationFilter implements GlobalFilter {
 
 	private boolean validation(String token) {
 		try {
+			log.info("{}", secretKey);
 			SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
 
 			Jws<Claims> claimsJws = Jwts.parser()
@@ -86,5 +86,35 @@ public class JwtAuthenticationFilter implements GlobalFilter {
 			log.error("JWT 검증 실패 : {}", e.getMessage());
 			return false;
 		}
+	}
+
+	private String extractUserId(String token) {
+		SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
+		Claims claims = Jwts.parser()
+			.verifyWith(key)
+			.build()
+			.parseSignedClaims(token)
+			.getBody();
+		return claims.get("userId", String.class);
+	}
+
+	private String extractUsername(String token) {
+		SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
+		Claims claims = Jwts.parser()
+			.verifyWith(key)
+			.build()
+			.parseSignedClaims(token)
+			.getBody();
+		return claims.get("username", String.class);
+	}
+
+	private String extractRole(String token) {
+		SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
+		Claims claims = Jwts.parser()
+			.verifyWith(key)
+			.build()
+			.parseSignedClaims(token)
+			.getBody();
+		return claims.get("role", String.class);
 	}
 }

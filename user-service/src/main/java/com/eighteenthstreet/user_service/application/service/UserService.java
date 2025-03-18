@@ -47,13 +47,7 @@ public class UserService {
 
 	public Boolean validation(String username) {
 		User user = userRepository.findByUsername(username);
-		if (user == null) {
-			return false;
-		}
-		if (user.getDeletedAt() != null && user.getIsDeleted()) {
-			return false;
-		}
-		return true;
+		return user != null;
 	}
 
 	public boolean isExistUsername(String username) {
@@ -108,7 +102,7 @@ public class UserService {
 
 		// 기존 Redis 저장된 Refresh Token 삭제
 		Long userId = jwtUtil.getUserIdFromToken(authorization);
-		redisTemplate.delete("refresh:" + userId);
+		redisTemplate.delete("refresh_token:" + userId);
 	}
 
 	public Role getUserRole(Long userId) {
