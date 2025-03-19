@@ -1,5 +1,7 @@
 package com.eighteenthstreet.user_service.domain.model;
 
+import java.util.UUID;
+
 import org.hibernate.annotations.SQLRestriction;
 
 import com.eighteenthstreet.user_service.presentation.dto.UpdateUserRequestDto;
@@ -13,6 +15,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -29,8 +32,9 @@ import lombok.NoArgsConstructor;
 @SQLRestriction("is_deleted = false")
 public class User extends BaseEntity {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long userId;
+	@Column(name = "user_id")
+	@GeneratedValue(strategy = GenerationType.UUID)
+	private UUID userId;
 
 	@Column(length = 10, nullable = false)
 	private String username;
@@ -57,6 +61,13 @@ public class User extends BaseEntity {
 	@Column(length = 20, nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Status status;
+
+	@PrePersist
+	public void prePersist() {
+		if (userId == null) {
+			userId = UUID.randomUUID();
+		}
+	}
 
 	public void update(UpdateUserRequestDto request) {
 		this.email = request.email();

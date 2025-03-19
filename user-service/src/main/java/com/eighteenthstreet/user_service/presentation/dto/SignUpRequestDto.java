@@ -37,3 +37,4 @@ public record SignUpRequestDto(
 	Role role
 ) {
 }
+
