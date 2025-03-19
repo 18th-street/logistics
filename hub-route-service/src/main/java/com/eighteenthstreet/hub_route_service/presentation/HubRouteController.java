@@ -1,16 +1,21 @@
 package com.eighteenthstreet.hub_route_service.presentation;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.eighteenthstreet.hub_route_service.application.HubRouteService;
-import com.eighteenthstreet.hub_route_service.application.dto.GetHubRoutesResponse;
+import com.eighteenthstreet.hub_route_service.application.dto.CreateHubRouteRequest;
+import com.eighteenthstreet.hub_route_service.application.dto.GetHubRouteResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,6 +38,10 @@ public class HubRouteController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
-		return ResponseEntity.status(HttpStatus.OK).body(hubRoutes);
+	@PostMapping("/add")
+	public ResponseEntity<GetHubRouteResponse> addHubRoute(@RequestBody CreateHubRouteRequest request) {
+		GetHubRouteResponse response = hubRouteService.addHubRoute(request);
+
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 }
