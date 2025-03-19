@@ -25,14 +25,6 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(errorResponse, e.getErrorCode().getHttpStatus());
 	}
 
-	// 잘못된 인자(요청) 예외
-	@ExceptionHandler(IllegalArgumentException.class)
-	public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
-		log.error(" 잘못된 요청: {}", e.getMessage());
-		ErrorResponse errorResponse = new ErrorResponse(ErrorCode.INVALID_REQUEST);
-		return new ResponseEntity<>(errorResponse, ErrorCode.INVALID_REQUEST.getHttpStatus());
-	}
-
 	// NullPointerException 등 예기치 못한 예외 처리
 	@ExceptionHandler(RuntimeException.class)
 	public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException e) {
