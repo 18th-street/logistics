@@ -9,36 +9,45 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.eighteenthstreet.company_service.application.dto.CreateCompanyResponse;
+import com.eighteenthstreet.company_service.application.dto.GetHubResponse;
 import com.eighteenthstreet.company_service.application.dto.SelectCompanyResponse;
 import com.eighteenthstreet.company_service.application.dto.UpdateCompanyResponse;
 import com.eighteenthstreet.company_service.domain.model.Company;
 import com.eighteenthstreet.company_service.domain.repository.CompanyRepository;
 import com.eighteenthstreet.company_service.exception.CustomCompanyAlreadyExistException;
+import com.eighteenthstreet.company_service.exception.CustomCompanyHubNotFoundException;
 import com.eighteenthstreet.company_service.exception.CustomCompanyNotFoundException;
+import com.eighteenthstreet.company_service.infrastructure.client.HubServiceClient;
 import com.eighteenthstreet.company_service.presentation.request.CreateCompanyRequest;
 import com.eighteenthstreet.company_service.presentation.request.UpdateCompanyRequest;
 
 import exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CompanyService {
 	private final CompanyRepository companyRepository;
-	// todo
-	// private final HubServiceClient hubServiceClient;
-	// private final ProductServiceClient productServiceClient;
+	private final HubServiceClient hubServiceClient;
+	//private final ProductServiceClient productServiceClient;
 
 	@Transactional
-	public CreateCompanyResponse registerCompany(CreateCompanyRequest request) {
-		// todo. 허브 검사
-		// hubService.findHub(request.hubId());
+	public CreateCompanyResponse registerCompany(CreateCompanyRequest request, UUID userId) {
+		// 허브 검사
+		try {
+			GetHubResponse hubResponse = hubServiceClient.getHub(request.hubId());
+		} catch (Exception e) {
+			log.error("{업체 등록 시 Hub 조회 API 호출 실패: {}", e.getMessage());
+			throw new CustomCompanyHubNotFoundException(ErrorCode.COMPANY_HUB_NOT_FOUND);
+		}
 
 		if (companyRepository.existsByName(request.name())) {
 			throw new CustomCompanyAlreadyExistException(ErrorCode.COMPANY_ALREADY_EXIST);
 		}
 
-		Company company = Company.create(request);
+		Company company = Company.create(request, userId);
 		companyRepository.save(company);
 
 		return CreateCompanyResponse.from(company);
@@ -48,19 +57,19 @@ public class CompanyService {
 	public UpdateCompanyResponse updateCompany(
 		UUID companyId,
 		UpdateCompanyRequest request
-		//Long userId,
-		//String role
 	) {
-		// todo. hub 검사
-		// hubService.findHub(request.hubId());
+		// 허브 검사
+		try {
+			GetHubResponse hubResponse = hubServiceClient.getHub(request.hubId());
+		} catch (Exception e) {
+			log.error("{업체 등록 시 Hub 조회 API 호출 실패: {}", e.getMessage());
+			throw new CustomCompanyHubNotFoundException(ErrorCode.COMPANY_HUB_NOT_FOUND);
+		}
 
 		// company 조회
 		Company foundCompany = companyRepository.findById(companyId)
 			.orElseThrow(() -> new CustomCompanyNotFoundException(ErrorCode.COMPANY_NOT_FOUND));
 
-		// todo. 업체 담당자만 수정 가능
-		//if (role.equals("COMPANY_MANAGER") && !Objects.equals(foundCompany.getManagerId(), userId)) {}
-		// 내용 수정
 		foundCompany.update(request);
 
 		// 응답 반환

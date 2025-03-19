@@ -51,15 +51,15 @@ public class Company extends BaseEntity {
 	private UUID hubId;
 
 	@Column(name = "company_manager_id")
-	private Long managerId;
+	private UUID managerId;
 
-	public static Company create(CreateCompanyRequest request) {
+	public static Company create(CreateCompanyRequest request, UUID userId) {
 		return Company.builder()
 			.name(request.name())
 			.type(CompanyType.from(request.type()))
 			.address(request.address())
 			.hubId(request.hubId())
-			//.managerId(userId)
+			.managerId(userId)
 			.build();
 	}
 
