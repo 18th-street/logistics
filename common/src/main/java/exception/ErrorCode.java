@@ -58,7 +58,8 @@ public enum ErrorCode {
 	HUB_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "이미 존재하는 허브입니다.", "H002"),
 
 	// 허브 경로 오류
-	HUB_ROUTE_NOT_FOUND(HttpStatus.BAD_REQUEST, "허브경로가 존재하지 않습니다.", "H003");
+	HUB_ROUTE_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 경로입니다.", "H003"),
+	HUB_ROUTE_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 존재하는 경로입니다.", "H004");
 
 	private final HttpStatus httpStatus;
 	private final String message;
