@@ -20,7 +20,7 @@ spring:
   jpa:
     defer-datasource-initialization: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -58,6 +58,7 @@ message:
   queue:
     delivery: delivery.delivery
     route: delivery.route
+    delivery-assigned: delivery.assigned
   err:
     exchange: delivery.err
     queue:
