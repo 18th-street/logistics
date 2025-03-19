@@ -34,3 +34,8 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:19090/eureka/
+
+naver:
+  api:
+    client-id: ${NAVER_CLIENT_ID}
+    client-secret: ${NAVER_CLIENT_SECRET}
