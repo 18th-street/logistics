@@ -1,5 +1,7 @@
 package com.eighteenthstreet.user_service.presentation.controller;
 
+import java.util.UUID;
+
 import org.springframework.context.annotation.Description;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -83,7 +85,7 @@ public class UserController {
 	)
 	@GetMapping("/{userId}/role")
 	@PreAuthorize("hasRole('MASTER')")
-	public ResponseEntity<Role> getUserRole(@PathVariable("userId") Long userId) {
+	public ResponseEntity<Role> getUserRole(@PathVariable("userId") UUID userId) {
 		Role role = userService.getUserRole(userId);
 		return ResponseEntity.ok(role);
 	}
@@ -127,7 +129,7 @@ public class UserController {
 		"사용자 정보 상세 조회 (본인 및 마스터)"
 	)
 	@GetMapping("/{userId}")
-	public ResponseEntity<UserResponseDto> getUserDetail(@PathVariable("userId") Long userId) {
+	public ResponseEntity<UserResponseDto> getUserDetail(@PathVariable("userId") UUID userId) {
 		return ResponseEntity.ok(userService.getUserDetail(userId));
 	}
 
@@ -137,7 +139,7 @@ public class UserController {
 	@PatchMapping("/{userId}")
 	@PreAuthorize("hasRole('MASTER')")
 	public ResponseEntity<UserResponseDto> updateUserInfo(
-		@PathVariable("userId") Long userId,
+		@PathVariable("userId") UUID userId,
 		@Valid @RequestBody UpdateUserRequestDto request
 	) {
 		return ResponseEntity.ok(userService.updateUserInfo(userId, request));
@@ -149,7 +151,7 @@ public class UserController {
 	@PatchMapping("/{userId}/change-password")
 	@PreAuthorize("hasRole('MASTER')")
 	public ResponseEntity<Void> changePassword(
-		@PathVariable("userId") Long userId,
+		@PathVariable("userId") UUID userId,
 		@Valid @RequestBody ChangePasswordRequestDto request
 	) {
 		userService.changePassword(userId, request);
@@ -171,7 +173,7 @@ public class UserController {
 	)
 	@DeleteMapping("/{userId}")
 	@PreAuthorize("hasRole('MASTER')")
-	public ResponseEntity<Void> deleteUser(@PathVariable("userId") Long userId) {
+	public ResponseEntity<Void> deleteUser(@PathVariable("userId") UUID userId) {
 		userService.deleteUser(userId);
 		return ResponseEntity.ok().build();
 	}

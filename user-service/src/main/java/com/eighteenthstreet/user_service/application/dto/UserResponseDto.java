@@ -1,16 +1,19 @@
 package com.eighteenthstreet.user_service.application.dto;
 
+import java.util.UUID;
+
 import com.eighteenthstreet.user_service.domain.model.Status;
 
 import auth.Role;
 
 public record UserResponseDto(
-	Long userId,
+	UUID userId,
 	String username,
 	String password,
-	String slackId,
+	String email,
 	String name,
 	String phone,
+	String slackId,
 	Role role,
 	Status status
 ) {
