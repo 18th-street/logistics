@@ -8,4 +8,7 @@ import com.eighteenthstreet.hub_service.domain.model.Hub;
 
 public interface HubRouteRepository {
 	Optional<List<HubRoute>> findByDepartureHubIdAndArrivalHubId(Hub departureHub, Hub arrivalHub);
+	Optional<HubRoute> findByDepartureHubIdAndArrivalHubId(Hub departureHub, Hub arrivalHub);
+
+	List<HubRoute> findAllByDepartureHubId(Hub startHub);
 }
