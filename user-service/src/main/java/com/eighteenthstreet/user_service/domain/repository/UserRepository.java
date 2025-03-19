@@ -1,5 +1,7 @@
 package com.eighteenthstreet.user_service.domain.repository;
 
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -14,5 +16,5 @@ public interface UserRepository {
 
 	User findByUsername(String username);
 
-	User findById(Long userId);
+	User findByUserId(UUID userId);
 }
