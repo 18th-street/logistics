@@ -1,5 +1,6 @@
 package com.eighteenthstreet.user_service.application.service;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -101,12 +102,16 @@ public class UserService {
 			.set("blacklist:" + accessToken, "expired", jwtProvider.getAccessExpiration(), TimeUnit.SECONDS);
 
 		// 기존 Redis 저장된 Refresh Token 삭제
-		Long userId = jwtUtil.getUserIdFromToken(authorization);
+		UUID userId = jwtUtil.getUserIdFromToken(authorization);
 		redisTemplate.delete("refresh_token:" + userId);
 	}
 
-	public Role getUserRole(Long userId) {
-		return userRepository.findById(userId).getRole();
+	public Role getUserRole(UUID userId) {
+		User user = userRepository.findByUserId(userId);
+		if (user == null) {
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
+		}
+		return user.getRole();
 	}
 
 	public Page<UserResponseDto> getAllUsers(Pageable pageable) {
@@ -117,29 +122,36 @@ public class UserService {
 		return userRepository.findActiveUsers(name, pageable).map(userMapper::toUserResponseDto);
 	}
 
-	public UserResponseDto getUserDetail(Long userId) {
+	public UserResponseDto getUserDetail(UUID userId) {
 		User user = loginUser();
 		if (!user.getRole().equals(Role.MASTER) && !user.getUserId().equals(userId)) {
 			throw new CustomException(ErrorCode.ACCESS_DENIED);
 		}
 
-		User targetUser = userRepository.findById(userId);
-		if (targetUser.getDeletedAt() != null && targetUser.getIsDeleted()) {
-			throw new CustomException(ErrorCode.DELETED_USER);
+		User targetUser = userRepository.findByUserId(userId);
+		if (targetUser == null) {
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
 		}
 		return userMapper.toUserResponseDto(targetUser);
 	}
 
 	@Transactional
-	public UserResponseDto updateUserInfo(Long userId, UpdateUserRequestDto request) {
-		User user = userRepository.findById(userId);
+	public UserResponseDto updateUserInfo(UUID userId, UpdateUserRequestDto request) {
+		User user = userRepository.findByUserId(userId);
+		if (user == null) {
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
+		}
 		user.update(request);
 		return userMapper.toUserResponseDto(user);
 	}
 
 	@Transactional
-	public void changePassword(Long userId, ChangePasswordRequestDto request) {
-		User user = userRepository.findById(userId);
+	public void changePassword(UUID userId, ChangePasswordRequestDto request) {
+		User user = userRepository.findByUserId(userId);
+		if (user == null) {
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
+		}
+
 		if (passwordEncoder.matches(request.password(), user.getPassword())) {
 			throw new CustomException(ErrorCode.SAME_PASSWORD_NOT_ALLOWED);
 		}
@@ -150,6 +162,10 @@ public class UserService {
 	@Transactional
 	public void updateStatus(UpdateStatusRequestDto request) {
 		User user = loginUser();
+		if (user == null) {
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
+		}
+
 		if (!statusCode.equals(request.code())) {
 			throw new CustomException(ErrorCode.INVALID_AUTHENTICATION);
 		}
@@ -157,8 +173,12 @@ public class UserService {
 	}
 
 	@Transactional
-	public void deleteUser(Long userId) {
-		userRepository.findById(userId).performSoftDelete();
+	public void deleteUser(UUID userId) {
+		User user = userRepository.findByUserId(userId);
+		if (user == null) {
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
+		}
+		user.performSoftDelete();
 	}
 
 	private User loginUser() {
@@ -166,7 +186,6 @@ public class UserService {
 		if (authentication == null || !authentication.isAuthenticated()) {
 			throw new CustomException(ErrorCode.AUTHENTICATION_REQUIRED);
 		}
-		Long userId = Long.valueOf(authentication.getName());
-		return userRepository.findById(userId);
+		return userRepository.findByUserId(UUID.fromString(authentication.getName()));
 	}
 }
