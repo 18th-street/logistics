@@ -25,9 +25,3 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:19090/eureka/
-
-slack:
-  incoming-hook:
-    url: ${SLACK_URL}
-  bot:
-    token: ${SLACK_BOT_TOKEN}

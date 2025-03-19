@@ -27,7 +27,7 @@ public class SlackClient {
 
 	private final RestTemplate restTemplate;
 
-	@Value("${slack.bot.token}")
+	@Value("${SLACK_BOT_TOKEN}")
 	private String slackToken;
 
 	public boolean sendMessage(String receiverId, String message) {
