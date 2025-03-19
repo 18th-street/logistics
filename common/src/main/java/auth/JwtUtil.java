@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 public class JwtUtil {
-	@Value("${service.jwt.secret-key}")
+	@Value("${JWT_SECRET_KEY}")
 	private String secretKey;
 
 	public UUID getUserIdFromToken(String authorization) {
