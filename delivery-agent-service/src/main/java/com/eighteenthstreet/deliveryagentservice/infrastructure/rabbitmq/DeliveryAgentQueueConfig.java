@@ -22,6 +22,9 @@ public class DeliveryAgentQueueConfig {
 	@Value("${message.queue.route}")
 	private String queueRoute;
 
+	@Value("${message.queue.delivery-assigned}")
+	private String queueAssigned;
+
 	@Bean
 	public TopicExchange exchange() {
 		return new TopicExchange(exchange);
@@ -33,7 +36,17 @@ public class DeliveryAgentQueueConfig {
 	}
 
 	@Bean
+	public Queue queueAssigned() {
+		return new Queue(queueAssigned);
+	}
+
+	@Bean
 	public Binding bindingRoute() {
 		return BindingBuilder.bind(queueRoute()).to(exchange()).with(queueRoute);
+	}
+
+	@Bean
+	public Binding bindingAssigned() {
+		return BindingBuilder.bind(queueRoute()).to(exchange()).with(queueAssigned);
 	}
 }

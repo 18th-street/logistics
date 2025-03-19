@@ -42,6 +42,7 @@ message:
   queue:
     delivery: delivery.delivery
     route: delivery.route
+    delivery-assigned: delivery.assigned
   err:
     exchange: delivery.err
     queue:
