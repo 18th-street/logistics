@@ -34,7 +34,7 @@ public class CompanyService {
 	//private final ProductServiceClient productServiceClient;
 
 	@Transactional
-	public CreateCompanyResponse registerCompany(CreateCompanyRequest request, Long userId) {
+	public CreateCompanyResponse registerCompany(CreateCompanyRequest request, UUID userId) {
 		// 허브 검사
 		try {
 			GetHubResponse hubResponse = hubServiceClient.getHub(request.hubId());

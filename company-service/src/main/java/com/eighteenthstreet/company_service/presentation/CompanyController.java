@@ -22,14 +22,13 @@ import com.eighteenthstreet.company_service.application.CompanyService;
 import com.eighteenthstreet.company_service.application.dto.CreateCompanyResponse;
 import com.eighteenthstreet.company_service.application.dto.SelectCompanyResponse;
 import com.eighteenthstreet.company_service.application.dto.UpdateCompanyResponse;
-import com.eighteenthstreet.company_service.exception.CustomCompanyRoleDeniedException;
 import com.eighteenthstreet.company_service.presentation.request.CreateCompanyRequest;
 import com.eighteenthstreet.company_service.presentation.request.SearchCondition;
 import com.eighteenthstreet.company_service.presentation.request.UpdateCompanyRequest;
 
+import auth.CheckRole;
 import auth.JwtUtil;
 import auth.Role;
-import exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -39,42 +38,31 @@ public class CompanyController {
 	private final JwtUtil jwtUtil;
 	private final CompanyService companyService;
 
-	@ResponseStatus(HttpStatus.CREATED)
+	@CheckRole({Role.MASTER, Role.HUB})
 	@PostMapping()
 	public ResponseEntity<CreateCompanyResponse> registerCompany(
 		@RequestBody CreateCompanyRequest request,
 		@RequestHeader("Authorization") String token
 	) {
-		Role role = jwtUtil.getRoleFromToken(token);
-		Long userId = jwtUtil.getUserIdFromToken(token);
-		hasValidRegisterRole(role);
+		UUID userId = jwtUtil.getUserIdFromToken(token);
+
 		CreateCompanyResponse response = companyService.registerCompany(request, userId);
-		return ResponseEntity.ok(response);
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-	@ResponseStatus(HttpStatus.OK)
+	@CheckRole({Role.MASTER, Role.HUB, Role.COMPANY})
 	@PatchMapping("/{companyId}")
 	public ResponseEntity<UpdateCompanyResponse> updateCompany(
 		@PathVariable("companyId") UUID companyId,
-		@RequestBody UpdateCompanyRequest request,
-		@RequestHeader("Authorization") String token
+		@RequestBody UpdateCompanyRequest request
 	) {
-		Role role = jwtUtil.getRoleFromToken(token);
-		hasValidUpdateRole(role);
-
 		UpdateCompanyResponse response = companyService.updateCompany(companyId, request);
 		return ResponseEntity.ok(response);
 	}
 
-	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@CheckRole({Role.MASTER, Role.HUB})
 	@DeleteMapping("/{companyId}")
-	public ResponseEntity<Void> deleteCompany(
-		@PathVariable UUID companyId,
-		@RequestHeader("Authorization") String token
-	) {
-		Role role = jwtUtil.getRoleFromToken(token);
-		hasValidDeleterRole(role);
-		
+	public ResponseEntity<Void> deleteCompany(@PathVariable UUID companyId) {
 		companyService.deleteCompany(companyId);
 		return ResponseEntity.noContent().build();
 	}
@@ -109,23 +97,5 @@ public class CompanyController {
 
 		PagedModel<SelectCompanyResponse> response = companyService.getCompanies(query, pageable);
 		return ResponseEntity.ok(response);
-	}
-
-	private void hasValidRegisterRole(Role role) {
-		if (role == null || !role.equals(Role.MASTER) && !role.equals(Role.HUB)) {
-			throw new CustomCompanyRoleDeniedException(ErrorCode.COMPANY_POST_ROLE_DENIED);
-		}
-	}
-
-	private void hasValidUpdateRole(Role role) {
-		if (role == null || role.equals(Role.DELIVERY)) {
-			throw new CustomCompanyRoleDeniedException(ErrorCode.COMPANY_UPDATE_ROLE_DENIED);
-		}
-	}
-
-	private void hasValidDeleterRole(Role role) {
-		if (role == null || !role.equals(Role.MASTER) && !role.equals(Role.HUB)) {
-			throw new CustomCompanyRoleDeniedException(ErrorCode.COMPANY_POST_ROLE_DENIED);
-		}
 	}
 }
