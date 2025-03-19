@@ -1,4 +1,4 @@
-package com.eighteenthstreet.hub_service.application.dto;
+package com.eighteenthstreet.hub_route_service.application.dto;
 
 import java.util.UUID;
 
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 @Builder
-public class CreateHubResponse {
+public class HubDto {
 
 	private UUID hubId;
 	private String name;
@@ -21,8 +21,8 @@ public class CreateHubResponse {
 	private Double latitude;
 	private Double longitude;
 
-	public static CreateHubResponse from(Hub hub) {
-		return CreateHubResponse.builder()
+	public static HubDto from(Hub hub) {
+		return HubDto.builder()
 			.hubId(hub.getHubId())
 			.name(hub.getName())
 			.address(hub.getAddress())
