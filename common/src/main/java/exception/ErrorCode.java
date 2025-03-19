@@ -52,6 +52,7 @@ public enum ErrorCode {
 	// 배달 담당자 서비스
 	DELIVERY_AGENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 배달담당자를 찾을 수 없습니다.", "D001"),
 	INVALID_DELIVERY_AGENT_STATUS(HttpStatus.BAD_REQUEST, "배달 담당자가 배송 중이므로 삭제할 수 없습니다.", "D002"),
+	INVALID_DELIVERY_AGENT(HttpStatus.BAD_REQUEST, "현재 남은 배달 담당자가 없습니다.", "D003"),
 
 	// 허브 오류
 	HUB_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 허브입니다.", "H001"),
