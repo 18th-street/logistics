@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -25,25 +26,31 @@ import com.eighteenthstreet.company_service.presentation.request.CreateCompanyRe
 import com.eighteenthstreet.company_service.presentation.request.SearchCondition;
 import com.eighteenthstreet.company_service.presentation.request.UpdateCompanyRequest;
 
+import auth.CheckRole;
+import auth.JwtUtil;
+import auth.Role;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/companies")
 public class CompanyController {
+	private final JwtUtil jwtUtil;
 	private final CompanyService companyService;
 
-	@ResponseStatus(HttpStatus.CREATED)
+	@CheckRole({Role.MASTER, Role.HUB})
 	@PostMapping()
 	public ResponseEntity<CreateCompanyResponse> registerCompany(
-		@RequestBody CreateCompanyRequest request
-		//Long userId
+		@RequestBody CreateCompanyRequest request,
+		@RequestHeader("Authorization") String token
 	) {
-		CreateCompanyResponse response = companyService.registerCompany(request);
-		return ResponseEntity.ok(response);
+		UUID userId = jwtUtil.getUserIdFromToken(token);
+
+		CreateCompanyResponse response = companyService.registerCompany(request, userId);
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-	@ResponseStatus(HttpStatus.OK)
+	@CheckRole({Role.MASTER, Role.HUB, Role.COMPANY})
 	@PatchMapping("/{companyId}")
 	public ResponseEntity<UpdateCompanyResponse> updateCompany(
 		@PathVariable("companyId") UUID companyId,
@@ -53,7 +60,7 @@ public class CompanyController {
 		return ResponseEntity.ok(response);
 	}
 
-	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@CheckRole({Role.MASTER, Role.HUB})
 	@DeleteMapping("/{companyId}")
 	public ResponseEntity<Void> deleteCompany(@PathVariable UUID companyId) {
 		companyService.deleteCompany(companyId);
