@@ -20,12 +20,6 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
-#  data:
-#    redis:
-#      host: localhost
-#      port: 6379
-#      username: ${REDIS_USERNAME}
-#      password: ${REDIS_PASSWORD}
 
 eureka:
   client:
@@ -37,7 +31,3 @@ slack:
     url: ${SLACK_URL}
   bot:
     token: ${SLACK_BOT_TOKEN}
-
-service:
-  jwt:
-    secret-key: ${JWT_SECRET_KEY}
