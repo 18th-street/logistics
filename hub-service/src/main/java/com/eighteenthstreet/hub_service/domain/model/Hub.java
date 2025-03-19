@@ -1,6 +1,5 @@
 package com.eighteenthstreet.hub_service.domain.model;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 import com.eighteenthstreet.hub_service.presentation.request.CreateHubRequest;
@@ -13,7 +12,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -34,11 +37,11 @@ public class Hub extends BaseEntity {
 	@Column(nullable = false)
 	private String address;
 
-	@Column(precision = 10, scale = 8, nullable = false)
-	private BigDecimal latitude;
+	@Column(nullable = false)
+	private Double latitude;
 
-	@Column(precision = 11, scale = 8, nullable = false)
-	private BigDecimal longitude;
+	@Column(nullable = false)
+	private Double longitude;
 
 	public static Hub create(CreateHubRequest request) {
 		return Hub.builder()
