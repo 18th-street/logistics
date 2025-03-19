@@ -1,48 +1,105 @@
 package com.eighteenthstreet.deliveryrouteservice.application;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.eighteenthstreet.deliveryrouteservice.application.client.GetHubRouteResponse;
+import com.eighteenthstreet.deliveryrouteservice.application.client.GetHubRoutesResponse;
+import com.eighteenthstreet.deliveryrouteservice.application.client.HubRouteClient;
 import com.eighteenthstreet.deliveryrouteservice.application.dto.GetDeliveryRouteResponse;
 import com.eighteenthstreet.deliveryrouteservice.domain.event.DeliveryCreatedEvent;
 import com.eighteenthstreet.deliveryrouteservice.domain.exception.DeliveryRouteNotFoundException;
 import com.eighteenthstreet.deliveryrouteservice.domain.model.DeliveryRoute;
 import com.eighteenthstreet.deliveryrouteservice.domain.repository.DeliveryRouteRepository;
-import exception.ErrorCode;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
+import exception.ErrorCode;
+import feign.FeignException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class DeliveryRouteService {
 
-    private final DeliveryRouteRepository deliveryRouteRepository;
+	@Value("${message.queue.route}")
+	private String queue;
 
-    public void createDeliveryRoute(DeliveryCreatedEvent deliveryCreatedEvent) {
+	private final DeliveryRouteRepository deliveryRouteRepository;
+	private final RabbitTemplate rabbitTemplate;
+	private final HubRouteClient hubRouteClient;
 
-        // 1. TODO: 허브와 허브 경로를 구해야한다. 여기서 (예상 소요시간, 실제거리 ,실제소요시간) 필드 받아와야한다.
-        // 2. 그걸 DB에 저장을 한 후
-        // 3. DeliveryAgent 로 이벤트 보내준다.
+	@RabbitListener(queues = "${message.queue.delivery}")
+	public void createDeliveryRoute(DeliveryCreatedEvent event) {
+		log.info("######### 배송 요청 받음: {}", event);
 
-        DeliveryRoute deliveryRoute = DeliveryRoute.createDeliveryRoute(deliveryCreatedEvent);
+		try {
+			// 1. API로 경로 물어보기
+			log.info("API 호출 시작: startHubId={}, endHubId={}", event.getStartHubId(), event.getEndHubId());
+			GetHubRoutesResponse response = hubRouteClient.getHubRoutes(event.getStartHubId(), event.getEndHubId());
+			log.info("API 호출 성공: response={}", response);
 
-        deliveryRouteRepository.save(deliveryRoute);
-    }
+			// 2. 경로 저장하고, 배차 요청 준비하기
+			List<RouteCreatedEvent.RouteInfo> routeInfos = new ArrayList<>();
+			int sequence = 1;
+			for (GetHubRouteResponse route : response.getRoutes()) {
+				DeliveryRoute deliveryRoute = DeliveryRoute.builder()
+					.deliveryId(event.getDeliveryId())
+					.sequence(sequence)
+					.startHubId(route.getDepartureHub().getHubId())
+					.endHubId(route.getArrivalHub().getHubId())
+					.estimatedDistance(route.getEstimatedDistance())
+					.estimatedDuration(route.getEstimatedDuration())
+					.build();
+				deliveryRouteRepository.save(deliveryRoute);
+				log.info("경로 저장: {}", deliveryRoute);
 
-    public GetDeliveryRouteResponse getDeliveryRoutes(UUID deliveryAgentId) {
-        DeliveryRoute deliveryRoute = deliveryRouteRepository.findById(deliveryAgentId).orElseThrow(
-                () -> new DeliveryRouteNotFoundException(ErrorCode.DELIVERY_ROUTE_NOT_FOUND)
-        );
+				routeInfos.add(
+					new RouteCreatedEvent.RouteInfo(sequence++, route.getDepartureHub().getHubId(),
+						route.getArrivalHub().getHubId()));
+			}
 
-        return GetDeliveryRouteResponse.fromEntity(deliveryRoute);
-    }
+			// 3. 배차 시작하라고 메시지 보내기
+			RouteCreatedEvent routeEvent = new RouteCreatedEvent(event.getDeliveryId(), routeInfos);
+			rabbitTemplate.convertAndSend(queue, routeEvent);
+			log.info("##### 배차 요청 보냄: {}", routeEvent);
+		} catch (FeignException.NotFound e) {
+			log.error("경로를 찾을 수 없음: startHubId={}, endHubId={}, 오류: {}",
+				event.getStartHubId(), event.getEndHubId(), e.getMessage());
+			// 여기서 추가 작업 필요 시 처리 (예: 재시도 큐로 보내기)
+		} catch (Exception e) {
+			log.error("예상치 못한 오류 발생: event={}, 오류: {}", event, e.getMessage(), e);
+			throw e; // RabbitMQ가 메시지를 재시도하거나 DLQ로 보낼 수 있게 예외를 던짐
+		}
+	}
 
-    @Transactional
-    public void deleteDeliveryRoute(UUID deliveryAgentId) {
-        DeliveryRoute deliveryRoute = deliveryRouteRepository.findById(deliveryAgentId).orElseThrow(
-                () -> new DeliveryRouteNotFoundException(ErrorCode.DELIVERY_ROUTE_NOT_FOUND)
-        );
+	public GetDeliveryRouteResponse getDeliveryRoutes(UUID deliveryAgentId) {
+		DeliveryRoute deliveryRoute = deliveryRouteRepository.findById(deliveryAgentId).orElseThrow(
+			() -> new DeliveryRouteNotFoundException(ErrorCode.DELIVERY_ROUTE_NOT_FOUND)
+		);
 
-        deliveryRoute.softDelete();
-    }
+		return GetDeliveryRouteResponse.fromEntity(deliveryRoute);
+	}
+
+	@Transactional
+	public void deleteDeliveryRoute(UUID deliveryAgentId) {
+		DeliveryRoute deliveryRoute = deliveryRouteRepository.findById(deliveryAgentId).orElseThrow(
+			() -> new DeliveryRouteNotFoundException(ErrorCode.DELIVERY_ROUTE_NOT_FOUND)
+		);
+
+		deliveryRoute.softDelete();
+	}
+
+	// 이벤트 정의
+	record RouteCreatedEvent(UUID deliveryId, List<RouteInfo> routes) {
+		record RouteInfo(int sequence, UUID startHubId, UUID endHubId) {
+		}
+	}
 }
