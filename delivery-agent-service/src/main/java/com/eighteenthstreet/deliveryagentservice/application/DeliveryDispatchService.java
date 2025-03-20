@@ -1,6 +1,7 @@
 package com.eighteenthstreet.deliveryagentservice.application;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -29,6 +30,9 @@ public class DeliveryDispatchService {
 
 	@Value("${message.queue.delivery-assigned}")
 	private String deliveryAssignedQueue;
+
+	@Value("${message.queue.delivery-agent-failed}")
+	private String deliveryAssignedFailQueue;
 
 	@RabbitListener(queues = "${message.queue.route}")
 	public void handleRouteCratedEvent(RouteCreatedEvent event) {
@@ -71,11 +75,23 @@ public class DeliveryDispatchService {
 			}
 
 		} catch (Exception e) {
+			DeliveryFailedEvent failedEvent = new DeliveryFailedEvent(
+				event.deliveryId(),
+				ErrorCode.INVALID_DELIVERY_AGENT
+			);
+			rabbitTemplate.convertAndSend(deliveryAssignedFailQueue, failedEvent);
 			log.error("배차 처리 중 오류 발생: event={}, 오류: {}", event, e.getMessage(), e);
 			throw e;  // 예외 메세지 처리
 		}
 
 	}
 
+	public record DeliveryFailedEvent(
+		UUID deliveryId,
+		ErrorCode errorCode
+	) {
+	}
 }
+
+
 

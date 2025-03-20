@@ -59,6 +59,7 @@ message:
     delivery: delivery.delivery
     route: delivery.route
     delivery-assigned: delivery.assigned
+    delivery-agent-failed: delivery.agent.failed
   err:
     exchange: delivery.err
     queue:
