@@ -54,6 +54,7 @@ public class DeliveryDispatchService {
 
 				// 3. 배차 정보 업데이트
 				assignedAgent.setDeliveryId(event.deliveryId());
+				assignedAgent.setDeliveryRouteId(route.routeId());
 				assignedAgent.setHubId(route.startHubId());
 				assignedAgent.setSequence(route.sequence());
 				assignedAgent.setDeliveryAgentStatus(DeliveryAgentStatus.IN_DELIVERY);

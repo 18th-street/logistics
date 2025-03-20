@@ -63,11 +63,12 @@ public class DeliveryRouteService {
 					.estimatedDistance(route.getEstimatedDistance())
 					.estimatedDuration(route.getEstimatedDuration())
 					.build();
-				deliveryRouteRepository.save(deliveryRoute);
-				log.info("경로 저장: {}", deliveryRoute);
+				DeliveryRoute saveRoute = deliveryRouteRepository.save(deliveryRoute);
+				log.info("경로 저장: {}", saveRoute);
 
 				routeInfos.add(
-					new RouteCreatedEvent.RouteInfo(sequence++, route.getDepartureHub().getHubId(),
+					new RouteCreatedEvent.RouteInfo(saveRoute.getDeliveryRouteId(), sequence++,
+						route.getDepartureHub().getHubId(),
 						route.getArrivalHub().getHubId()));
 			}
 
@@ -129,7 +130,7 @@ public class DeliveryRouteService {
 
 	// 이벤트 정의
 	record RouteCreatedEvent(UUID deliveryId, List<RouteInfo> routes) {
-		record RouteInfo(int sequence, UUID startHubId, UUID endHubId) {
+		record RouteInfo(UUID routeId, int sequence, UUID startHubId, UUID endHubId) {
 		}
 	}
 }
