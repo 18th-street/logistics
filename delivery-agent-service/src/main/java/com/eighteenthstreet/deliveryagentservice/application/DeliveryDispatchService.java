@@ -40,7 +40,7 @@ public class DeliveryDispatchService {
 			List<DeliveryAgent> availableAgents = deliveryAgentRepository.findByDeliveryAgentStatus(
 				DeliveryAgentStatus.AVAILABLE);
 			if (availableAgents.isEmpty()) {
-				throw new InvalidDeliveryAgentException(ErrorCode.INVALID_DELIVERY);
+				throw new InvalidDeliveryAgentException(ErrorCode.INVALID_DELIVERY_AGENT);
 
 			}
 			log.info("사용 가능한 담당자 수: {}", availableAgents.size());
