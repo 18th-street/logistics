@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.eighteenthstreet.deliveryagentservice.application.dto.CreateDeliveryAgentResponse;
+import com.eighteenthstreet.deliveryagentservice.application.dto.DeliveryAgentDto;
 import com.eighteenthstreet.deliveryagentservice.application.dto.GetDeliveryAgentResponse;
 import com.eighteenthstreet.deliveryagentservice.domain.exception.DeliveryAgentNotFoundException;
 import com.eighteenthstreet.deliveryagentservice.domain.exception.InvalidDeliveryAgentException;
@@ -96,5 +97,19 @@ public class DeliveryAgentService {
 			}
 			deliveryAgent.deleteDeliveryAgent(DeliveryAgentStatus.AVAILABLE);
 		}
+	}
+
+	@Transactional(readOnly = true)
+	public List<DeliveryAgentDto> getDeliveryAgentsByDeliveryId(UUID deliveryId) {
+		List<DeliveryAgent> agents = deliveryAgentRepository.findByDeliveryId(deliveryId);
+
+		return agents.stream()
+			.map(agent -> new DeliveryAgentDto(
+				agent.getDeliveryAgentId(),
+				agent.getDeliveryAgentStatus().name(),
+				agent.getSequence(),
+				null
+			))
+			.toList();
 	}
 }
