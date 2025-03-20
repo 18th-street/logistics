@@ -29,6 +29,15 @@ public class DeliveryQueueConfig {
 	@Value("${message.queue.delivery-assigned}")
 	private String queueAssigned;
 
+	@Value("${message.queue.failed}")
+	private String queueFailed;
+
+	@Value("${message.err.exchange}")
+	private String exchangeErr;
+
+	@Value("${message.err.queue.route}")
+	private String queueErrRoute;
+
 	@Bean
 	public TopicExchange exchange() {
 		return new TopicExchange(exchange);
@@ -42,6 +51,11 @@ public class DeliveryQueueConfig {
 	@Bean
 	public Queue queueRoute() {
 		return new Queue(queueRoute);
+	}
+
+	@Bean
+	public Queue queueFailed() {
+		return new Queue(queueFailed); // "delivery.failed"
 	}
 
 	@Bean
@@ -62,5 +76,28 @@ public class DeliveryQueueConfig {
 	@Bean
 	public Binding bindingAssigned() {
 		return BindingBuilder.bind(queueRoute()).to(exchange()).with(queueAssigned);
+	}
+
+	@Bean
+	public Binding bindingFailed() {
+		return BindingBuilder.bind(queueFailed()).to(exchange()).with(queueFailed);
+	}
+
+	// 에러 익스체인지
+	@Bean
+	public TopicExchange exchangeErr() {
+		return new TopicExchange(exchangeErr); // "delivery.err"
+	}
+
+	// 에러 큐
+	@Bean
+	public Queue queueErrRoute() {
+		return new Queue(queueErrRoute); // "delivery.err.route"
+	}
+
+	// 에러 바인딩
+	@Bean
+	public Binding bindingErrRoute() {
+		return BindingBuilder.bind(queueErrRoute()).to(exchangeErr()).with(queueErrRoute);
 	}
 }

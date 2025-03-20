@@ -4,6 +4,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
 import com.eighteenthstreet.deliveryservice.domain.event.DeliveryAgentAssignedEvent;
+import com.eighteenthstreet.deliveryservice.domain.event.DeliveryRouteCreationFailedEvent;
 import com.eighteenthstreet.deliveryservice.domain.exception.DeliveryNotFoundException;
 import com.eighteenthstreet.deliveryservice.domain.model.Delivery;
 import com.eighteenthstreet.deliveryservice.domain.model.DeliveryStatus;
@@ -37,5 +38,10 @@ public class DeliveryEventService {
 			throw e;
 		}
 
+	}
+
+	@RabbitListener(queues = "${message.queue.failed}")
+	public void handleDeliveryRouteCreationFailed(DeliveryRouteCreationFailedEvent event) {
+		log.info("배송 경로 생성 실패 이벤트 수신: {}", event);
 	}
 }
