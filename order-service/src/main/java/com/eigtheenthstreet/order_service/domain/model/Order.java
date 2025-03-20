@@ -8,9 +8,6 @@ import java.util.UUID;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
-import com.eigtheenthstreet.order_service.presentation.request.CreateOrderRequest;
-import com.eigtheenthstreet.order_service.util.DateTimeUtil;
-
 import base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -74,18 +71,6 @@ public class Order extends BaseEntity {
 	@Builder.Default
 	@OneToMany(mappedBy = "orderId")
 	private List<OrderItem> orderItems = new ArrayList<>();
-
-	public static Order create(CreateOrderRequest request, UUID userId) {
-		return Order.builder()
-			.supplierCompanyId(request.supplierCompanyId())
-			.consumerCompanyId(request.consumerCompanyId())
-			.orderStatus(OrderStatus.CREATED)
-			.ordererId(userId)
-			.requestDetails(request.requestDetails())
-			.destinationAddress(request.deliveryAddress())
-			.deliveryLimitedAt(DateTimeUtil.parseDateTime(request.deliveryLimitedAt()))
-			.build();
-	}
 
 	public void updateDeliveryId(UUID deliveryId) {
 		this.deliveryId = deliveryId;

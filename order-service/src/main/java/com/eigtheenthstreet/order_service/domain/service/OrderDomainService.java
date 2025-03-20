@@ -116,6 +116,7 @@ public class OrderDomainService {
 		return orderItems;
 	}
 
+	@Transactional
 	public void updateOrderQuantityAndTotalAmount(UUID orderId, List<OrderItem> orderItems) {
 		int totalQuantity = orderItems.stream().mapToInt(OrderItem::getQuantity).sum();
 		int totalPrice = orderItems.stream().mapToInt(OrderItem::getTotalPrice).sum();
