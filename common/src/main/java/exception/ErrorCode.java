@@ -23,13 +23,13 @@ public enum ErrorCode {
 	// Company
 	COMPANY_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "이미 등록되어 있는 업체입니다.", "C001"),
 	COMPANY_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당하는 업체를 찾을 수 없습니다.", "C002"),
-	COMPANY_UPDATE_ROLE_DENIED(HttpStatus.FORBIDDEN, "권한이 MASTER 또는 HUB 또는 COMPANY인 사용자여야 합니다.", "C003"),
-	COMPANY_POST_ROLE_DENIED(HttpStatus.FORBIDDEN, "권한이 MASTER 또는 HUB인 사용자여야 합니다.", "C004"),
 	COMPANY_HUB_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 업체가 소속된 Hub를 찾을 수 없습니다.", "C005"),
 
 	// Product
 	PRODUCT_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "이미 등록된 상품입니다.", "P001"),
 	PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않은 상품입니다.", "P002"),
+	PRODUCT_NOT_FOUND_COMPANY(HttpStatus.BAD_REQUEST, "업체 조회 API 호출을 실패했습니다.", "P006"),
+	PRODUCT_MISMATCH_HUB_ID(HttpStatus.BAD_REQUEST, "요청 허브 ID와 응답 허브 ID가 다릅니다.", "P007"),
 
 	// Order
 	ORDER_NOT_FOUND(HttpStatus.BAD_REQUEST, "주문을 찾을 수 없습니다.", "O001"),
@@ -40,7 +40,6 @@ public enum ErrorCode {
 	ORDER_STATUS_UPDATE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "배송 전 상태인 주문만 수정할 수 있습니다.", "O006"),
 	ORDER_DELETE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "배송 전 상태인 주문만 삭제할 수 있습니다.", "O007"),
 	ORDER_CANCEL_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "주문 실패 또는 배송 생성 실패인 주문은 취소할 수 없습니다.", "O008"),
-	ORDER_ROLE_DENIED(HttpStatus.FORBIDDEN, "MASTER 또는 HUB 권한인 사용자만 주문 수정이 가능합니다.", "O009"),
 
 	// 배달 서비스
 	DELIVERY_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 배달을 찾을 수 없습니다.", "D001"),
