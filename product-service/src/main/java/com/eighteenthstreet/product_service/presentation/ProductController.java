@@ -1,5 +1,6 @@
 package com.eighteenthstreet.product_service.presentation;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.PageRequest;
@@ -18,9 +19,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.eighteenthstreet.product_service.application.ProductService;
+import com.eighteenthstreet.product_service.application.dto.BulkProductResponse;
 import com.eighteenthstreet.product_service.application.dto.CreateProductResponse;
 import com.eighteenthstreet.product_service.application.dto.SelectProductResponse;
 import com.eighteenthstreet.product_service.application.dto.UpdateProductResponse;
+import com.eighteenthstreet.product_service.presentation.request.BulkProductRequest;
 import com.eighteenthstreet.product_service.presentation.request.CreateProductRequest;
 import com.eighteenthstreet.product_service.presentation.request.SearchCondition;
 import com.eighteenthstreet.product_service.presentation.request.UpdateProductRequest;
@@ -37,9 +40,7 @@ public class ProductController {
 
 	@CheckRole({Role.MASTER, Role.HUB, Role.COMPANY})
 	@PostMapping()
-	public ResponseEntity<CreateProductResponse> registerProduct(
-		@RequestBody CreateProductRequest request
-	) {
+	public ResponseEntity<CreateProductResponse> registerProduct(@RequestBody CreateProductRequest request) {
 		CreateProductResponse response = productService.registerProduct(request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
@@ -56,9 +57,7 @@ public class ProductController {
 
 	@CheckRole({Role.MASTER, Role.HUB})
 	@DeleteMapping("/{productId}")
-	public ResponseEntity<Void> deleteProduct(
-		@PathVariable UUID productId
-	) {
+	public ResponseEntity<Void> deleteProduct(@PathVariable UUID productId) {
 		productService.deleteProduct(productId);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
@@ -109,5 +108,11 @@ public class ProductController {
 	) {
 		productService.restoreStock(productId, quantity);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+
+	@PostMapping("/bulk")
+	public ResponseEntity<List<BulkProductResponse>> getBulkProducts(@RequestBody BulkProductRequest request) {
+		List<BulkProductResponse> response = productService.getBulkProducts(request);
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 }

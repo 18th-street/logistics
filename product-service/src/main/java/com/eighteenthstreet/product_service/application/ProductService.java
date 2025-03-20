@@ -1,5 +1,6 @@
 package com.eighteenthstreet.product_service.application;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -8,6 +9,7 @@ import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.eighteenthstreet.product_service.application.dto.BulkProductResponse;
 import com.eighteenthstreet.product_service.application.dto.CreateProductResponse;
 import com.eighteenthstreet.product_service.application.dto.SelectCompanyResponse;
 import com.eighteenthstreet.product_service.application.dto.SelectProductResponse;
@@ -19,6 +21,7 @@ import com.eighteenthstreet.product_service.exception.CustomMismatchHubIdExcepti
 import com.eighteenthstreet.product_service.exception.CustomProductAlreadyExistException;
 import com.eighteenthstreet.product_service.exception.CustomProductNotFoundException;
 import com.eighteenthstreet.product_service.infrastructure.client.CompanyServiceClient;
+import com.eighteenthstreet.product_service.presentation.request.BulkProductRequest;
 import com.eighteenthstreet.product_service.presentation.request.CreateProductRequest;
 import com.eighteenthstreet.product_service.presentation.request.UpdateProductRequest;
 
@@ -104,7 +107,7 @@ public class ProductService {
 		Page<Product> products = productRepository.searchByProducts(query, pageable);
 
 		Page<SelectProductResponse> content = products.map(SelectProductResponse::from);
-		
+
 		return new PagedModel<>(content);
 	}
 
@@ -126,5 +129,14 @@ public class ProductService {
 
 		// 상품 재고 복원
 		foundProduct.restoreStock(quantity);
+	}
+
+	public List<BulkProductResponse> getBulkProducts(BulkProductRequest request) {
+		List<UUID> productIds = request.productIds();
+		List<Product> products = productRepository.findByIds(productIds);
+
+		return products.stream()
+			.map(BulkProductResponse::from)
+			.toList();
 	}
 }
