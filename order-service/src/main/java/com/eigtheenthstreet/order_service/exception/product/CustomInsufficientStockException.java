@@ -1,4 +1,6 @@
-package com.eigtheenthstreet.order_service.exception;
+package com.eigtheenthstreet.order_service.exception.product;
+
+import com.eigtheenthstreet.order_service.exception.CustomException;
 
 import exception.ErrorCode;
 
