@@ -58,6 +58,9 @@ public enum ErrorCode {
 	INVALID_DELIVERY_AGENT(HttpStatus.BAD_REQUEST, "현재 남은 배달 담당자가 없습니다.", "D003"),
 	DELIVERY_AGENT_NOT_FOUND_BY_ID(HttpStatus.NOT_FOUND, "해당 Delivery ID로 배달 담당자를 찾을 수 없습니다.", "D004"),
 	DELIVERY_AGENT_DELETION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "배달 담당자 삭제에 실패했습니다.", "D005"),
+	INVALID_HUB_ID(HttpStatus.BAD_REQUEST, "허브 ID가 유효하지 않습니다.", "D006"),
+	MISSING_HUB_ID(HttpStatus.BAD_REQUEST, "허브 담당자는 허브 ID가 필요합니다.", "D007"),
+	HUB_MISMATCH(HttpStatus.BAD_REQUEST, "허브 담당자의 소속 허브와 경로 허브가 일치하지 않습니다.", "D008"),
 
 	// 허브 오류
 	HUB_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 허브입니다.", "H001"),
