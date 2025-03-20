@@ -1,4 +1,4 @@
-package com.eigtheenthstreet.order_service.application.dto;
+package com.eigtheenthstreet.order_service.infrastructure.client.dto;
 
 import java.util.UUID;
 
@@ -8,6 +8,7 @@ public record CreateCompanyResponse(
 	UUID companyId,
 	String name,
 	@JsonProperty("type")
-	String companyType
+	String companyType,
+	UUID hubId
 ) {
 }
