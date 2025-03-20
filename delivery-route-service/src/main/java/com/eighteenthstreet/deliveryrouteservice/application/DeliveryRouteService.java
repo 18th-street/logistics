@@ -32,11 +32,15 @@ public class DeliveryRouteService {
 	@Value("${message.queue.route}")
 	private String queue;
 
+	@Value("${message.queue.failed}")
+	private String failedQueue;
+
 	private final DeliveryRouteRepository deliveryRouteRepository;
 	private final RabbitTemplate rabbitTemplate;
 	private final HubRouteClient hubRouteClient;
 
 	@RabbitListener(queues = "${message.queue.delivery}")
+	@Transactional
 	public void createDeliveryRoute(DeliveryCreatedEvent event) {
 		log.info("######### 배송 요청 받음: {}", event);
 
@@ -73,10 +77,11 @@ public class DeliveryRouteService {
 		} catch (FeignException.NotFound e) {
 			log.error("경로를 찾을 수 없음: startHubId={}, endHubId={}, 오류: {}",
 				event.getStartHubId(), event.getEndHubId(), e.getMessage());
-			// 여기서 추가 작업 필요 시 처리 (예: 재시도 큐로 보내기)
+			sendFailureEvent(event.getDeliveryId(), ErrorCode.DELIVERY_ROUTE_NOT_FOUND);
 		} catch (Exception e) {
 			log.error("예상치 못한 오류 발생: event={}, 오류: {}", event, e.getMessage(), e);
-			throw e; // RabbitMQ가 메시지를 재시도하거나 DLQ로 보낼 수 있게 예외를 던짐
+			sendFailureEvent(event.getDeliveryId(), ErrorCode.DELIVERY_ROUTE_CREATION_FAILED);
+			throw e;
 		}
 	}
 
@@ -95,6 +100,16 @@ public class DeliveryRouteService {
 		);
 
 		deliveryRoute.softDelete();
+	}
+
+	private void sendFailureEvent(UUID deliveryId, ErrorCode errorCode) {
+		DeliveryRouteCreationFailedEvent failedEvent = new DeliveryRouteCreationFailedEvent(deliveryId, errorCode);
+		rabbitTemplate.convertAndSend(failedQueue, failedEvent);
+		log.info("배송 경로 생성 실패 이벤트 발송: {}", failedEvent);
+	}
+
+	// 실패 이벤트 정의
+	record DeliveryRouteCreationFailedEvent(UUID deliveryId, ErrorCode errorCode) {
 	}
 
 	// 이벤트 정의
