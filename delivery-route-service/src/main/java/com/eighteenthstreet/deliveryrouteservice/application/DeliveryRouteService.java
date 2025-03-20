@@ -18,6 +18,7 @@ import com.eighteenthstreet.deliveryrouteservice.domain.event.DeliveryCreatedEve
 import com.eighteenthstreet.deliveryrouteservice.domain.exception.DeliveryRouteNotFoundException;
 import com.eighteenthstreet.deliveryrouteservice.domain.model.DeliveryRoute;
 import com.eighteenthstreet.deliveryrouteservice.domain.repository.DeliveryRouteRepository;
+import com.eighteenthstreet.deliveryrouteservice.presentation.exception.error.CustomException;
 
 import exception.ErrorCode;
 import feign.FeignException;
@@ -100,6 +101,20 @@ public class DeliveryRouteService {
 		);
 
 		deliveryRoute.softDelete();
+	}
+
+	// Feign 호출용 서비스
+	@Transactional
+	public void deleteDeliveryRouteByDeliveryId(UUID deliveryId) {
+		List<DeliveryRoute> deliveryRoutes = deliveryRouteRepository.findByDeliveryId(deliveryId);
+
+		if (deliveryRoutes.isEmpty()) {
+			throw new CustomException(ErrorCode.DELIVERY_ROUTE_NOT_FOUND_BY_ID);
+		}
+
+		for (DeliveryRoute deliveryRoute : deliveryRoutes) {
+			deliveryRoute.softDelete();
+		}
 	}
 
 	private void sendFailureEvent(UUID deliveryId, ErrorCode errorCode) {
