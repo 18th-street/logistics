@@ -48,6 +48,7 @@ public enum ErrorCode {
 
 	// 배달 경로 서비스
 	DELIVERY_ROUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 배달경로을 찾을 수 없습니다.", "DR001"),
+	DELIVERY_ROUTE_CREATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "배송 경로 생성에 실패했습니다.", "DR002"),
 
 	// 배달 담당자 서비스
 	DELIVERY_AGENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 배달담당자를 찾을 수 없습니다.", "D001"),
