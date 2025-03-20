@@ -19,4 +19,6 @@ public interface HubRepository {
 	Page<Hub> findByNameContaining(String keyword, Pageable pageable);
 
 	Optional<Hub> findById(UUID hubId);
+
+	boolean existsById(UUID hubId);
 }
