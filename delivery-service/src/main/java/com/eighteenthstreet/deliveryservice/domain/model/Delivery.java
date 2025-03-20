@@ -49,7 +49,7 @@ public class Delivery extends BaseEntity {
 	private String destinationAddress;
 
 	@Column(name = "recipient")
-	private String recipient;
+	private UUID recipient;
 
 	@Column(name = "slack_id")
 	private String slackId;
