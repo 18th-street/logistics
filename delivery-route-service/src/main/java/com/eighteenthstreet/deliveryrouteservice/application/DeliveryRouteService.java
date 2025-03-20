@@ -67,10 +67,8 @@ public class DeliveryRouteService {
 				DeliveryRoute saveRoute = deliveryRouteRepository.save(deliveryRoute);
 				log.info("경로 저장: {}", saveRoute);
 
-				routeInfos.add(
-					new RouteCreatedEvent.RouteInfo(saveRoute.getDeliveryRouteId(), sequence++,
-						route.getDepartureHub().getHubId(),
-						route.getArrivalHub().getHubId()));
+				routeInfos.add(new RouteCreatedEvent.RouteInfo(saveRoute.getDeliveryRouteId(), sequence++,
+					route.getDepartureHub().getHubId(), route.getArrivalHub().getHubId()));
 			}
 
 			// 3. 배차 시작하라고 메시지 보내기
@@ -78,8 +76,8 @@ public class DeliveryRouteService {
 			rabbitTemplate.convertAndSend(queue, routeEvent);
 			log.info("##### 배차 요청 보냄: {}", routeEvent);
 		} catch (FeignException.NotFound e) {
-			log.error("경로를 찾을 수 없음: startHubId={}, endHubId={}, 오류: {}",
-				event.getStartHubId(), event.getEndHubId(), e.getMessage());
+			log.error("경로를 찾을 수 없음: startHubId={}, endHubId={}, 오류: {}", event.getStartHubId(), event.getEndHubId(),
+				e.getMessage());
 			sendFailureEvent(event.getDeliveryId(), ErrorCode.DELIVERY_ROUTE_NOT_FOUND);
 		} catch (Exception e) {
 			log.error("예상치 못한 오류 발생: event={}, 오류: {}", event, e.getMessage(), e);
@@ -89,9 +87,8 @@ public class DeliveryRouteService {
 	}
 
 	public GetDeliveryRouteResponse getDeliveryRoutes(UUID deliveryAgentId) {
-		DeliveryRoute deliveryRoute = deliveryRouteRepository.findById(deliveryAgentId).orElseThrow(
-			() -> new DeliveryRouteNotFoundException(ErrorCode.DELIVERY_ROUTE_NOT_FOUND)
-		);
+		DeliveryRoute deliveryRoute = deliveryRouteRepository.findById(deliveryAgentId)
+			.orElseThrow(() -> new DeliveryRouteNotFoundException(ErrorCode.DELIVERY_ROUTE_NOT_FOUND));
 
 		return GetDeliveryRouteResponse.fromEntity(deliveryRoute);
 	}
@@ -100,20 +97,15 @@ public class DeliveryRouteService {
 	public List<DeliveryRouteDto> getDeliveryRoutesByDeliveryId(UUID deliveryId) {
 		List<DeliveryRoute> routes = deliveryRouteRepository.findByDeliveryId(deliveryId);
 		return routes.stream()
-			.map(route -> new DeliveryRouteDto(
-				route.getDeliveryRouteId(),
-				route.getSequence(),
-				route.getStartHubId(),
-				route.getEndHubId()
-			))
+			.map(route -> new DeliveryRouteDto(route.getDeliveryRouteId(), route.getSequence(), route.getStartHubId(),
+				route.getEndHubId()))
 			.toList();
 	}
 
 	@Transactional
 	public void deleteDeliveryRoute(UUID deliveryAgentId) {
-		DeliveryRoute deliveryRoute = deliveryRouteRepository.findById(deliveryAgentId).orElseThrow(
-			() -> new DeliveryRouteNotFoundException(ErrorCode.DELIVERY_ROUTE_NOT_FOUND)
-		);
+		DeliveryRoute deliveryRoute = deliveryRouteRepository.findById(deliveryAgentId)
+			.orElseThrow(() -> new DeliveryRouteNotFoundException(ErrorCode.DELIVERY_ROUTE_NOT_FOUND));
 
 		deliveryRoute.softDelete();
 	}

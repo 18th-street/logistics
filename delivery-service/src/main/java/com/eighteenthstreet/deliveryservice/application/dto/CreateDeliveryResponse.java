@@ -1,10 +1,15 @@
 package com.eighteenthstreet.deliveryservice.application.dto;
 
+import java.util.UUID;
+
 import com.eighteenthstreet.deliveryservice.domain.model.Delivery;
 import com.eighteenthstreet.deliveryservice.domain.model.DeliveryStatus;
-import lombok.*;
 
-import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -12,20 +17,20 @@ import java.util.UUID;
 @Setter
 @Builder
 public class CreateDeliveryResponse {
-    private UUID deliveryId;
-    private UUID orderId;
-    private UUID startHubId;
-    private UUID endHubId;
-    private DeliveryStatus status;
+	private UUID deliveryId;
+	private UUID orderId;
+	private UUID startHubId;
+	private UUID endHubId;
+	private DeliveryStatus status;
 
-    public static CreateDeliveryResponse fromEntity(Delivery delivery) {
-        return CreateDeliveryResponse.builder()
-                .deliveryId(delivery.getDeliveryId())
-                .orderId(delivery.getOrderId())
-                .startHubId(delivery.getStartHubId())
-                .endHubId(delivery.getEndHubId())
-                .status(delivery.getStatus())
-                .build();
-    }
+	public static CreateDeliveryResponse fromEntity(Delivery delivery) {
+		return CreateDeliveryResponse.builder()
+			.deliveryId(delivery.getDeliveryId())
+			.orderId(delivery.getOrderId())
+			.startHubId(delivery.getStartHubId())
+			.endHubId(delivery.getEndHubId())
+			.status(delivery.getStatus())
+			.build();
+	}
 
 }

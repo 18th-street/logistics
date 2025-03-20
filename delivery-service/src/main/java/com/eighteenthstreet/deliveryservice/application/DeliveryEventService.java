@@ -27,9 +27,8 @@ public class DeliveryEventService {
 		log.info("DeliveryAgentEvent 수신 {}", event);
 
 		try {
-			Delivery delivery = deliveryRepository.findById(event.deliveryId()).orElseThrow(
-				() -> new DeliveryNotFoundException(ErrorCode.DELIVERY_NOT_FOUND)
-			);
+			Delivery delivery = deliveryRepository.findById(event.deliveryId())
+				.orElseThrow(() -> new DeliveryNotFoundException(ErrorCode.DELIVERY_NOT_FOUND));
 
 			delivery.setStatus(DeliveryStatus.OUT_FOR_DELIVERY);  // 상태 변경
 

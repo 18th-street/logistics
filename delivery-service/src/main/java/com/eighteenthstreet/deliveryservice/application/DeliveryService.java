@@ -125,12 +125,8 @@ public class DeliveryService {
 			Map<Integer, DeliveryRouteDto> routeMap = routes.stream()
 				.collect(Collectors.toMap(DeliveryRouteDto::getRouteSequence, route -> route));
 			List<DeliveryAgentDto> agentsWithRoutes = agentsWithoutRoutes.stream()
-				.map(agent -> new DeliveryAgentDto(
-					agent.getDeliveryAgentId(),
-					agent.getStatus(),
-					agent.getAgentSequence(),
-					routeMap.get(agent.getAgentSequence())
-				))
+				.map(agent -> new DeliveryAgentDto(agent.getDeliveryAgentId(), agent.getStatus(),
+					agent.getAgentSequence(), routeMap.get(agent.getAgentSequence())))
 				.collect(Collectors.toList());
 
 			// 4. 응답 조합
