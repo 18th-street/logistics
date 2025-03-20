@@ -69,6 +69,10 @@ public class Delivery extends BaseEntity {
 		this.status = DeliveryStatus.CANCELED;
 	}
 
+	public void failed() {
+		this.status = DeliveryStatus.DELIVERY_FAIL;
+	}
+
 	public static Delivery createDelivery(CreateDeliveryRequest createDeliveryRequest) {
 		return Delivery.builder()
 			.startHubId(createDeliveryRequest.getStartHubId())
