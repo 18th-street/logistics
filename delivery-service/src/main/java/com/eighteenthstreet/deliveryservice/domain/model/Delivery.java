@@ -28,7 +28,7 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@SQLRestriction("deleted_at IS NULL")
+@SQLRestriction("deleted_at IS NULL AND status <> 'DELIVERY_FAIL'")
 @Table(name = "p_delivery")
 public class Delivery extends BaseEntity {
 
