@@ -12,8 +12,20 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "p_hub_route")
 public class HubRoute extends BaseEntity {
 
 	@Id
@@ -33,9 +45,6 @@ public class HubRoute extends BaseEntity {
 
 	@Column(name = "estimated_duration")
 	private Double estimatedDuration;
-
-	@Column(name = "hop_count") // 경유 허브 개수
-	private Integer hopCount;
 
 	@Column
 	private String status;
