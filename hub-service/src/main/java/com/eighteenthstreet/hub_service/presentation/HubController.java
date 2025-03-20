@@ -1,6 +1,5 @@
 package com.eighteenthstreet.hub_service.presentation;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.PageRequest;
@@ -21,7 +20,6 @@ import com.eighteenthstreet.hub_service.application.HubService;
 import com.eighteenthstreet.hub_service.application.dto.CreateHubResponse;
 import com.eighteenthstreet.hub_service.application.dto.GetHubResponse;
 import com.eighteenthstreet.hub_service.application.dto.UpdateHubResponse;
-import com.eighteenthstreet.hub_service.domain.model.Hub;
 import com.eighteenthstreet.hub_service.presentation.request.CreateHubRequest;
 import com.eighteenthstreet.hub_service.presentation.request.UpdateHubRequest;
 
@@ -57,8 +55,6 @@ public class HubController {
 
 		PageRequest pageable = PageRequest.of(page, size);
 
-		log.info(pageable.toString());
-
 		PagedModel<GetHubResponse> response = hubService.searchHubs(pageable, keyword);
 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -72,8 +68,8 @@ public class HubController {
 	}
 
 	@PutMapping("/{hubId}")
-	public ResponseEntity<UpdateHubResponse> updateHub(@PathVariable UUID hubId, @RequestBody UpdateHubRequest request)
-	{
+	public ResponseEntity<UpdateHubResponse> updateHub(@PathVariable UUID hubId,
+		@RequestBody UpdateHubRequest request) {
 		UpdateHubResponse response = hubService.updateHub(hubId, request);
 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
