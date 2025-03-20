@@ -1,15 +1,10 @@
 package com.eighteenthstreet.hub_service.application;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,9 +47,9 @@ public class HubService {
 		Page<Hub> hubPage;
 
 		if (keyword == null || keyword.trim().isEmpty()) {
-			hubPage = hubRepository.findAll(pageable);
+			hubPage = hubRepository.findByIsDeletedNull(pageable);
 		} else {
-			hubPage = hubRepository.findByNameContaining(keyword, pageable);
+			hubPage = hubRepository.findByIsDeletedNullAndNameContaining(keyword, pageable);
 		}
 
 		Page<GetHubResponse> responses = hubPage.map(GetHubResponse::from);
@@ -67,7 +62,7 @@ public class HubService {
 		Hub hub = hubRepository.findById(hubId)
 			.orElseThrow(() -> new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND));
 
-		if (hub.getIsDeleted()) {
+		if (Boolean.TRUE.equals(hub.getIsDeleted())) {
 			throw new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND);
 		}
 
