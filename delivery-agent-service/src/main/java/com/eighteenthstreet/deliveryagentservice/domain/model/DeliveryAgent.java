@@ -43,6 +43,9 @@ public class DeliveryAgent extends BaseEntity {
 	@Column(name = "delivery_id")
 	private UUID deliveryId;
 
+	@Column(name = "delivery_route_id")
+	private UUID deliveryRouteId;
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "type")
 	private DeliveryAgentType deliveryAgentType;

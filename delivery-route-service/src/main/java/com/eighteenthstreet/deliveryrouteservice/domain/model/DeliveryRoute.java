@@ -29,6 +29,7 @@ import lombok.Setter;
 public class DeliveryRoute extends BaseEntity {
 	@Id
 	@UuidGenerator
+	@Column(name = "delivery_route_id")
 	private UUID deliveryRouteId;
 
 	@Column(name = "delivery_id")
