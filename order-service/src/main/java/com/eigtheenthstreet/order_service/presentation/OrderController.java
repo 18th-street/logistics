@@ -22,7 +22,7 @@ import com.eigtheenthstreet.order_service.application.OrderService;
 import com.eigtheenthstreet.order_service.application.dto.CreateOrderResponse;
 import com.eigtheenthstreet.order_service.application.dto.SelectOrderResponse;
 import com.eigtheenthstreet.order_service.application.dto.UpdateOrderResponse;
-import com.eigtheenthstreet.order_service.exception.CustomOrderRoleDeniedException;
+import com.eigtheenthstreet.order_service.exception.order.CustomOrderRoleDeniedException;
 import com.eigtheenthstreet.order_service.presentation.request.CreateOrderRequest;
 import com.eigtheenthstreet.order_service.presentation.request.SearchCondition;
 import com.eigtheenthstreet.order_service.presentation.request.UpdateOrderRequest;
@@ -44,7 +44,7 @@ public class OrderController {
 		@RequestBody CreateOrderRequest createOrderRequest,
 		@RequestHeader("Authorization") String token
 	) {
-		Long userId = jwtUtil.getUserIdFromToken(token);
+		UUID userId = jwtUtil.getUserIdFromToken(token);
 		CreateOrderResponse response = orderService.registerOrder(createOrderRequest, userId);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
@@ -67,11 +67,10 @@ public class OrderController {
 		@PathVariable UUID orderId,
 		@RequestHeader("Authorization") String token
 	) {
-		Long userId = jwtUtil.getUserIdFromToken(token);
 		Role role = jwtUtil.getRoleFromToken(token);
 		hasValidDeleteRole(role);
 
-		orderService.deleteOrder(orderId, userId);
+		orderService.deleteOrder(orderId);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
@@ -80,11 +79,10 @@ public class OrderController {
 		@PathVariable UUID orderId,
 		@RequestHeader("Authorization") String token
 	) {
-		Long userId = jwtUtil.getUserIdFromToken(token);
 		Role role = jwtUtil.getRoleFromToken(token);
 		hasValidCancelRole(role);
 
-		orderService.cancelOrder(orderId, userId);
+		orderService.cancelOrder(orderId);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
