@@ -14,7 +14,6 @@ import com.eigtheenthstreet.order_service.domain.repository.OrderItemRepository;
 import com.eigtheenthstreet.order_service.domain.repository.OrderRepository;
 import com.eigtheenthstreet.order_service.exception.order.CustomOrderItemNotFoundException;
 import com.eigtheenthstreet.order_service.exception.order.CustomOrderNotFoundException;
-import com.eigtheenthstreet.order_service.exception.order.OrderCancelNotAllowedException;
 import com.eigtheenthstreet.order_service.presentation.request.CreateOrderRequest;
 import com.eigtheenthstreet.order_service.util.DateTimeUtil;
 
@@ -42,23 +41,6 @@ public class OrderDomainService {
 			.build();
 
 		return orderRepository.save(order);
-	}
-
-	@Transactional
-	public void deleteOrder(UUID orderId) {
-		Order order = findOrderById(orderId);
-
-		// 주문 상품 목록 삭제
-		List<OrderItem> orderItems = order.getOrderItems();
-
-		if (orderItems == null) {
-			throw new CustomOrderItemNotFoundException(ErrorCode.ORDER_ITEM_NOT_FOUND);
-		}
-
-		orderItems.forEach(OrderItem::performSoftDelete);
-
-		// 주문 삭제
-		order.performSoftDelete();
 	}
 
 	@Transactional(readOnly = true)
@@ -140,12 +122,6 @@ public class OrderDomainService {
 
 		Order order = findOrderById(orderId);
 		order.saveOrderTotalQuantityAndTotalAmount(totalQuantity, totalPrice);
-	}
-
-	public void validateOrderCancellation(Order order) {
-		if (OrderStatus.isCancelOrderStatusNotAllowed(order.getOrderStatus())) {
-			throw new OrderCancelNotAllowedException(ErrorCode.ORDER_CANCEL_NOT_ALLOWED);
-		}
 	}
 
 	private Order getOrder(UUID orderId) {
