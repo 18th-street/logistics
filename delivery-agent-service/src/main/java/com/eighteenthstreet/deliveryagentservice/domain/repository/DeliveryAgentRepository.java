@@ -13,4 +13,6 @@ public interface DeliveryAgentRepository {
 	Optional<DeliveryAgent> findById(UUID id);
 
 	List<DeliveryAgent> findByDeliveryAgentStatus(DeliveryAgentStatus status);
+
+	List<DeliveryAgent> findByDeliveryId(UUID deliveryId);
 }

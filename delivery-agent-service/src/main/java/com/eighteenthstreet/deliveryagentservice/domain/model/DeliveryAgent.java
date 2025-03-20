@@ -65,4 +65,10 @@ public class DeliveryAgent extends BaseEntity {
 	public void updateDeliveryAgentType(DeliveryAgentType deliveryAgentStatus) {
 		this.deliveryAgentType = deliveryAgentStatus;
 	}
+
+	public void deleteDeliveryAgent(DeliveryAgentStatus status) {
+		this.deliveryAgentStatus = status;
+		this.deliveryId = null;    // 기존 deliveryId 지우기
+		this.sequence = 0;         // 기존 sequence 지우기 (초기화)
+	}
 }
