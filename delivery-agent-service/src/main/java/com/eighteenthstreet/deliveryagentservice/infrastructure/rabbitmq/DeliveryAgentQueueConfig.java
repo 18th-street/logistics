@@ -1,4 +1,4 @@
-package com.eighteenthstreet.deliveryservice.infrastructure.rabbitmq;
+package com.eighteenthstreet.deliveryagentservice.infrastructure.rabbitmq;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -10,8 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class DeliveryQueueConfig {
-
+public class DeliveryAgentQueueConfig {
 	@Bean
 	public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
 		return new Jackson2JsonMessageConverter();
@@ -20,32 +19,15 @@ public class DeliveryQueueConfig {
 	@Value("${message.exchange}")
 	private String exchange;
 
-	@Value("${message.queue.delivery}")
-	private String queueDelivery;
-
 	@Value("${message.queue.route}")
 	private String queueRoute;
 
 	@Value("${message.queue.delivery-assigned}")
 	private String queueAssigned;
 
-	@Value("${message.queue.failed}")
-	private String queueFailed;
-
-	@Value("${message.err.exchange}")
-	private String exchangeErr;
-
-	@Value("${message.err.queue.route}")
-	private String queueErrRoute;
-
 	@Bean
 	public TopicExchange exchange() {
 		return new TopicExchange(exchange);
-	}
-
-	@Bean
-	public Queue queueDelivery() {
-		return new Queue(queueDelivery);
 	}
 
 	@Bean
@@ -54,18 +36,8 @@ public class DeliveryQueueConfig {
 	}
 
 	@Bean
-	public Queue queueFailed() {
-		return new Queue(queueFailed); // "delivery.failed"
-	}
-
-	@Bean
 	public Queue queueAssigned() {
 		return new Queue(queueAssigned);
-	}
-
-	@Bean
-	public Binding bindingDelivery() {
-		return BindingBuilder.bind(queueDelivery()).to(exchange()).with(queueDelivery);
 	}
 
 	@Bean
@@ -76,28 +48,5 @@ public class DeliveryQueueConfig {
 	@Bean
 	public Binding bindingAssigned() {
 		return BindingBuilder.bind(queueRoute()).to(exchange()).with(queueAssigned);
-	}
-
-	@Bean
-	public Binding bindingFailed() {
-		return BindingBuilder.bind(queueFailed()).to(exchange()).with(queueFailed);
-	}
-
-	// 에러 익스체인지
-	@Bean
-	public TopicExchange exchangeErr() {
-		return new TopicExchange(exchangeErr); // "delivery.err"
-	}
-
-	// 에러 큐
-	@Bean
-	public Queue queueErrRoute() {
-		return new Queue(queueErrRoute); // "delivery.err.route"
-	}
-
-	// 에러 바인딩
-	@Bean
-	public Binding bindingErrRoute() {
-		return BindingBuilder.bind(queueErrRoute()).to(exchangeErr()).with(queueErrRoute);
 	}
 }

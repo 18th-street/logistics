@@ -17,7 +17,6 @@ public class CreateDeliveryRequest {
 	private UUID orderId;
 	private UUID startHubId;
 	private UUID endHubId;
-	private String recipient;
+	private UUID recipient;
 	private String destinationAddress;
-	private String recipientSlackId;
 }

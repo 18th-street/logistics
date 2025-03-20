@@ -1,4 +1,4 @@
-package com.eighteenthstreet.deliveryservice.infrastructure.rabbitmq;
+package com.eighteenthstreet.deliveryrouteservice.infrastructure.rabbitmq;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -10,12 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class DeliveryQueueConfig {
-
-	@Bean
-	public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
-		return new Jackson2JsonMessageConverter();
-	}
+public class DeliveryRouteQueueConfig {
 
 	@Value("${message.exchange}")
 	private String exchange;
@@ -25,9 +20,6 @@ public class DeliveryQueueConfig {
 
 	@Value("${message.queue.route}")
 	private String queueRoute;
-
-	@Value("${message.queue.delivery-assigned}")
-	private String queueAssigned;
 
 	@Value("${message.queue.failed}")
 	private String queueFailed;
@@ -39,18 +31,25 @@ public class DeliveryQueueConfig {
 	private String queueErrRoute;
 
 	@Bean
-	public TopicExchange exchange() {
-		return new TopicExchange(exchange);
+	public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
+		return new Jackson2JsonMessageConverter();
 	}
 
+	// 기본 익스체인지
+	@Bean
+	public TopicExchange exchange() {
+		return new TopicExchange(exchange); // "delivery"
+	}
+
+	// 큐 정의
 	@Bean
 	public Queue queueDelivery() {
-		return new Queue(queueDelivery);
+		return new Queue(queueDelivery); // "delivery.delivery"
 	}
 
 	@Bean
 	public Queue queueRoute() {
-		return new Queue(queueRoute);
+		return new Queue(queueRoute); // "delivery.route"
 	}
 
 	@Bean
@@ -58,11 +57,7 @@ public class DeliveryQueueConfig {
 		return new Queue(queueFailed); // "delivery.failed"
 	}
 
-	@Bean
-	public Queue queueAssigned() {
-		return new Queue(queueAssigned);
-	}
-
+	// 바인딩
 	@Bean
 	public Binding bindingDelivery() {
 		return BindingBuilder.bind(queueDelivery()).to(exchange()).with(queueDelivery);
@@ -71,11 +66,6 @@ public class DeliveryQueueConfig {
 	@Bean
 	public Binding bindingRoute() {
 		return BindingBuilder.bind(queueRoute()).to(exchange()).with(queueRoute);
-	}
-
-	@Bean
-	public Binding bindingAssigned() {
-		return BindingBuilder.bind(queueRoute()).to(exchange()).with(queueAssigned);
 	}
 
 	@Bean

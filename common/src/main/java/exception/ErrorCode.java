@@ -44,14 +44,20 @@ public enum ErrorCode {
 
 	// 배달 서비스
 	DELIVERY_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 배달을 찾을 수 없습니다.", "D001"),
-	INVALID_DELIVERY(HttpStatus.NOT_FOUND, "해당 배달은 취소를 할 수 없습니다.", "D002"),
+	INVALID_DELIVERY(HttpStatus.NOT_FOUND, "해당 배달은 배송중이라 취소를 할 수 없습니다.", "D002"),
 
 	// 배달 경로 서비스
 	DELIVERY_ROUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 배달경로을 찾을 수 없습니다.", "DR001"),
+	DELIVERY_ROUTE_CREATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "배송 경로 생성에 실패했습니다.", "DR002"),
+	DELIVERY_ROUTE_NOT_FOUND_BY_ID(HttpStatus.NOT_FOUND, "해당 Delivery ID로 배달 경로를 찾을 수 없습니다.", "DR003"),
+	DELIVERY_ROUTE_DELETION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "배달 경로 삭제에 실패했습니다.", "DR004"),
 
 	// 배달 담당자 서비스
 	DELIVERY_AGENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 배달담당자를 찾을 수 없습니다.", "D001"),
 	INVALID_DELIVERY_AGENT_STATUS(HttpStatus.BAD_REQUEST, "배달 담당자가 배송 중이므로 삭제할 수 없습니다.", "D002"),
+	INVALID_DELIVERY_AGENT(HttpStatus.BAD_REQUEST, "현재 남은 배달 담당자가 없습니다.", "D003"),
+	DELIVERY_AGENT_NOT_FOUND_BY_ID(HttpStatus.NOT_FOUND, "해당 Delivery ID로 배달 담당자를 찾을 수 없습니다.", "D004"),
+	DELIVERY_AGENT_DELETION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "배달 담당자 삭제에 실패했습니다.", "D005"),
 
 	// 허브 오류
 	HUB_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 허브입니다.", "H001"),
