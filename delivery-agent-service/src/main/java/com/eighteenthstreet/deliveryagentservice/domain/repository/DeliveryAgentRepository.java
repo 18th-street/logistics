@@ -1,12 +1,18 @@
 package com.eighteenthstreet.deliveryagentservice.domain.repository;
 
-import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgent;
-
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface DeliveryAgentRepository {
-    DeliveryAgent save(DeliveryAgent deliveryAgent);
+import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgent;
+import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgentStatus;
 
-    Optional<DeliveryAgent> findById(UUID id);
+public interface DeliveryAgentRepository {
+	DeliveryAgent save(DeliveryAgent deliveryAgent);
+
+	Optional<DeliveryAgent> findById(UUID id);
+
+	List<DeliveryAgent> findByDeliveryAgentStatus(DeliveryAgentStatus status);
+
+	List<DeliveryAgent> findByDeliveryId(UUID deliveryId);
 }
