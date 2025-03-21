@@ -22,6 +22,7 @@ import com.eighteenthstreet.deliveryservice.domain.event.DeliveryCreatedEvent;
 import com.eighteenthstreet.deliveryservice.domain.exception.DeliveryNotFoundException;
 import com.eighteenthstreet.deliveryservice.domain.model.Delivery;
 import com.eighteenthstreet.deliveryservice.domain.repository.DeliveryRepository;
+import com.eighteenthstreet.deliveryservice.infrastructure.messaging.message.DeliveryMessage;
 import com.eighteenthstreet.deliveryservice.presentation.exception.error.CustomException;
 import com.eighteenthstreet.deliveryservice.presentation.request.CreateDeliveryRequest;
 import com.eighteenthstreet.deliveryservice.presentation.request.UpdateStatusDeliveryRequest;
@@ -50,6 +51,18 @@ public class DeliveryService {
 		DeliveryCreatedEvent event = new DeliveryCreatedEvent(createDeliveryRequest.getStartHubId(),
 			createDeliveryRequest.getEndHubId(), delivery.getDeliveryId());
 		log.info("######### Send Message[Delivery] : {}", event);
+		rabbitTemplate.convertAndSend(queueDelivery, event);
+		return CreateDeliveryResponse.fromEntity(delivery);
+	}
+
+	public CreateDeliveryResponse createMessageDelivery(DeliveryMessage message) {
+		Delivery delivery = Delivery.createMessageDelivery(message);
+
+		delivery = deliveryRepository.save(delivery);
+
+		DeliveryCreatedEvent event = new DeliveryCreatedEvent(message.startHubId(),
+			message.endHubId(), delivery.getDeliveryId());
+		log.info("######### Send Message[Delivery Message] : {}", event);
 		rabbitTemplate.convertAndSend(queueDelivery, event);
 		return CreateDeliveryResponse.fromEntity(delivery);
 	}
@@ -131,4 +144,5 @@ public class DeliveryService {
 			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
 		}
 	}
+
 }

@@ -6,6 +6,7 @@ import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
 
 import com.eighteenthstreet.deliveryservice.domain.exception.InvalidDeliveryException;
+import com.eighteenthstreet.deliveryservice.infrastructure.messaging.message.DeliveryMessage;
 import com.eighteenthstreet.deliveryservice.presentation.request.CreateDeliveryRequest;
 
 import base.BaseEntity;
@@ -83,4 +84,16 @@ public class Delivery extends BaseEntity {
 			.status(DeliveryStatus.PENDING_AT_HUB)
 			.build();
 	}
+
+	public static Delivery createMessageDelivery(DeliveryMessage message) {
+		return Delivery.builder()
+			.startHubId(message.startHubId())
+			.endHubId(message.endHubId())
+			.orderId(message.orderId())
+			.recipient(message.ordererId())
+			.destinationAddress(message.destinationAddress())
+			.status(DeliveryStatus.PENDING_AT_HUB)
+			.build();
+	}
+
 }
