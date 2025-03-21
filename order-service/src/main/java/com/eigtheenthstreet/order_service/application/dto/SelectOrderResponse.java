@@ -6,16 +6,19 @@ import java.util.UUID;
 import com.eigtheenthstreet.order_service.domain.model.Order;
 import com.eigtheenthstreet.order_service.domain.model.OrderItem;
 import com.eigtheenthstreet.order_service.domain.model.OrderStatus;
+import com.eigtheenthstreet.order_service.infrastructure.client.dto.GetBulkProductResponse;
+import com.eigtheenthstreet.order_service.util.DateTimeUtil;
 
 public record SelectOrderResponse(
 	UUID orderId,
-	//UUID ordererId,
+	UUID ordererId,
 	UUID supplierCompanyId,
 	UUID consumerCompanyId,
 	Integer orderTotalQuantity,
 	Integer orderTotalAmount,
+	String deliveryLimitedAt,
 	List<SelectOrderItemResponse> orderItems,
-	//UUID deliveryId,
+	UUID deliveryId,
 	OrderStatus orderStatus
 ) {
 	public static SelectOrderResponse from(
@@ -24,32 +27,33 @@ public record SelectOrderResponse(
 	) {
 		return new SelectOrderResponse(
 			order.getId(),
+			order.getOrdererId(),
 			order.getSupplierCompanyId(),
 			order.getConsumerCompanyId(),
 			order.getQuantity(),
 			order.getTotalAmount(),
+			DateTimeUtil.formatDateTime(order.getDeliveryLimitedAt()),
 			orderItem,
+			order.getDeliveryId(),
 			order.getOrderStatus()
 		);
 	}
 
 	public record SelectOrderItemResponse(
 		UUID productId,
+		String productName,
 		Integer productQuantity,
+		Integer productPrice,
 		Integer productTotalPrice
 	) {
-		public static SelectOrderItemResponse from(OrderItem orderItem) {
+		public static SelectOrderItemResponse from(GetBulkProductResponse productResponse, OrderItem orderItem) {
 			return new SelectOrderItemResponse(
-				orderItem.getProductId(),
+				productResponse.productId(),
+				productResponse.productName(),
 				orderItem.getQuantity(),
+				productResponse.productPrice(),
 				orderItem.getTotalPrice()
 			);
-		}
-
-		public static List<SelectOrderItemResponse> of(List<OrderItem> orderItems) {
-			return orderItems.stream()
-				.map(SelectOrderItemResponse::from)
-				.toList();
 		}
 	}
 }

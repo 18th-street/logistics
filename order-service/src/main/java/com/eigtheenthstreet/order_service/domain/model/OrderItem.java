@@ -5,8 +5,6 @@ import java.util.UUID;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
-import com.eigtheenthstreet.order_service.presentation.request.UpdateOrderRequest;
-
 import base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -59,8 +57,8 @@ public class OrderItem extends BaseEntity {
 		return productQuantity * productPrice;
 	}
 
-	public void update(UpdateOrderRequest.UpdateOrderItemRequest orderItemRequest, Integer productPrice) {
-		this.quantity += orderItemRequest.productQuantity();
+	public void updateQuantityAndTotalPrice(int newQuantity, int productPrice) {
+		this.quantity = newQuantity;
 		this.totalPrice = this.quantity * productPrice;
 	}
 
