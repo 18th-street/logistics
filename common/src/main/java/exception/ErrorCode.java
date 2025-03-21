@@ -30,6 +30,9 @@ public enum ErrorCode {
 	// Product
 	PRODUCT_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "이미 등록된 상품입니다.", "P001"),
 	PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않은 상품입니다.", "P002"),
+	PRODUCT_NOT_FOUND_COMPANY(HttpStatus.BAD_REQUEST, "업체 조회 API 호출을 실패했습니다.", "P006"),
+	PRODUCT_MISMATCH_HUB_ID(HttpStatus.BAD_REQUEST, "요청 허브 ID와 응답 허브 ID가 다릅니다.", "P007"),
+	PRODUCT_BULK_NOT_FOUND(HttpStatus.BAD_REQUEST, "상품 정보 Bulk 조회를 실패했습니다.", "P003"),
 
 	// Order
 	ORDER_NOT_FOUND(HttpStatus.BAD_REQUEST, "주문을 찾을 수 없습니다.", "O001"),
@@ -40,18 +43,33 @@ public enum ErrorCode {
 	ORDER_STATUS_UPDATE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "배송 전 상태인 주문만 수정할 수 있습니다.", "O006"),
 	ORDER_DELETE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "배송 전 상태인 주문만 삭제할 수 있습니다.", "O007"),
 	ORDER_CANCEL_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "주문 실패 또는 배송 생성 실패인 주문은 취소할 수 없습니다.", "O008"),
-	ORDER_ROLE_DENIED(HttpStatus.FORBIDDEN, "MASTER 또는 HUB 권한인 사용자만 주문 수정이 가능합니다.", "O009"),
+	ORDER_UPDATE_ROLE_DENIED(HttpStatus.FORBIDDEN, "권한이 MASTER 또는 HUB인 사용자만 주문을 수정할 수 있습니다.", "O009"),
+	ORDER_DELETE_ROLE_DENIED(HttpStatus.FORBIDDEN, "권한이 MASTER 또는 HUB인 사용자만 주문을 삭제할 수 있습니다.", "O010"),
+	ORDER_CANCEL_ROLE_DENIED(HttpStatus.FORBIDDEN, "권한이 MASTER 또는 HUB인 사용자만 주문을 취소할 수 있습니다.", "O011"),
+	ORDER_PRODUCT_DECREASE_STOCK_FAIL(HttpStatus.BAD_REQUEST, "OrderService에서 상품 재고 차감 API 호출을 실패하였습니다.", "O012"),
+	ORDER_ITEM_NOT_FOUND(HttpStatus.BAD_REQUEST, "주문 상품 목록을 찾을 수 없습니다.", "O013"),
+	ORDER_COMPANY_GET_API_FAIL(HttpStatus.BAD_REQUEST, "OrderService에서 업체 조회 API 호출을 실패하였습니다.", "O014"),
+	ORDER_PRODUCT_RESTORE_STOCK_FAIL(HttpStatus.BAD_REQUEST, "OrderService에서 상품 재고 복원 API 호출을 실패하였습니다", "O015"),
 
 	// 배달 서비스
 	DELIVERY_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 배달을 찾을 수 없습니다.", "D001"),
-	INVALID_DELIVERY(HttpStatus.NOT_FOUND, "해당 배달은 취소를 할 수 없습니다.", "D002"),
+	INVALID_DELIVERY(HttpStatus.NOT_FOUND, "해당 배달은 배송중이라 취소를 할 수 없습니다.", "D002"),
 
 	// 배달 경로 서비스
 	DELIVERY_ROUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 배달경로을 찾을 수 없습니다.", "DR001"),
+	DELIVERY_ROUTE_CREATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "배송 경로 생성에 실패했습니다.", "DR002"),
+	DELIVERY_ROUTE_NOT_FOUND_BY_ID(HttpStatus.NOT_FOUND, "해당 Delivery ID로 배달 경로를 찾을 수 없습니다.", "DR003"),
+	DELIVERY_ROUTE_DELETION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "배달 경로 삭제에 실패했습니다.", "DR004"),
 
 	// 배달 담당자 서비스
 	DELIVERY_AGENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 배달담당자를 찾을 수 없습니다.", "D001"),
 	INVALID_DELIVERY_AGENT_STATUS(HttpStatus.BAD_REQUEST, "배달 담당자가 배송 중이므로 삭제할 수 없습니다.", "D002"),
+	INVALID_DELIVERY_AGENT(HttpStatus.BAD_REQUEST, "현재 남은 배달 담당자가 없습니다.", "D003"),
+	DELIVERY_AGENT_NOT_FOUND_BY_ID(HttpStatus.NOT_FOUND, "해당 Delivery ID로 배달 담당자를 찾을 수 없습니다.", "D004"),
+	DELIVERY_AGENT_DELETION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "배달 담당자 삭제에 실패했습니다.", "D005"),
+	INVALID_HUB_ID(HttpStatus.BAD_REQUEST, "허브 ID가 유효하지 않습니다.", "D006"),
+	MISSING_HUB_ID(HttpStatus.BAD_REQUEST, "허브 담당자는 허브 ID가 필요합니다.", "D007"),
+	HUB_MISMATCH(HttpStatus.BAD_REQUEST, "허브 담당자의 소속 허브와 경로 허브가 일치하지 않습니다.", "D008"),
 
 	// 허브 오류
 	HUB_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 허브입니다.", "H001"),

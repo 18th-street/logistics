@@ -8,6 +8,7 @@ public record CreateOrderRequest(
 	UUID consumerCompanyId,
 	String requestDetails,
 	String deliveryAddress,
+	String deliveryLimitedAt,
 	//UUID slackId,
 	List<OrderItemReqeust> orderItems
 ) {

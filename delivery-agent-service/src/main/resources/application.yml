@@ -20,7 +20,7 @@ spring:
   jpa:
     defer-datasource-initialization: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -30,10 +30,25 @@ spring:
     init:
       mode: always
 
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    listener:
+      simple:
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 5000ms
+
+
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:19090/eureka/
+    register-with-eureka: true
+    fetch-registry: true
 
 management:
   zipkin:
@@ -42,3 +57,15 @@ management:
   tracing:
     sampling:
       probability: 1.0
+
+
+message:
+  exchange: logistics
+  queue:
+    delivery-route: logistics.delivery-route
+    delivery-assigned: logistics.assigned
+    delivery-agent-failed: logistics.agent-failed
+  err:
+    exchange: logistics.err
+    queue:
+      route: logistics.err.route

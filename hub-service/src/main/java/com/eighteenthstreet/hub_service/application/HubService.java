@@ -1,11 +1,11 @@
 package com.eighteenthstreet.hub_service.application;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedModel;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,5 +88,9 @@ public class HubService {
 		List<Hub> hubs = hubRepository.findByHubIdInAndIsDeletedNull(hubIds);
 
 		return hubs.stream().map(GetHubResponse::from).toList();
+	}
+
+	public boolean existsById(UUID hubId) {
+		return hubRepository.existsById(hubId);
 	}
 }

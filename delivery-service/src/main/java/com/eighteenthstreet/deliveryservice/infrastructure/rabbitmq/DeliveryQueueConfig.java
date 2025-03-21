@@ -12,43 +12,117 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class DeliveryQueueConfig {
 
-    @Bean
-    public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
-        return new Jackson2JsonMessageConverter();
-    }
+	@Bean
+	public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
+		return new Jackson2JsonMessageConverter();
+	}
 
-    @Value("${message.exchange}")
-    private String exchange;
+	@Value("${message.exchange}")
+	private String exchange;
 
-    @Value("${message.queue.delivery}")
-    private String queueDelivery;
+	@Value("${message.queue.delivery}")
+	private String queueOrderDelivery;
 
-    @Value("${message.queue.route}")
-    private String queueRoute;
+	@Value("${message.queue.delivery-service}")
+	private String queueDelivery;
 
+	@Value("${message.queue.delivery-route}")
+	private String queueRoute;
 
-    @Bean
-    public TopicExchange exchange() {
-        return new TopicExchange(exchange);
-    }
+	@Value("${message.queue.delivery-assigned}")
+	private String queueAssigned;
 
-    @Bean
-    public Queue queueDelivery() {
-        return new Queue(queueDelivery);
-    }
+	@Value("${message.queue.delivery-route-failed}")
+	private String queueFailed;
 
-    @Bean
-    public Queue queueRoute() {
-        return new Queue(queueRoute);
-    }
+	@Value("${message.err.exchange}")
+	private String exchangeErr;
 
-    @Bean
-    public Binding bindingDelivery() {
-        return BindingBuilder.bind(queueDelivery()).to(exchange()).with(queueDelivery);
-    }
+	@Value("${message.err.queue.route}")
+	private String queueErrRoute;
 
-    @Bean
-    public Binding bindingRoute() {
-        return BindingBuilder.bind(queueRoute()).to(exchange()).with(queueRoute);
-    }
+	@Value("${message.queue.delivery-agent-failed}")
+	private String queueAgentFailed;
+
+	@Bean
+	public TopicExchange exchange() {
+		return new TopicExchange(exchange);
+	}
+
+	public Queue queueOrderDelivery() {
+		return new Queue(queueOrderDelivery);
+	}
+
+	@Bean
+	public Queue queueDelivery() {
+		return new Queue(queueDelivery);
+	}
+
+	@Bean
+	public Queue queueRoute() {
+		return new Queue(queueRoute);
+	}
+
+	@Bean
+	public Queue queueAgentFailed() {
+		return new Queue(queueAgentFailed);
+	}
+
+	@Bean
+	public Queue queueFailed() {
+		return new Queue(queueFailed);
+	}
+
+	@Bean
+	public Queue queueAssigned() {
+		return new Queue(queueAssigned);
+	}
+
+	@Bean
+	public Binding bindingOrderDelivery() {
+		return BindingBuilder.bind(queueOrderDelivery()).to(exchange()).with(queueOrderDelivery);
+	}
+
+	@Bean
+	public Binding bindingDelivery() {
+		return BindingBuilder.bind(queueDelivery()).to(exchange()).with(queueDelivery);
+	}
+
+	@Bean
+	public Binding bindingRoute() {
+		return BindingBuilder.bind(queueRoute()).to(exchange()).with(queueRoute);
+	}
+
+	@Bean
+	public Binding bindingAssigned() {
+		return BindingBuilder.bind(queueRoute()).to(exchange()).with(queueAssigned);
+	}
+
+	@Bean
+	public Binding bindingFailed() {
+		return BindingBuilder.bind(queueFailed()).to(exchange()).with(queueFailed);
+	}
+
+	// 에러 익스체인지
+	@Bean
+	public TopicExchange exchangeErr() {
+		return new TopicExchange(exchangeErr); // "delivery.err"
+	}
+
+	// 에러 큐
+	@Bean
+	public Queue queueErrRoute() {
+		return new Queue(queueErrRoute); // "delivery.err.route"
+	}
+
+	// 에러 바인딩
+	@Bean
+	public Binding bindingErrRoute() {
+		return BindingBuilder.bind(queueErrRoute()).to(exchangeErr()).with(queueErrRoute);
+	}
+
+	@Bean
+	public Binding bindingAssignedFailed() {
+		return BindingBuilder.bind(queueAgentFailed()).to(exchange()).with(queueAgentFailed);
+	}
 }

@@ -20,7 +20,7 @@ spring:
   jpa:
     defer-datasource-initialization: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -35,24 +35,35 @@ spring:
     port: 5672
     username: guest
     password: guest
+    listener:
+      simple:
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 5000ms
 
 
 message:
-  exchange: delivery
+  exchange: logistics
   queue:
-    delivery: delivery.delivery
-    route: delivery.route
+    delivery: logistics.delivery
+    delivery-service: logistics.delivery-service
+    delivery-route: logistics.delivery-route
+    delivery-assigned: logistics.assigned
+    delivery-route-failed: logistics.route-failed
+    delivery-agent-failed: logistics.agent-failed
   err:
-    exchange: delivery.err
+    exchange: logistics.err
     queue:
-      err:
-        delivery: delivery.err.delivery
-
+      route: logistics.err.route
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:19090/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
 
 management:
   zipkin:

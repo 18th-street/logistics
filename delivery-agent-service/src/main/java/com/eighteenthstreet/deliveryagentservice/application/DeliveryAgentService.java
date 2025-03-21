@@ -1,81 +1,98 @@
 package com.eighteenthstreet.deliveryagentservice.application;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.eighteenthstreet.deliveryagentservice.application.dto.CreateDeliveryAgentResponse;
+import com.eighteenthstreet.deliveryagentservice.application.dto.DeliveryAgentDto;
 import com.eighteenthstreet.deliveryagentservice.application.dto.GetDeliveryAgentResponse;
 import com.eighteenthstreet.deliveryagentservice.domain.exception.DeliveryAgentNotFoundException;
 import com.eighteenthstreet.deliveryagentservice.domain.exception.InvalidDeliveryAgentException;
 import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgent;
 import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgentStatus;
 import com.eighteenthstreet.deliveryagentservice.domain.repository.DeliveryAgentRepository;
+import com.eighteenthstreet.deliveryagentservice.presentation.exception.error.CustomException;
 import com.eighteenthstreet.deliveryagentservice.presentation.request.CreateDeliveryAgentRequest;
 import com.eighteenthstreet.deliveryagentservice.presentation.request.UpdateDeliveryTypeRequest;
+
 import exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class DeliveryAgentService {
 
-    private final DeliveryAgentRepository deliveryAgentRepository;
+	private final DeliveryAgentRepository deliveryAgentRepository;
 
-    //TODO: 추후 동기방식으로 boolean 값으로 검증 하고 저장함
-    // 유저에서 DeliveryAgent 을 생성
-    public CreateDeliveryAgentResponse createDeliveryAgent(CreateDeliveryAgentRequest request) {
+	public CreateDeliveryAgentResponse createDeliveryAgent(CreateDeliveryAgentRequest request, UUID userId) {
 
-        // 1. 추후 hubService 에서 ID 검증을 해봐야함
-        // 2. useService 에서도 ID 검증을 해봐야함
-        DeliveryAgent deliveryAgent = DeliveryAgent.builder()
-                .hubId(request.getHubId())
-                .userId(request.getUserId())
-                .deliveryAgentType(request.getDeliveryAgentType())
-                .deliveryAgentStatus(DeliveryAgentStatus.AVAILABLE)
-                .slackId(request.getSlackId())
-                .build();
+		// TODO: 존재하는 허브인지 확인
 
-        return CreateDeliveryAgentResponse.fromEntity(deliveryAgentRepository.save(deliveryAgent));
-    }
+		DeliveryAgent deliveryAgent = DeliveryAgent.builder()
+			.hubId(request.getHubId())
+			.userId(userId)
+			.deliveryAgentType(request.getDeliveryAgentType())
+			.deliveryAgentStatus(DeliveryAgentStatus.AVAILABLE)
+			.slackId(request.getSlackId())
+			.build();
 
+		return CreateDeliveryAgentResponse.fromEntity(deliveryAgentRepository.save(deliveryAgent));
+	}
 
-    public GetDeliveryAgentResponse getDeliveryAgent(UUID id) {
-        DeliveryAgent deliveryAgent = deliveryAgentRepository.findById(id).orElseThrow(
-                () -> new DeliveryAgentNotFoundException(ErrorCode.DELIVERY_AGENT_NOT_FOUND)
-        );
+	public GetDeliveryAgentResponse getDeliveryAgent(UUID id) {
+		DeliveryAgent deliveryAgent = deliveryAgentRepository.findById(id)
+			.orElseThrow(() -> new DeliveryAgentNotFoundException(ErrorCode.DELIVERY_AGENT_NOT_FOUND));
 
-        return GetDeliveryAgentResponse.fromEntity(deliveryAgent);
-    }
+		return GetDeliveryAgentResponse.fromEntity(deliveryAgent);
+	}
 
+	@Transactional
+	public void updateDeliveryAgentType(UpdateDeliveryTypeRequest request) {
+		DeliveryAgent deliveryAgent = deliveryAgentRepository.findById(request.getDeliveryAgentId())
+			.orElseThrow(() -> new DeliveryAgentNotFoundException(ErrorCode.DELIVERY_AGENT_NOT_FOUND));
 
-    //TODO: 적당한 담당자 찾는 로직 구현
-    public void handleRouteCreated() {
-        // 1. 적당한 담당자 찾기
-        // 2. 배차정보 set
-        // 3. DB저장
-        // 4. Delivery로 이벤트 발행 --> 그러면 Delivery 상태 변경
-    }
+		deliveryAgent.updateDeliveryAgentType(request.getDeliveryAgentType());
+	}
 
-    @Transactional
-    public void updateDeliveryAgentType(UpdateDeliveryTypeRequest request) {
-        DeliveryAgent deliveryAgent = deliveryAgentRepository.findById(request.getDeliveryAgentId()).orElseThrow(
-                () -> new DeliveryAgentNotFoundException(ErrorCode.DELIVERY_AGENT_NOT_FOUND)
-        );
+	@Transactional
+	public void deleteDeliveryAgent(UUID id) {
+		DeliveryAgent deliveryAgent = deliveryAgentRepository.findById(id)
+			.orElseThrow(() -> new DeliveryAgentNotFoundException(ErrorCode.DELIVERY_AGENT_NOT_FOUND));
 
-        deliveryAgent.updateDeliveryAgentType(request.getDeliveryAgentType());
-    }
+		if (deliveryAgent.getDeliveryAgentStatus() == DeliveryAgentStatus.IN_DELIVERY) {
+			throw new InvalidDeliveryAgentException(ErrorCode.INVALID_DELIVERY_AGENT_STATUS);
+		}
 
-    @Transactional
-    public void deleteDeliveryAgent(UUID id) {
-        DeliveryAgent deliveryAgent = deliveryAgentRepository.findById(id).orElseThrow(
-                () -> new DeliveryAgentNotFoundException(ErrorCode.DELIVERY_AGENT_NOT_FOUND)
-        );
+		deliveryAgent.softDelete();
+	}
 
-        if (deliveryAgent.getDeliveryAgentStatus() == DeliveryAgentStatus.IN_DELIVERY) {
-            throw new InvalidDeliveryAgentException(ErrorCode.INVALID_DELIVERY_AGENT_STATUS);
-        }
+	// Feign 호출용 새 메서드
+	@Transactional
+	public void deleteDeliveryAgentByDeliveryId(UUID deliveryId) {
+		List<DeliveryAgent> deliveryAgents = deliveryAgentRepository.findByDeliveryId(deliveryId);
 
-        deliveryAgent.softDelete();
-    }
+		if (deliveryAgents.isEmpty()) {
+			throw new CustomException(ErrorCode.DELIVERY_AGENT_NOT_FOUND);
+		}
+
+		for (DeliveryAgent deliveryAgent : deliveryAgents) {
+			if (deliveryAgent.getDeliveryAgentStatus() == DeliveryAgentStatus.IN_DELIVERY) {
+				throw new CustomException(ErrorCode.INVALID_DELIVERY_AGENT_STATUS);
+			}
+			deliveryAgent.deleteDeliveryAgent(DeliveryAgentStatus.AVAILABLE);
+		}
+	}
+
+	@Transactional(readOnly = true)
+	public List<DeliveryAgentDto> getDeliveryAgentsByDeliveryId(UUID deliveryId) {
+		List<DeliveryAgent> agents = deliveryAgentRepository.findByDeliveryId(deliveryId);
+
+		return agents.stream()
+			.map(agent -> new DeliveryAgentDto(agent.getDeliveryAgentId(), agent.getDeliveryAgentStatus().name(),
+				agent.getSequence(), null))
+			.toList();
+	}
 }

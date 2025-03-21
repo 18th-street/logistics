@@ -1,17 +1,17 @@
 package com.eighteenthstreet.deliveryservice.domain.event;
 
+import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 public class DeliveryCreatedEvent {
-    private UUID startHubId;
-    private UUID endHubId;
-    private UUID deliveryId;
+	private UUID startHubId;
+	private UUID endHubId;
+	private UUID deliveryId;
+	private UUID orderId;
 }

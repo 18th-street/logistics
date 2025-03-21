@@ -1,8 +1,9 @@
 package com.eigtheenthstreet.order_service.application;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -13,9 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.eigtheenthstreet.order_service.application.dto.CompanyType;
-import com.eigtheenthstreet.order_service.application.dto.CreateCompanyResponse;
 import com.eigtheenthstreet.order_service.application.dto.CreateOrderResponse;
-import com.eigtheenthstreet.order_service.application.dto.CreateProductResponse;
 import com.eigtheenthstreet.order_service.application.dto.SelectOrderResponse;
 import com.eigtheenthstreet.order_service.application.dto.UpdateOrderResponse;
 import com.eigtheenthstreet.order_service.domain.model.Order;
@@ -23,109 +22,106 @@ import com.eigtheenthstreet.order_service.domain.model.OrderItem;
 import com.eigtheenthstreet.order_service.domain.model.OrderStatus;
 import com.eigtheenthstreet.order_service.domain.repository.OrderItemRepository;
 import com.eigtheenthstreet.order_service.domain.repository.OrderRepository;
-import com.eigtheenthstreet.order_service.exception.CustomCompanyNotReceiverException;
-import com.eigtheenthstreet.order_service.exception.CustomCompanyNotSupplierException;
-import com.eigtheenthstreet.order_service.exception.CustomInsufficientStockException;
-import com.eigtheenthstreet.order_service.exception.CustomOrderDeleteNotAllowedException;
-import com.eigtheenthstreet.order_service.exception.CustomOrderNotFoundException;
-import com.eigtheenthstreet.order_service.exception.CustomOrderStatusUpdateNotAllowedException;
-import com.eigtheenthstreet.order_service.exception.CustomProductNotForSaleException;
-import com.eigtheenthstreet.order_service.exception.OrderCancelNotAllowedException;
+import com.eigtheenthstreet.order_service.domain.service.OrderDomainService;
+import com.eigtheenthstreet.order_service.exception.company.CustomCompanyGetApiFailException;
+import com.eigtheenthstreet.order_service.exception.company.CustomCompanyNotReceiverException;
+import com.eigtheenthstreet.order_service.exception.company.CustomCompanyNotSupplierException;
+import com.eigtheenthstreet.order_service.exception.order.CustomOrderDeleteNotAllowedException;
+import com.eigtheenthstreet.order_service.exception.order.CustomOrderStatusUpdateNotAllowedException;
+import com.eigtheenthstreet.order_service.exception.order.CustomProductNotForSaleException;
+import com.eigtheenthstreet.order_service.exception.order.CustomProductRestoreStockApiFailException;
+import com.eigtheenthstreet.order_service.exception.order.OrderCancelNotAllowedException;
+import com.eigtheenthstreet.order_service.exception.product.CustomInsufficientStockException;
+import com.eigtheenthstreet.order_service.exception.product.CustomProductBulkNotFoundException;
+import com.eigtheenthstreet.order_service.exception.product.CustomProductDecreaseStockApiFailException;
 import com.eigtheenthstreet.order_service.infrastructure.client.CompanyServiceClient;
 import com.eigtheenthstreet.order_service.infrastructure.client.ProductServiceClient;
+import com.eigtheenthstreet.order_service.infrastructure.client.dto.CreateCompanyResponse;
+import com.eigtheenthstreet.order_service.infrastructure.client.dto.GetBulkProductRequest;
+import com.eigtheenthstreet.order_service.infrastructure.client.dto.GetBulkProductResponse;
+import com.eigtheenthstreet.order_service.infrastructure.messaging.OrderMessageProducer;
 import com.eigtheenthstreet.order_service.presentation.request.CreateOrderRequest;
 import com.eigtheenthstreet.order_service.presentation.request.UpdateOrderRequest;
 
 import exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
 	private final OrderRepository orderRepository;
 	private final CompanyServiceClient companyServiceClient;
 	private final ProductServiceClient productServiceClient;
-	//private final DeliveryServiceClient deliveryServiceClient;
 	private final OrderItemRepository orderItemRepository;
+	private final OrderMessageProducer orderMessageProducer;
+	private final OrderDomainService orderDomainService;
 
 	@Transactional
-	public CreateOrderResponse registerOrder(CreateOrderRequest request, Long userId) {
-		// 업체 검사
-		CreateCompanyResponse supplierCompany = companyServiceClient.getCompany(request.supplierCompanyId());
-		CreateCompanyResponse consumerCompany = companyServiceClient.getCompany(request.consumerCompanyId());
-
-		if (!CompanyType.SUPPLIER.getName().equals(supplierCompany.companyType())) {
-			throw new CustomCompanyNotSupplierException(ErrorCode.ORDER_COMPANY_NOT_SUPPLIER);
-		}
-
-		if (!CompanyType.RECEIVER.getName().equals(consumerCompany.companyType())) {
-			throw new CustomCompanyNotReceiverException(ErrorCode.ORDER_COMPANY_NOT_RECEIVER);
-		}
+	public CreateOrderResponse registerOrder(
+		CreateOrderRequest request,
+		UUID userId
+	) {
+		// 업체 정보 조회
+		CreateCompanyResponse supplierCompany = getCompany(request.supplierCompanyId());
+		CreateCompanyResponse receiverCompany = getCompany(request.consumerCompanyId());
+		validateCompanies(supplierCompany, receiverCompany);
 
 		// Order 생성
-		Order order = Order.create(request, userId);
-		orderRepository.save(order);
+		Order order = orderDomainService.createOrder(request, userId);
 
-		// 주문 항목 생성 및 총액 계산
-		int totalQuantity = 0;
-		int totalAmount = 0;
+		// 상품 정보 조회 (bulk api)
+		List<UUID> productIds = request.orderItems().stream()
+			.map(CreateOrderRequest.OrderItemReqeust::productId)
+			.toList();
 
-		for (CreateOrderRequest.OrderItemReqeust orderItem : request.orderItems()) {
-			// 상품 검사 -> 판매 상태, 가격 변동 여부, 재고 수량 확인
-			CreateProductResponse product = productServiceClient.getProduct(orderItem.productId());
+		List<GetBulkProductResponse> bulkProductInfo = getBulkProductInfo(productIds);
 
-			if (!product.isSold()) {
-				throw new CustomProductNotForSaleException(ErrorCode.ORDER_PRODUCT_NOT_FOR_SALE);
+		// 주문 상품 목록 생성
+		List<OrderItem> orderItems = new ArrayList<>();
 
-			}
+		for (CreateOrderRequest.OrderItemReqeust orderItemRequest : request.orderItems()) {
+			// 상품 정보를 조회하여 상품 가격 및 재고 확인
+			GetBulkProductResponse productResponse = bulkProductInfo.stream()
+				.filter(p -> p.productId().equals(orderItemRequest.productId()))
+				.findFirst()
+				.orElseThrow(() -> new CustomProductBulkNotFoundException(ErrorCode.PRODUCT_BULK_NOT_FOUND));
 
-			if (product.stockQuantity() < orderItem.productQuantity()) {
-				throw new CustomInsufficientStockException(ErrorCode.ORDER_INSUFFICIENT_STOCK);
-			}
+			// 판매 여부 및 재고 수량 확인
+			validateProduct(productResponse, orderItemRequest.productQuantity());
 
-			// 주문 항목 생성
-			OrderItem savedOrderItem = OrderItem.create(
+			OrderItem savedOrderItem = orderDomainService.createOrderItem(
 				order.getId(),
-				orderItem.productId(),
-				orderItem.productQuantity(),
-				product.productPrice());
+				orderItemRequest.productId(),
+				orderItemRequest.productQuantity(),
+				productResponse.productPrice()
+			);
 
-			orderItemRepository.save(savedOrderItem);
-
-			// 총 수량과 총액 계산
-			totalQuantity += savedOrderItem.getQuantity();
-			totalAmount += savedOrderItem.getTotalPrice();
-
-			// 재고 차감 요청
-			//productServiceClient.decreaseStock(orderItem.productId(), orderItem.productQuantity());
+			orderItems.add(savedOrderItem);
 		}
 
-		// Order에 총 수량과 총액 설정
-		order.addOrderTotalQuantityAndTotalAmount(totalQuantity, totalAmount);
+		// 주문 항목 저장 및 재고 차감
+		decreaseTotalProductQuantity(orderItems);
 
-		// 배송 및 배송 경로 생성
-		// todo. 주문이 생성될 때 배송과 배송 경로가 생성되어야 한다
-		// 	주문에서 deliveryServiceClient 호출 -> delivery-service에서 delivery랑 deliveryRoute 생성 -> order-service에서 deliveryId만 받아와서 order에 연결
-		// try {
-		// 	CreateDeliveryResponse delivery = deliveryServiceClient.createDelivery(
-		// 		order.getId(),
-		// 		request.deliveryAddress()
-		// 	);
-		//
-		// 	order.addDelivery(delivery.deliveryId());
-		// } catch (Exception e) {
-		// 	order.changeOrderStatusFailed();
-		// }
+		// 주문 총 가격과 총 수량 수정
+		orderDomainService.updateOrderQuantityAndTotalAmount(order.getId(), orderItems);
 
-		// 응답 반환
+		// 주문 성공 이벤트 배송으로 발행
+		log.info("OrderService에서 주문 생성 성공 이벤트 deliveryQueue로 발행");
+		orderMessageProducer.sendToDelivery(order, supplierCompany.hubId(), receiverCompany.hubId());
+
+		// 주문 성공 이벤트 슬랙으로 발행
+		log.info("OrderService에서 주문 생성 성공 이벤트 slackQueue로 발행");
+		orderMessageProducer.sendToSlack(order);
+
 		return CreateOrderResponse.from(order.getId());
 	}
 
 	@Transactional
 	public UpdateOrderResponse updateOrder(UpdateOrderRequest request, UUID orderId) {
 		// 주문 조회
-		Order foundOrder = orderRepository.findById(orderId)
-			.orElseThrow(() -> new CustomOrderNotFoundException(ErrorCode.ORDER_NOT_FOUND));
+		Order foundOrder = orderDomainService.getOrderById(orderId);
 
 		// 주문 상태 확인
 		if (OrderStatus.isUpdateOrderStatusNotAllowed(foundOrder.getOrderStatus())) {
@@ -133,60 +129,59 @@ public class OrderService {
 		}
 
 		// 기존 주문 상품 목록 조회
-		List<OrderItem> foundOrderItems = orderItemRepository.findByOrderId(orderId);
+		List<OrderItem> foundOrderItems = foundOrder.getOrderItems();
 
-		// 변경된 주문 상품 목록 조회
-		List<OrderItem> updatedOrderItems = new ArrayList<>();
+		// 요청된 상품 ID 목록
+		List<UUID> requestedProductIds = request.orderItems().stream()
+			.map(UpdateOrderRequest.UpdateOrderItemRequest::productId)
+			.toList();
 
-		// 변경된 주문 항목을 ProductServiceClient로 전달하여 추가 상품 재고 확인
-		List<UpdateOrderRequest.UpdateOrderItemRequest> orderItemsRequest = request.orderItems();
-		for (UpdateOrderRequest.UpdateOrderItemRequest orderItemRequest : orderItemsRequest) {
-			// 추가 상품 조회
-			CreateProductResponse productClientResponse = productServiceClient.getProduct(orderItemRequest.productId());
+		// 상품 정보 조회
+		List<GetBulkProductResponse> bulkProductInfo = getBulkProductInfo(requestedProductIds);
 
-			// 상품 검사
-			if (!productClientResponse.isSold()) {
-				throw new CustomProductNotForSaleException(ErrorCode.ORDER_PRODUCT_NOT_FOR_SALE);
-			}
+		// 재고 변경 사항 추적
+		Map<UUID, Integer> stockChanges = new HashMap<>();
 
-			if (productClientResponse.stockQuantity() < orderItemRequest.productQuantity()) {
-				throw new CustomInsufficientStockException(ErrorCode.ORDER_INSUFFICIENT_STOCK);
-			}
+		for (UpdateOrderRequest.UpdateOrderItemRequest orderItemRequest : request.orderItems()) {
+			// 상품 정보를 조회하여 상품 가격 및 재고 확인
+			GetBulkProductResponse productResponse = bulkProductInfo.stream()
+				.filter(p -> p.productId().equals(orderItemRequest.productId()))
+				.findFirst()
+				.orElseThrow(() -> new CustomProductBulkNotFoundException(ErrorCode.PRODUCT_BULK_NOT_FOUND));
 
-			// 변경된 주문 상품 목록 생성
-			// 기존 주문 상품 중 수정할 상품 조회
-			Optional<OrderItem> existingOrderItem = foundOrderItems.stream()
-				.filter(orderItem -> orderItem.getProductId().equals(orderItemRequest.productId()))
-				.findFirst();
+			// 상품 재고 검증
+			validateProduct(productResponse, orderItemRequest.productQuantity());
 
-			// 주문 상품 수정
-			if (existingOrderItem.isPresent()) {
-				OrderItem orderItem = existingOrderItem.get();
-				orderItem.update(orderItemRequest, productClientResponse.productPrice());
-				updatedOrderItems.add(orderItem);
-			} else {
-				// 기존에 없는 주문 상품 새로 추가
-				OrderItem orderItem = OrderItem.create(
-					foundOrder.getId(),
-					orderItemRequest.productId(),
-					orderItemRequest.productQuantity(),
-					productClientResponse.productPrice()
-				);
-				updatedOrderItems.add(orderItem);
-			}
+			// 주문 업데이트
+			int quantityDifference = orderDomainService.updateOrderItem(
+				orderId,
+				orderItemRequest.productId(),
+				orderItemRequest.productQuantity(),
+				productResponse.productPrice()
+			);
 
-			// 재고 차감 요청
-			// 재고가 충분한 경우 수량 차감, 재고 부족 시 주문 수정 불가 처리
-			//productServiceClient.decreaseStock(orderItem.productId(), orderItem.productQuantity());
+			// 재고 차감 또는 복원
+			stockChanges.put(orderItemRequest.productId(), quantityDifference);
 		}
 
-		//orderItemRepository.saveAll(updatedOrderItems); //-> saveAll 오류 발생
-		updatedOrderItems.forEach(orderItemRepository::save);
+		// 재고 조정
+		for (Map.Entry<UUID, Integer> entry : stockChanges.entrySet()) {
+			Integer quantityDifference = entry.getValue();
+			UUID productId = entry.getKey();
 
-		// order의 수량과 가격 업데이트
-		foundOrder.updateOrderQuantityAndTotalPrice(updatedOrderItems);
+			if (quantityDifference < 0) {
+				// 수량 증가 -> 재고 감소
+				decreaseProductQuantity(productId, Math.abs(quantityDifference));
+			} else if (quantityDifference > 0) {
+				// 수량 감소 -> 재고 복원
+				restoreProductQuantity(productId, quantityDifference);
+			}
 
-		List<UpdateOrderResponse.UpdateOrderItemResponse> updateOrderItems = updatedOrderItems.stream()
+			// 변경이 없는 경우 pass
+		}
+
+		// 응답 생성
+		List<UpdateOrderResponse.UpdateOrderItemResponse> updateOrderItems = foundOrderItems.stream()
 			.map(UpdateOrderResponse.UpdateOrderItemResponse::from)
 			.toList();
 
@@ -194,76 +189,46 @@ public class OrderService {
 	}
 
 	@Transactional
-	public void deleteOrder(UUID orderId, Long userId) {
-		// todo. 주문 삭제 권한 확인
-
+	public void deleteOrder(UUID orderId) {
 		// 주문 조회
-		Order foundOrder = orderRepository.findById(orderId)
-			.orElseThrow(() -> new CustomOrderNotFoundException(ErrorCode.ORDER_NOT_FOUND));
+		Order foundOrder = orderDomainService.getOrderById(orderId);
 
-		// 주문 상태 확인
+		// 주문 삭제 가능 여부 검증
 		if (OrderStatus.isDeleteOrderStatusNotAllowed(foundOrder.getOrderStatus())) {
 			throw new CustomOrderDeleteNotAllowedException(ErrorCode.ORDER_DELETE_NOT_ALLOWED);
 		}
 
 		// 주문 상품 목록 조회
-		List<OrderItem> foundOrderItems = orderItemRepository.findByOrderId(orderId);
+		List<OrderItem> foundOrderItems = orderDomainService.getOrderItems(orderId);
 
 		// 주문 상품 삭제
 		for (OrderItem foundOrderItem : foundOrderItems) {
 			foundOrderItem.performSoftDelete();
-
-			// try {
-			// 	//productServiceClient.restoreStock(foundOrderItem.getProductId(), foundOrderItem.getQuantity());
-			// } catch (Exception e) {
-			// 	throw new IllegalStateException("상품 재고 복구에 실패했습니다.", e);
-			// }
+			// todo. 재고 복구 로직 추가
 		}
-
-		// 배송 삭제
-		// try {
-		// 	deliveryServiceFeignClient.deleteDelivery(orderId); // DeliveryServiceClient 호출
-		// } catch (Exception e) {
-		// 	throw new IllegalStateException("배송 정보 삭제에 실패했습니다.", e);
-		// }
 
 		// 주문 삭제
 		foundOrder.performSoftDelete();
 	}
 
 	@Transactional
-	public void cancelOrder(UUID orderId, Long userId) {
-		// 주문 취소 권한
-
+	public void cancelOrder(UUID orderId) {
 		// 주문 조회
-		Order foundOrder = orderRepository.findById(orderId)
-			.orElseThrow(() -> new CustomOrderNotFoundException(ErrorCode.ORDER_NOT_FOUND));
+		Order foundOrder = orderDomainService.getOrderById(orderId);
 
+		// 주문 취소 가능 여부 검증
 		if (OrderStatus.isCancelOrderStatusNotAllowed(foundOrder.getOrderStatus())) {
 			throw new OrderCancelNotAllowedException(ErrorCode.ORDER_CANCEL_NOT_ALLOWED);
 		}
 
 		// 주문 항목 조회
-		List<OrderItem> foundOrderItems = orderItemRepository.findByOrderId(orderId);
+		List<OrderItem> foundOrderItems = orderDomainService.getOrderItems(orderId);
 
 		// 주문 상품 삭제
 		for (OrderItem foundOrderItem : foundOrderItems) {
 			foundOrderItem.performSoftDelete();
-
-			// 주문 상품 재고 복구
-			// try {
-			// 	//productServiceClient.restoreStock(foundOrderItem.getProductId(), foundOrderItem.getQuantity());
-			// } catch (Exception e) {
-			// 	throw new IllegalStateException("상품 재고 복구에 실패했습니다.", e);
-			// }
+			// todo. 재고 복구 로직 추가
 		}
-
-		// 배송 정보 삭제
-		// try {
-		// 	deliveryServiceFeignClient.deleteDelivery(orderId); // DeliveryServiceClient 호출
-		// } catch (Exception e) {
-		// 	throw new IllegalStateException("배송 정보 삭제에 실패했습니다.", e);
-		// }
 
 		// 주문 상태 변경
 		foundOrder.cancel();
@@ -272,23 +237,36 @@ public class OrderService {
 	@Transactional(readOnly = true)
 	public SelectOrderResponse getOrder(UUID orderId) {
 		// 주문 조회
-		Order foundOrder = orderRepository.findById(orderId)
-			.orElseThrow(() -> new CustomOrderNotFoundException(ErrorCode.ORDER_NOT_FOUND));
+		Order foundOrder = orderDomainService.getOrderById(orderId);
 
 		// 주문 상품 조회
-		List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+		List<OrderItem> orderItems = orderDomainService.getOrderItems(orderId);
 
 		// 주문 상품 응답 dto 생성
 		List<SelectOrderResponse.SelectOrderItemResponse> orderItemsDto = new ArrayList<>();
 
+		List<UUID> productIds = orderItems.stream()
+			.map(OrderItem::getProductId)
+			.toList();
+
+		// 주문 상품 bulk 조회
+		List<GetBulkProductResponse> bulkProducts = getBulkProductInfo(productIds);
+
 		for (OrderItem orderItem : orderItems) {
+			GetBulkProductResponse productResponse = bulkProducts.stream()
+				.filter(product -> product.productId().equals(orderItem.getProductId()))
+				.findFirst()
+				.orElseThrow(() -> new CustomProductBulkNotFoundException(ErrorCode.PRODUCT_NOT_FOUND));
+
 			SelectOrderResponse.SelectOrderItemResponse selectOrderItemResponse = SelectOrderResponse.SelectOrderItemResponse.from(
+				productResponse,
 				orderItem
 			);
+
 			orderItemsDto.add(selectOrderItemResponse);
 		}
 
-		// 배송 및 배송 경로 정보 조회
+		// todo. 배송 상태 조회
 		//DeliveryResponse delivery = deliveryServiceFeignClient.getDeliveryInfo(orderId);
 
 		return SelectOrderResponse.from(foundOrder, orderItemsDto);
@@ -297,14 +275,33 @@ public class OrderService {
 	@Transactional(readOnly = true)
 	public PagedModel<SelectOrderResponse> getAllOrders(String query, Pageable pageable) {
 		Page<Order> orders = orderRepository.searchByOrders(pageable);
-		// todo. 배송 정보도 함께 조회?
+		// 주문 응답 리스트 생성
+		// 주문 상품 응답 dto 생성
 		List<SelectOrderResponse> content = orders.stream().map(order -> {
-			List<OrderItem> foundOrderItem = orderItemRepository.findByOrderId(order.getId());
+			List<OrderItem> orderItems = order.getOrderItems();
 
-			List<SelectOrderResponse.SelectOrderItemResponse> orderItemsResponse = SelectOrderResponse.SelectOrderItemResponse.of(
-				foundOrderItem);
+			// 주문 상품 ID 목록
+			List<UUID> productIds = orderItems.stream()
+				.map(OrderItem::getProductId)
+				.toList();
 
-			return SelectOrderResponse.from(order, orderItemsResponse);
+			// 상품 정보 한 번만 조회하기 todo. 캐시 사용
+			List<GetBulkProductResponse> bulkProducts = getBulkProductInfo(productIds);
+
+			// 각 orderItem의 응답 생성
+			List<SelectOrderResponse.SelectOrderItemResponse> orderItemResponse = orderItems.stream()
+				.map(orderItem -> {
+					// 해당 주문 아이템에 맞는 상품 정보 찾아서 매핑
+					GetBulkProductResponse productResponse = bulkProducts.stream()
+						.filter(product -> product.productId().equals(orderItem.getProductId()))
+						.findFirst()
+						.orElseThrow(() -> new CustomProductBulkNotFoundException(ErrorCode.PRODUCT_NOT_FOUND));
+
+					return SelectOrderResponse.SelectOrderItemResponse.from(productResponse, orderItem);
+				}).toList();
+
+			// 주문 응답 생성
+			return SelectOrderResponse.from(order, orderItemResponse);
 		}).toList();
 
 		Page<SelectOrderResponse> pageResult = new PageImpl<>(
@@ -314,5 +311,108 @@ public class OrderService {
 		);
 
 		return new PagedModel<>(pageResult);
+	}
+
+	private CreateCompanyResponse getCompany(UUID companyId) {
+		try {
+			return companyServiceClient.getCompany(companyId);
+		} catch (Exception e) {
+			log.error("업체 조회 API 호출 실패: {}", e.getMessage());
+			throw new CustomCompanyGetApiFailException(ErrorCode.ORDER_COMPANY_GET_API_FAIL);
+		}
+	}
+
+	private void validateCompanies(CreateCompanyResponse supplierCompany, CreateCompanyResponse receiverCompany) {
+		if (!CompanyType.SUPPLIER.getName().equals(supplierCompany.companyType())) {
+			throw new CustomCompanyNotSupplierException(ErrorCode.ORDER_COMPANY_NOT_SUPPLIER);
+		}
+
+		if (!CompanyType.RECEIVER.getName().equals(receiverCompany.companyType())) {
+			throw new CustomCompanyNotReceiverException(ErrorCode.ORDER_COMPANY_NOT_RECEIVER);
+		}
+	}
+
+	private void decreaseTotalProductQuantity(List<OrderItem> orderItems) {
+		for (OrderItem orderItem : orderItems) {
+			try {
+				productServiceClient.decreaseStock(orderItem.getProductId(), orderItem.getQuantity());
+			} catch (Exception e) {
+				log.error("상품 재고 차감 API 요청 실패: {}", e.getMessage());
+				throw new CustomProductDecreaseStockApiFailException(ErrorCode.ORDER_PRODUCT_DECREASE_STOCK_FAIL);
+			}
+		}
+	}
+
+	// 상품 정보를 Bulk API에서 조회하는 메서드
+	private List<GetBulkProductResponse> getBulkProductInfo(List<UUID> productIds) {
+		GetBulkProductRequest request = GetBulkProductRequest.from(productIds);
+
+		try {
+			List<GetBulkProductResponse> bulkProducts = productServiceClient.getBulkProducts(request);
+			for (GetBulkProductResponse bulkProduct : bulkProducts) {
+				System.out.println("bulkProduct.productId() = " + bulkProduct.productId());
+				System.out.println("bulkProduct.productName() = " + bulkProduct.productName());
+			}
+			return bulkProducts;
+		} catch (Exception e) {
+			log.error("상품 정보 조회(Bulk API) 실패: {}", e.getMessage());
+			throw new CustomProductBulkNotFoundException(ErrorCode.PRODUCT_BULK_NOT_FOUND);
+		}
+	}
+
+	private void validateProduct(GetBulkProductResponse product, int requestedQuantity) {
+		if (!product.isSold()) {
+			throw new CustomProductNotForSaleException(ErrorCode.ORDER_PRODUCT_NOT_FOR_SALE);
+		}
+
+		if (product.productQuantity() < requestedQuantity) {
+			throw new CustomInsufficientStockException(ErrorCode.ORDER_INSUFFICIENT_STOCK);
+		}
+	}
+
+	private List<UUID> getProductIds(
+		List<OrderItem> savedOrderItems,
+		List<UpdateOrderRequest.UpdateOrderItemRequest> newOrderItems
+	) {
+		List<UUID> savedProductIds = savedOrderItems.stream()
+			.map(OrderItem::getProductId)
+			.toList();
+
+		List<UUID> newProductIds = newOrderItems.stream()
+			.map(UpdateOrderRequest.UpdateOrderItemRequest::productId)
+			.toList();
+
+		List<UUID> productIds = new ArrayList<>();
+
+		productIds.addAll(savedProductIds);
+		productIds.addAll(newProductIds);
+
+		return productIds;
+	}
+
+	private void decreaseProductQuantity(UUID productId, int quantity) {
+		if (quantity <= 0) {
+			return;
+		}
+
+		try {
+			productServiceClient.decreaseStock(productId, quantity);
+		} catch (Exception e) {
+			log.error("상품 재고 차감 API 요청 실패: {}", e.getMessage());
+			throw new CustomProductDecreaseStockApiFailException(ErrorCode.ORDER_PRODUCT_DECREASE_STOCK_FAIL);
+		}
+	}
+
+	private void restoreProductQuantity(UUID productId, int quantity) {
+		if (quantity <= 0) {
+			return;
+		}
+
+		try {
+			productServiceClient.restoreStock(productId, quantity);
+		} catch (Exception e) {
+			log.error("상품 재고 복원 API 요청 실패: {}", e.getMessage());
+			throw new CustomProductRestoreStockApiFailException(ErrorCode.ORDER_PRODUCT_RESTORE_STOCK_FAIL);
+		}
 	}
 }

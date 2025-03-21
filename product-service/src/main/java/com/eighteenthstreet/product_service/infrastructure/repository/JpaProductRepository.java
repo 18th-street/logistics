@@ -1,5 +1,6 @@
 package com.eighteenthstreet.product_service.infrastructure.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,7 +19,11 @@ public interface JpaProductRepository extends JpaRepository<Product, UUID>, Prod
 
 	Optional<Product> findById(UUID productId);
 
-	@Query("select p from Product p "
-		+ "where (:query is null or p.name like %:query%)")
+	@Query("SELECT p FROM Product p "
+		+ "WHERE (:query IS NULL or p.name LIKE %:query%)")
 	Page<Product> searchByProducts(String query, Pageable pageable);
+
+	@Query("SELECT p FROM Product p "
+		+ "WHERE p.id IN :productIds")
+	List<Product> findByIds(List<UUID> productIds);
 }

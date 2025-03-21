@@ -1,12 +1,12 @@
 package com.eigtheenthstreet.order_service.domain.model;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
-
-import com.eigtheenthstreet.order_service.presentation.request.CreateOrderRequest;
 
 import base.BaseEntity;
 import jakarta.persistence.Column;
@@ -16,6 +16,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -43,9 +44,6 @@ public class Order extends BaseEntity {
 	@Column(name = "order_totalPrice")
 	private Integer totalAmount;
 
-	@Column(name = "order_request_details")
-	private String requestDetails;
-
 	@Enumerated(EnumType.STRING)
 	private OrderStatus orderStatus;
 
@@ -58,17 +56,34 @@ public class Order extends BaseEntity {
 	@Column(name = "supplier_company_id")
 	private UUID supplierCompanyId;
 
-	@Column(name = "consumer_company_id")
+	@Column(name = "receiver_company_id")
 	private UUID consumerCompanyId;
 
-	public static Order create(CreateOrderRequest request, Long userId) {
-		return Order.builder()
-			.supplierCompanyId(request.supplierCompanyId())
-			.consumerCompanyId(request.consumerCompanyId())
-			.requestDetails(request.requestDetails())
-			.orderStatus(OrderStatus.CREATED)
-			//.ordererId(userId)
-			.build();
+	@Column(name = "order_destination_address")
+	private String destinationAddress;
+
+	@Column(name = "order_request_details")
+	private String requestDetails;
+
+	@Column(name = "order_delivery_limited_at")
+	private LocalDateTime deliveryLimitedAt;
+
+	@Builder.Default
+	@OneToMany(mappedBy = "orderId")
+	private List<OrderItem> orderItems = new ArrayList<>();
+
+	public void updateDeliveryId(UUID deliveryId) {
+		this.deliveryId = deliveryId;
+	}
+
+	public void updateOrderTotal(List<OrderItem> orderItems) {
+		this.quantity = orderItems.stream()
+			.mapToInt(OrderItem::getQuantity)
+			.sum();
+
+		this.totalAmount = orderItems.stream()
+			.mapToInt(OrderItem::getTotalPrice)
+			.sum();
 	}
 
 	// public void addDelivery(UUID deliveryId) {
@@ -79,20 +94,7 @@ public class Order extends BaseEntity {
 	// 	this.orderStatus = OrderStatus.DELIVERY_FAILED;
 	// }
 
-	public void addOrderTotalQuantityAndTotalAmount(int totalQuantity, Integer totalAmount) {
-		this.quantity = totalQuantity;
-		this.totalAmount = totalAmount;
-	}
-
-	public void updateOrderQuantityAndTotalPrice(List<OrderItem> updatedOrderItems) {
-		int totalQuantity = updatedOrderItems.stream()
-			.mapToInt(OrderItem::getQuantity)
-			.sum();
-
-		int totalAmount = updatedOrderItems.stream()
-			.mapToInt(OrderItem::getTotalPrice)
-			.sum();
-
+	public void saveOrderTotalQuantityAndTotalAmount(int totalQuantity, int totalAmount) {
 		this.quantity = totalQuantity;
 		this.totalAmount = totalAmount;
 	}

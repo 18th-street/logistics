@@ -1,13 +1,15 @@
 package com.eighteenthstreet.deliveryrouteservice.domain.repository;
 
-
-import com.eighteenthstreet.deliveryrouteservice.domain.model.DeliveryRoute;
-
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface DeliveryRouteRepository {
-    DeliveryRoute save(DeliveryRoute deliveryRoute);
+import com.eighteenthstreet.deliveryrouteservice.domain.model.DeliveryRoute;
 
-    Optional<DeliveryRoute> findById(UUID deliveryAgentId);
+public interface DeliveryRouteRepository {
+	DeliveryRoute save(DeliveryRoute deliveryRoute);
+
+	Optional<DeliveryRoute> findById(UUID deliveryAgentId);
+
+	List<DeliveryRoute> findByDeliveryId(UUID deliveryId);
 }
