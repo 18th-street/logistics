@@ -18,7 +18,6 @@ import com.eighteenthstreet.deliveryservice.application.dto.CreateDeliveryRespon
 import com.eighteenthstreet.deliveryservice.application.dto.DeliveryAgentDto;
 import com.eighteenthstreet.deliveryservice.application.dto.DeliveryDetailsResponse;
 import com.eighteenthstreet.deliveryservice.application.dto.DeliveryRouteDto;
-import com.eighteenthstreet.deliveryservice.application.dto.GetDeliveryResponse;
 import com.eighteenthstreet.deliveryservice.domain.event.DeliveryCreatedEvent;
 import com.eighteenthstreet.deliveryservice.domain.exception.DeliveryNotFoundException;
 import com.eighteenthstreet.deliveryservice.domain.model.Delivery;
@@ -62,14 +61,6 @@ public class DeliveryService {
 
 		delivery.updateStatus(request.getDeliveryStatus());
 		deliveryRepository.save(delivery);
-	}
-
-	//TODO: hubClient 에서 허브경로 받아와서 저장하고, 배달담당자도 받아와야함
-	public GetDeliveryResponse getDelivery(UUID uuid) {
-		Delivery delivery = deliveryRepository.findById(uuid)
-			.orElseThrow(() -> new DeliveryNotFoundException(ErrorCode.DELIVERY_NOT_FOUND));
-
-		return GetDeliveryResponse.fromEntity(delivery);
 	}
 
 	@Transactional

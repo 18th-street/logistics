@@ -13,6 +13,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,7 +27,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @SQLRestriction("deleted_at IS NULL")
-@Table(name = "p_delivery_agent")
+@Table(name = "p_delivery_agent",
+	uniqueConstraints = {@UniqueConstraint(columnNames = "user_id")})
 public class DeliveryAgent extends BaseEntity {
 
 	@Id
@@ -37,7 +39,7 @@ public class DeliveryAgent extends BaseEntity {
 	@Column(name = "hub_id")
 	private UUID hubId;
 
-	@Column(name = "user_id")
+	@Column(name = "user_id", unique = true)
 	private UUID userId;
 
 	@Column(name = "delivery_id")
