@@ -49,7 +49,7 @@ public class DeliveryService {
 		delivery = deliveryRepository.save(delivery);
 
 		DeliveryCreatedEvent event = new DeliveryCreatedEvent(createDeliveryRequest.getStartHubId(),
-			createDeliveryRequest.getEndHubId(), delivery.getDeliveryId());
+			createDeliveryRequest.getEndHubId(), delivery.getDeliveryId(), UUID.randomUUID());
 		log.info("######### Send Message[Delivery] : {}", event);
 		rabbitTemplate.convertAndSend(queueDelivery, event);
 		return CreateDeliveryResponse.fromEntity(delivery);
@@ -61,7 +61,7 @@ public class DeliveryService {
 		delivery = deliveryRepository.save(delivery);
 
 		DeliveryCreatedEvent event = new DeliveryCreatedEvent(message.startHubId(),
-			message.endHubId(), delivery.getDeliveryId());
+			message.endHubId(), delivery.getDeliveryId(), message.orderId());
 		log.info("######### Send Message[Delivery Message] : {}", event);
 		rabbitTemplate.convertAndSend(queueDelivery, event);
 		return CreateDeliveryResponse.fromEntity(delivery);
