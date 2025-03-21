@@ -5,8 +5,6 @@ import java.util.UUID;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
 
-import com.eighteenthstreet.deliveryrouteservice.domain.event.DeliveryCreatedEvent;
-
 import base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -56,13 +54,4 @@ public class DeliveryRoute extends BaseEntity {
 	@Column(name = "actual_time")
 	private Integer actualDuration; // 실제 소요 시간 (추후 업데이트 가능)
 
-	public static DeliveryRoute createDeliveryRoute(DeliveryCreatedEvent deliveryCreatedEvent) {
-		// TODO: 허브 간 조회를 하고 추가 할 에정
-		return DeliveryRoute.builder()
-			.deliveryId(deliveryCreatedEvent.getDeliveryId())
-			.startHubId(deliveryCreatedEvent.getStartHubId())
-			.endHubId(deliveryCreatedEvent.getEndHubId())
-			.build();
-
-	}
 }
