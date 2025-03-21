@@ -1,6 +1,5 @@
 package com.eighteenthstreet.hub_service.presentation;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.PageRequest;
@@ -21,7 +20,6 @@ import com.eighteenthstreet.hub_service.application.HubService;
 import com.eighteenthstreet.hub_service.application.dto.CreateHubResponse;
 import com.eighteenthstreet.hub_service.application.dto.GetHubResponse;
 import com.eighteenthstreet.hub_service.application.dto.UpdateHubResponse;
-import com.eighteenthstreet.hub_service.domain.model.Hub;
 import com.eighteenthstreet.hub_service.presentation.request.CreateHubRequest;
 import com.eighteenthstreet.hub_service.presentation.request.UpdateHubRequest;
 
@@ -72,8 +70,8 @@ public class HubController {
 	}
 
 	@PutMapping("/{hubId}")
-	public ResponseEntity<UpdateHubResponse> updateHub(@PathVariable UUID hubId, @RequestBody UpdateHubRequest request)
-	{
+	public ResponseEntity<UpdateHubResponse> updateHub(@PathVariable UUID hubId,
+		@RequestBody UpdateHubRequest request) {
 		UpdateHubResponse response = hubService.updateHub(hubId, request);
 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -84,5 +82,10 @@ public class HubController {
 		hubService.deleteHub(hubId);
 
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+
+	@GetMapping("/{hubId}/exists")
+	public boolean existsById(@PathVariable("hubId") UUID hubId) {
+		return hubService.existsById(hubId);
 	}
 }

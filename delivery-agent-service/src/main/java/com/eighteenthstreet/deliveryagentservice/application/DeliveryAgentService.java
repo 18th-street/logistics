@@ -27,12 +27,8 @@ public class DeliveryAgentService {
 
 	private final DeliveryAgentRepository deliveryAgentRepository;
 
-	//TODO: 추후 동기방식으로 boolean 값으로 검증 하고 저장함
-	// 유저에서 DeliveryAgent 을 생성
 	public CreateDeliveryAgentResponse createDeliveryAgent(CreateDeliveryAgentRequest request) {
 
-		// 1. 추후 hubService 에서 ID 검증을 해봐야함
-		// 2. useService 에서도 ID 검증을 해봐야함
 		DeliveryAgent deliveryAgent = DeliveryAgent.builder()
 			.hubId(request.getHubId())
 			.userId(request.getUserId())
@@ -45,35 +41,24 @@ public class DeliveryAgentService {
 	}
 
 	public GetDeliveryAgentResponse getDeliveryAgent(UUID id) {
-		DeliveryAgent deliveryAgent = deliveryAgentRepository.findById(id).orElseThrow(
-			() -> new DeliveryAgentNotFoundException(ErrorCode.DELIVERY_AGENT_NOT_FOUND)
-		);
+		DeliveryAgent deliveryAgent = deliveryAgentRepository.findById(id)
+			.orElseThrow(() -> new DeliveryAgentNotFoundException(ErrorCode.DELIVERY_AGENT_NOT_FOUND));
 
 		return GetDeliveryAgentResponse.fromEntity(deliveryAgent);
 	}
 
-	//TODO: 적당한 담당자 찾는 로직 구현
-	public void handleRouteCreated() {
-		// 1. 적당한 담당자 찾기
-		// 2. 배차정보 set
-		// 3. DB저장
-		// 4. Delivery로 이벤트 발행 --> 그러면 Delivery 상태 변경
-	}
-
 	@Transactional
 	public void updateDeliveryAgentType(UpdateDeliveryTypeRequest request) {
-		DeliveryAgent deliveryAgent = deliveryAgentRepository.findById(request.getDeliveryAgentId()).orElseThrow(
-			() -> new DeliveryAgentNotFoundException(ErrorCode.DELIVERY_AGENT_NOT_FOUND)
-		);
+		DeliveryAgent deliveryAgent = deliveryAgentRepository.findById(request.getDeliveryAgentId())
+			.orElseThrow(() -> new DeliveryAgentNotFoundException(ErrorCode.DELIVERY_AGENT_NOT_FOUND));
 
 		deliveryAgent.updateDeliveryAgentType(request.getDeliveryAgentType());
 	}
 
 	@Transactional
 	public void deleteDeliveryAgent(UUID id) {
-		DeliveryAgent deliveryAgent = deliveryAgentRepository.findById(id).orElseThrow(
-			() -> new DeliveryAgentNotFoundException(ErrorCode.DELIVERY_AGENT_NOT_FOUND)
-		);
+		DeliveryAgent deliveryAgent = deliveryAgentRepository.findById(id)
+			.orElseThrow(() -> new DeliveryAgentNotFoundException(ErrorCode.DELIVERY_AGENT_NOT_FOUND));
 
 		if (deliveryAgent.getDeliveryAgentStatus() == DeliveryAgentStatus.IN_DELIVERY) {
 			throw new InvalidDeliveryAgentException(ErrorCode.INVALID_DELIVERY_AGENT_STATUS);
@@ -104,12 +89,8 @@ public class DeliveryAgentService {
 		List<DeliveryAgent> agents = deliveryAgentRepository.findByDeliveryId(deliveryId);
 
 		return agents.stream()
-			.map(agent -> new DeliveryAgentDto(
-				agent.getDeliveryAgentId(),
-				agent.getDeliveryAgentStatus().name(),
-				agent.getSequence(),
-				null
-			))
+			.map(agent -> new DeliveryAgentDto(agent.getDeliveryAgentId(), agent.getDeliveryAgentStatus().name(),
+				agent.getSequence(), null))
 			.toList();
 	}
 }
