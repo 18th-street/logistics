@@ -79,12 +79,16 @@ public enum ErrorCode {
 	HUB_ROUTE_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 경로입니다.", "H003"),
 	HUB_ROUTE_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 존재하는 경로입니다.", "H004"),
 
-
 	// 슬랙 오류
 	SLACK_SEND_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "슬랙 메시지 전송을 실패했습니다.", "S001"),
 	SLACK_ID_EXTRACT_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "슬랙 멤버 ID 추출을 실패했습니다.", "S002"),
 	SLACK_TRANSACTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "슬랙 메시지 저장을 실패했습니다.", "S003"),
-	SLACK_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 슬랙 메시지 정보를 찾을 수 없습니다.", "S004");
+	SLACK_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 슬랙 메시지 정보를 찾을 수 없습니다.", "S004"),
+	ORDER_GET_API_FAIL(HttpStatus.BAD_REQUEST, "주문 조회 API 호출을 실패했습니다.", "S005"),
+	DELIVERY_GET_API_FAIL(HttpStatus.BAD_REQUEST, "배달 조회 API 호출을 실패했습니다.", "S006"),
+	HUB_GET_API_FAIL(HttpStatus.BAD_REQUEST, "허브 조회 API 호출을 실패했습니다.", "S007"),
+	USER_GET_API_FAIL(HttpStatus.BAD_REQUEST, "유저 조회 API 호출을 실패했습니다.", "S008");
+	
 	private final HttpStatus httpStatus;
 	private final String message;
 	private final String code;
