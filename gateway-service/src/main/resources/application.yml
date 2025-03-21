@@ -36,14 +36,14 @@ spring:
           uri: lb://user-service
           predicates:
             - Path=/api/v1/users/**
-        - id: company-service
-          uri: lb://company-service
-          predicates:
-            - Path=/api/v1/companies/**
         - id: hub-service
           uri: lb://hub-service
           predicates:
             - Path=/api/v1/hub/**
+        - id: hub-route-service
+          uri: lb://hub-route-service
+          predicates:
+            - Path=/api/v1/hub/routes**
         - id: company-service
           uri: lb://company-service
           predicates:
