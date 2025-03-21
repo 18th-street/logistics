@@ -27,11 +27,13 @@ public class DeliveryAgentService {
 
 	private final DeliveryAgentRepository deliveryAgentRepository;
 
-	public CreateDeliveryAgentResponse createDeliveryAgent(CreateDeliveryAgentRequest request) {
+	public CreateDeliveryAgentResponse createDeliveryAgent(CreateDeliveryAgentRequest request, UUID userId) {
+
+		// TODO: 존재하는 허브인지 확인
 
 		DeliveryAgent deliveryAgent = DeliveryAgent.builder()
 			.hubId(request.getHubId())
-			.userId(request.getUserId())
+			.userId(userId)
 			.deliveryAgentType(request.getDeliveryAgentType())
 			.deliveryAgentStatus(DeliveryAgentStatus.AVAILABLE)
 			.slackId(request.getSlackId())

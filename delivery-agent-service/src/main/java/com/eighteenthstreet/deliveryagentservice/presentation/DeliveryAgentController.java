@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,6 +21,7 @@ import com.eighteenthstreet.deliveryagentservice.application.dto.GetDeliveryAgen
 import com.eighteenthstreet.deliveryagentservice.presentation.request.CreateDeliveryAgentRequest;
 import com.eighteenthstreet.deliveryagentservice.presentation.request.UpdateDeliveryTypeRequest;
 
+import auth.JwtUtil;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -27,14 +29,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DeliveryAgentController {
 	private final DeliveryAgentService deliveryAgentService;
-
-	//TODO: 추후 JWT 가져와서 권한체크 필요
+	private final JwtUtil jwtUtil;
 
 	@PostMapping
 	public ResponseEntity<CreateDeliveryAgentResponse> createDeliveryAgent(
-		@RequestBody CreateDeliveryAgentRequest request) {
-		CreateDeliveryAgentResponse response = deliveryAgentService.createDeliveryAgent(request);
+		@RequestBody CreateDeliveryAgentRequest request,
+		@RequestHeader("Authorization") String token) {
 
+		UUID userId = jwtUtil.getUserIdFromToken(token);
+
+		CreateDeliveryAgentResponse response = deliveryAgentService.createDeliveryAgent(request, userId);
 		return ResponseEntity.ok(response);
 	}
 
