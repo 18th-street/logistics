@@ -97,7 +97,7 @@ public class DeliveryService {
 	public DeliveryDetailsResponse getDeliveryDetails(UUID deliveryId) {
 		try {
 			// Delivery 존재 여부 확인
-			deliveryRepository.findById(deliveryId)
+			Delivery delivery = deliveryRepository.findById(deliveryId)
 				.orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_NOT_FOUND));
 
 			// 1. DeliveryAgent 조회
@@ -121,7 +121,7 @@ public class DeliveryService {
 				.collect(Collectors.toList());
 
 			// 4. 응답 조합
-			return new DeliveryDetailsResponse(deliveryId, agentsWithRoutes);
+			return new DeliveryDetailsResponse(deliveryId, delivery.getDestinationAddress(), agentsWithRoutes);
 
 		} catch (CustomException e) {
 			log.warn("배달 상세 조회 중 사용자 정의 예외 발생: message={}", e.getMessage());
