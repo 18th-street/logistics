@@ -20,8 +20,19 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
-
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    listener:
+      simple:
+        missing-queues-fatal: false # 큐가 없을 경우 오류 발생하지 않도록 설정
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:19090/eureka/
+
+message:
+  queue:
+    slack: logistics.slack
