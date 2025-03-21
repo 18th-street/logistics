@@ -60,14 +60,12 @@ management:
 
 
 message:
-  exchange: delivery
+  exchange: logistics
   queue:
-    delivery: delivery.delivery
-    route: delivery.route
-    delivery-assigned: delivery.assigned
-    delivery-agent-failed: delivery.agent.failed
+    delivery-route: logistics.delivery-route
+    delivery-assigned: logistics.assigned
+    delivery-agent-failed: logistics.agent-failed
   err:
-    exchange: delivery.err
+    exchange: logistics.err
     queue:
-      err:
-        delivery: delivery.err.delivery
+      route: logistics.err.route

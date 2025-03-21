@@ -19,7 +19,7 @@ public class DeliveryAgentQueueConfig {
 	@Value("${message.exchange}")
 	private String exchange;
 
-	@Value("${message.queue.route}")
+	@Value("${message.queue.delivery-route}")
 	private String queueRoute;
 
 	@Value("${message.queue.delivery-assigned}")
