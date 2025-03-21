@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedModel;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +36,6 @@ public class HubService {
 			throw new CustomHubAlreadyExistException(ErrorCode.HUB_ALREADY_EXIST);
 		}
 
-		// 권한 체크 (Master만 생성 가능)
 		Hub hub = Hub.create(request);
 		hubRepository.save(hub);
 
@@ -47,9 +47,9 @@ public class HubService {
 		Page<Hub> hubPage;
 
 		if (keyword == null || keyword.trim().isEmpty()) {
-			hubPage = hubRepository.findAll(pageable);
+			hubPage = hubRepository.findByIsDeletedNull(pageable);
 		} else {
-			hubPage = hubRepository.findByNameContaining(keyword, pageable);
+			hubPage = hubRepository.findByIsDeletedNullAndNameContaining(keyword, pageable);
 		}
 
 		Page<GetHubResponse> responses = hubPage.map(GetHubResponse::from);
@@ -59,20 +59,15 @@ public class HubService {
 
 	@Transactional(readOnly = true)
 	public GetHubResponse getHub(UUID hubId) {
-		Hub hub = hubRepository.findById(hubId)
+		Hub hub = hubRepository.findByHubIdAndIsDeletedNull(hubId)
 			.orElseThrow(() -> new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND));
-
-		if (hub.getIsDeleted()) {
-			throw new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND);
-		}
 
 		return GetHubResponse.from(hub);
 	}
 
 	@Transactional
 	public UpdateHubResponse updateHub(UUID hubId, UpdateHubRequest request) {
-		// 권한 체크 (Master만 수정 가능)
-		Hub foundHub = hubRepository.findById(hubId)
+		Hub foundHub = hubRepository.findByHubIdAndIsDeletedNull(hubId)
 			.orElseThrow(() -> new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND));
 
 		foundHub.update(request);
@@ -82,11 +77,17 @@ public class HubService {
 
 	@Transactional
 	public void deleteHub(UUID hubId) {
-		// 권한 체크 (Master만 삭제 가능)
-		Hub foundHub = hubRepository.findById(hubId)
+		Hub foundHub = hubRepository.findByHubIdAndIsDeletedNull(hubId)
 			.orElseThrow(() -> new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND));
 
 		foundHub.performSoftDelete();
+	}
+
+	@Transactional(readOnly = true)
+	public List<GetHubResponse> getHubsById(List<UUID> hubIds) {
+		List<Hub> hubs = hubRepository.findByHubIdInAndIsDeletedNull(hubIds);
+
+		return hubs.stream().map(GetHubResponse::from).toList();
 	}
 
 	public boolean existsById(UUID hubId) {

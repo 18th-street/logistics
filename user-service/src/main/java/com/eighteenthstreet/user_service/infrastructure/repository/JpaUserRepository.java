@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.eighteenthstreet.user_service.domain.model.User;
 
-public interface JpaUserRepository extends JpaRepository<User, Long> {
+public interface JpaUserRepository extends JpaRepository<User, UUID> {
 	User findByUsername(String username);
 
 	@Query(value = "SELECT u FROM User u "
