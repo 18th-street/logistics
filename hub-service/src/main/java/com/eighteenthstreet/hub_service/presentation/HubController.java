@@ -1,5 +1,6 @@
 package com.eighteenthstreet.hub_service.presentation;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.PageRequest;
@@ -20,9 +21,12 @@ import com.eighteenthstreet.hub_service.application.HubService;
 import com.eighteenthstreet.hub_service.application.dto.CreateHubResponse;
 import com.eighteenthstreet.hub_service.application.dto.GetHubResponse;
 import com.eighteenthstreet.hub_service.application.dto.UpdateHubResponse;
+import com.eighteenthstreet.hub_service.domain.model.Hub;
 import com.eighteenthstreet.hub_service.presentation.request.CreateHubRequest;
 import com.eighteenthstreet.hub_service.presentation.request.UpdateHubRequest;
 
+import auth.CheckRole;
+import auth.Role;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,6 +43,7 @@ public class HubController {
 		return "pong";
 	}
 
+	@CheckRole({Role.MASTER})
 	@PostMapping()
 	public ResponseEntity<CreateHubResponse> createHub(@RequestBody CreateHubRequest request) {
 		CreateHubResponse response = hubService.createHub(request);
@@ -55,8 +60,6 @@ public class HubController {
 
 		PageRequest pageable = PageRequest.of(page, size);
 
-		log.info(pageable.toString());
-
 		PagedModel<GetHubResponse> response = hubService.searchHubs(pageable, keyword);
 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -69,6 +72,7 @@ public class HubController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
+	@CheckRole({Role.MASTER})
 	@PutMapping("/{hubId}")
 	public ResponseEntity<UpdateHubResponse> updateHub(@PathVariable UUID hubId,
 		@RequestBody UpdateHubRequest request) {
@@ -77,6 +81,7 @@ public class HubController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
+	@CheckRole({Role.MASTER})
 	@DeleteMapping("/{hubId}")
 	public ResponseEntity<Void> deleteHub(@PathVariable UUID hubId) {
 		hubService.deleteHub(hubId);
@@ -88,4 +93,13 @@ public class HubController {
 	public boolean existsById(@PathVariable("hubId") UUID hubId) {
 		return hubService.existsById(hubId);
 	}
+
+	@PostMapping("/ids")
+	public ResponseEntity<List<GetHubResponse>> getHubsByIds(@RequestBody List<UUID> hubIds) {
+		List<GetHubResponse> response = hubService.getHubsById(hubIds);
+
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+
+	;
 }

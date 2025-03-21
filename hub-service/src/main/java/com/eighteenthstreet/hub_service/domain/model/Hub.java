@@ -43,6 +43,9 @@ public class Hub extends BaseEntity {
 	@Column(nullable = false)
 	private Double longitude;
 
+	@Column(nullable = false)
+	private UUID userId;
+
 	public static Hub create(CreateHubRequest request) {
 		return Hub.builder()
 			.name(request.getName())

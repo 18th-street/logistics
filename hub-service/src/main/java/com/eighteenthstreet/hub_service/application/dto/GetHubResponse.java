@@ -20,6 +20,7 @@ public class GetHubResponse {
 	private String address;
 	private Double latitude;
 	private Double longitude;
+	private UUID userId;
 
 	public static GetHubResponse from(Hub hub) {
 		return GetHubResponse.builder()
@@ -28,6 +29,7 @@ public class GetHubResponse {
 			.address(hub.getAddress())
 			.latitude(hub.getLatitude())
 			.longitude(hub.getLongitude())
+			.userId(hub.getUserId())
 			.build();
 	}
 }
