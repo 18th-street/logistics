@@ -22,4 +22,12 @@ public class DateTimeUtil {
 			throw new DateTimeParseException("Invalid date/time format", dateTimeString, e.getErrorIndex());
 		}
 	}
+
+	public static String formatDateTime(LocalDateTime dateTime) {
+		if (dateTime == null) {
+			throw new IllegalArgumentException("dateTime cannot be null");
+		}
+
+		return dateTime.format(DATE_TIME_FORMATTER);
+	}
 }

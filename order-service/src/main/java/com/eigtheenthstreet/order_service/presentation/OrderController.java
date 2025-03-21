@@ -27,6 +27,7 @@ import com.eigtheenthstreet.order_service.presentation.request.CreateOrderReques
 import com.eigtheenthstreet.order_service.presentation.request.SearchCondition;
 import com.eigtheenthstreet.order_service.presentation.request.UpdateOrderRequest;
 
+import auth.CheckRole;
 import auth.JwtUtil;
 import auth.Role;
 import exception.ErrorCode;
@@ -49,39 +50,30 @@ public class OrderController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
+	@CheckRole({Role.MASTER, Role.HUB})
 	@PatchMapping("/{orderId}")
 	public ResponseEntity<UpdateOrderResponse> updateOrder(
 		@PathVariable UUID orderId,
-		@RequestBody UpdateOrderRequest request,
-		@RequestHeader("Authorization") String token
+		@RequestBody UpdateOrderRequest request
 	) {
-		Role role = jwtUtil.getRoleFromToken(token);
-		hasValidUpdateRole(role);
-
 		UpdateOrderResponse response = orderService.updateOrder(request, orderId);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
+	@CheckRole({Role.MASTER, Role.HUB})
 	@DeleteMapping("/{orderId}")
 	public ResponseEntity<Void> deleteOrder(
-		@PathVariable UUID orderId,
-		@RequestHeader("Authorization") String token
+		@PathVariable UUID orderId
 	) {
-		Role role = jwtUtil.getRoleFromToken(token);
-		hasValidDeleteRole(role);
-
 		orderService.deleteOrder(orderId);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
+	@CheckRole({Role.MASTER, Role.HUB})
 	@DeleteMapping("/{orderId}/cancel")
 	public ResponseEntity<Void> cancelOrder(
-		@PathVariable UUID orderId,
-		@RequestHeader("Authorization") String token
+		@PathVariable UUID orderId
 	) {
-		Role role = jwtUtil.getRoleFromToken(token);
-		hasValidCancelRole(role);
-
 		orderService.cancelOrder(orderId);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}

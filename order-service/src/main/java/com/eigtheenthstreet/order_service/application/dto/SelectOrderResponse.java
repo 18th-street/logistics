@@ -7,6 +7,7 @@ import com.eigtheenthstreet.order_service.domain.model.Order;
 import com.eigtheenthstreet.order_service.domain.model.OrderItem;
 import com.eigtheenthstreet.order_service.domain.model.OrderStatus;
 import com.eigtheenthstreet.order_service.infrastructure.client.dto.GetBulkProductResponse;
+import com.eigtheenthstreet.order_service.util.DateTimeUtil;
 
 public record SelectOrderResponse(
 	UUID orderId,
@@ -15,6 +16,7 @@ public record SelectOrderResponse(
 	UUID consumerCompanyId,
 	Integer orderTotalQuantity,
 	Integer orderTotalAmount,
+	String deliveryLimitedAt,
 	List<SelectOrderItemResponse> orderItems,
 	UUID deliveryId,
 	OrderStatus orderStatus
@@ -30,6 +32,7 @@ public record SelectOrderResponse(
 			order.getConsumerCompanyId(),
 			order.getQuantity(),
 			order.getTotalAmount(),
+			DateTimeUtil.formatDateTime(order.getDeliveryLimitedAt()),
 			orderItem,
 			order.getDeliveryId(),
 			order.getOrderStatus()
