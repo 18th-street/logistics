@@ -52,6 +52,10 @@ message:
     exchange: logistics.err
     queue:
       route: logistics.err.route
+  complete:
+    exchange: logistics.complete
+    queue:
+      order: logistics.complete.order
 
 
 eureka:

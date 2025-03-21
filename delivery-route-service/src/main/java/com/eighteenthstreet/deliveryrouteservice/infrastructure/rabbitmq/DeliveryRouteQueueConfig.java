@@ -15,6 +15,9 @@ public class DeliveryRouteQueueConfig {
 	@Value("${message.exchange}")
 	private String exchange;
 
+	@Value("${message.complete.exchange}")
+	private String completeExchange;
+
 	@Value("${message.queue.delivery-service}")
 	private String queueDelivery;
 
@@ -30,6 +33,9 @@ public class DeliveryRouteQueueConfig {
 	@Value("${message.err.queue.route}")
 	private String queueErrRoute;
 
+	@Value("${message.complete.queue.order}")
+	private String queueCompleteOrder;
+
 	@Bean
 	public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
 		return new Jackson2JsonMessageConverter();
@@ -41,10 +47,20 @@ public class DeliveryRouteQueueConfig {
 		return new TopicExchange(exchange); // "delivery"
 	}
 
+	@Bean
+	public TopicExchange completeExchange() {
+		return new TopicExchange(completeExchange);
+	}
+
 	// 큐 정의
 	@Bean
 	public Queue queueDelivery() {
 		return new Queue(queueDelivery); // "delivery.delivery"
+	}
+
+	@Bean
+	public Queue queueCompleteOrder() {
+		return new Queue(queueCompleteOrder);
 	}
 
 	@Bean
@@ -89,5 +105,10 @@ public class DeliveryRouteQueueConfig {
 	@Bean
 	public Binding bindingErrRoute() {
 		return BindingBuilder.bind(queueErrRoute()).to(exchangeErr()).with(queueErrRoute);
+	}
+
+	@Bean
+	public Binding bindingCompleteOrder() {
+		return BindingBuilder.bind(queueCompleteOrder()).to(completeExchange()).with(queueCompleteOrder);
 	}
 }

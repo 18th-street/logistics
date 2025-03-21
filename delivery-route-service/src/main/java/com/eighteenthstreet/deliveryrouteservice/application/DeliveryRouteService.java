@@ -16,6 +16,7 @@ import com.eighteenthstreet.deliveryrouteservice.application.client.HubRouteClie
 import com.eighteenthstreet.deliveryrouteservice.application.dto.DeliveryRouteDto;
 import com.eighteenthstreet.deliveryrouteservice.application.dto.GetDeliveryRouteResponse;
 import com.eighteenthstreet.deliveryrouteservice.domain.event.DeliveryCreatedEvent;
+import com.eighteenthstreet.deliveryrouteservice.domain.event.OrderDeliveryCompleteMessage;
 import com.eighteenthstreet.deliveryrouteservice.domain.exception.DeliveryRouteNotFoundException;
 import com.eighteenthstreet.deliveryrouteservice.domain.model.DeliveryRoute;
 import com.eighteenthstreet.deliveryrouteservice.domain.repository.DeliveryRouteRepository;
@@ -36,6 +37,9 @@ public class DeliveryRouteService {
 
 	@Value("${message.queue.delivery-route-failed}")
 	private String failedQueue;
+
+	@Value("${message.complete.queue.order}")
+	private String completeOrderQueue;
 
 	private final DeliveryRouteRepository deliveryRouteRepository;
 	private final RabbitTemplate rabbitTemplate;
@@ -75,6 +79,12 @@ public class DeliveryRouteService {
 			RouteCreatedEvent routeEvent = new RouteCreatedEvent(event.getDeliveryId(), routeInfos);
 			rabbitTemplate.convertAndSend(queue, routeEvent);
 			log.info("##### 배차 요청 보냄: {}", routeEvent);
+
+			// 4. 주문 측에 배달 생성 메세지 보내기
+			OrderDeliveryCompleteMessage orderMessage = new OrderDeliveryCompleteMessage(event.getDeliveryId(),
+				event.getOrderId());
+			rabbitTemplate.convertAndSend(completeOrderQueue, orderMessage);
+
 		} catch (FeignException.NotFound e) {
 			log.error("경로를 찾을 수 없음: startHubId={}, endHubId={}, 오류: {}", event.getStartHubId(), event.getEndHubId(),
 				e.getMessage());
