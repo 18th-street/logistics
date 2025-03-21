@@ -1,5 +1,6 @@
 package com.eighteenthstreet.hub_service.domain;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,5 +19,7 @@ public interface HubRepository {
 
 	Page<Hub> findByIsDeletedNullAndNameContaining(String keyword, PageRequest pageable);
 
-	Optional<Hub> findById(UUID hubId);
+	Optional<Hub> findByHubIdAndIsDeletedNull(UUID hubId);
+
+	List<Hub> findByHubIdInAndIsDeletedNull(List<UUID> hubIds);
 }

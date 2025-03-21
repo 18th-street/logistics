@@ -1,5 +1,6 @@
 package com.eighteenthstreet.hub_service.presentation;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.PageRequest;
@@ -81,4 +82,13 @@ public class HubController {
 
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
+
+	@PostMapping("/ids")
+	public ResponseEntity<List<GetHubResponse>> getHubsByIds(@RequestBody List<UUID> hubIds) {
+		List<GetHubResponse> response = hubService.getHubsById(hubIds);
+
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+
+	;
 }

@@ -1,5 +1,6 @@
 package com.eighteenthstreet.hub_service.application;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -87,5 +88,12 @@ public class HubService {
 			.orElseThrow(() -> new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND));
 
 		foundHub.performSoftDelete();
+	}
+
+	@Transactional(readOnly = true)
+	public List<GetHubResponse> getHubsById(List<UUID> hubIds) {
+		List<Hub> hubs = hubRepository.findByHubIdInAndIsDeletedNull(hubIds);
+
+		return hubs.stream().map(GetHubResponse::from).toList();
 	}
 }
