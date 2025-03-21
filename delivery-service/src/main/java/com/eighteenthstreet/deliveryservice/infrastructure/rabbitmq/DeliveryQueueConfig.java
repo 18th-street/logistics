@@ -20,6 +20,9 @@ public class DeliveryQueueConfig {
 	@Value("${message.exchange}")
 	private String exchange;
 
+	@Value("${message.queue.delivery}")
+	private String queueOrderDelivery;
+
 	@Value("${message.queue.delivery-service}")
 	private String queueDelivery;
 
@@ -46,6 +49,10 @@ public class DeliveryQueueConfig {
 		return new TopicExchange(exchange);
 	}
 
+	public Queue queueOrderDelivery() {
+		return new Queue(queueOrderDelivery);
+	}
+
 	@Bean
 	public Queue queueDelivery() {
 		return new Queue(queueDelivery);
@@ -69,6 +76,11 @@ public class DeliveryQueueConfig {
 	@Bean
 	public Queue queueAssigned() {
 		return new Queue(queueAssigned);
+	}
+
+	@Bean
+	public Binding bindingOrderDelivery() {
+		return BindingBuilder.bind(queueOrderDelivery()).to(exchange()).with(queueOrderDelivery);
 	}
 
 	@Bean

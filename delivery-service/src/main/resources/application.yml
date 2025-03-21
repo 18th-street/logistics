@@ -46,6 +46,7 @@ spring:
 message:
   exchange: logistics
   queue:
+    delivery: logistics.delivery
     delivery-service: logistics.delivery-service
     delivery-route: logistics.delivery-route
     delivery-assigned: logistics.assigned
