@@ -7,16 +7,16 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import com.eighteenthstreet.slack_service.application.dto.GetDeliveryResponse;
+import com.eighteenthstreet.slack_service.application.client.DeliveryServiceClient;
+import com.eighteenthstreet.slack_service.application.client.HubServiceClient;
+import com.eighteenthstreet.slack_service.application.client.OrderServiceClient;
+import com.eighteenthstreet.slack_service.application.client.UserServiceClient;
+import com.eighteenthstreet.slack_service.application.dto.DeliveryDetailsResponse;
 import com.eighteenthstreet.slack_service.application.dto.GetHubResponse;
 import com.eighteenthstreet.slack_service.application.dto.OrderDeliveryInfo;
 import com.eighteenthstreet.slack_service.application.dto.SelectOrderResponse;
 import com.eighteenthstreet.slack_service.application.dto.UserResponseDto;
 import com.eighteenthstreet.slack_service.application.service.SlackService;
-import com.eighteenthstreet.slack_service.infrastructure.client.DeliveryServiceClient;
-import com.eighteenthstreet.slack_service.infrastructure.client.HubServiceClient;
-import com.eighteenthstreet.slack_service.infrastructure.client.OrderServiceClient;
-import com.eighteenthstreet.slack_service.infrastructure.client.UserServiceClient;
 import com.eighteenthstreet.slack_service.infrastructure.config.ServletRequestUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -44,9 +44,9 @@ public class SlackEndpoint {
 			UUID.randomUUID(), // ordererId
 			UUID.randomUUID(), // supplierCompanyId
 			UUID.randomUUID(), // consumerCompanyId
-			"빠른 배송 요청", // requestDetails
 			15, // orderTotalQuantity
 			250000, // orderTotalAmount
+			"2025년 04월 04일 22시 50분", // deliveryLimitedAt
 			List.of(
 				new SelectOrderResponse.SelectOrderItemResponse(
 					UUID.randomUUID(), "크록스 블랙", 10, 15000, 150000
@@ -69,15 +69,24 @@ public class SlackEndpoint {
 		UUID hub2 = UUID.randomUUID();
 		UUID hub3 = UUID.randomUUID();
 
-		GetDeliveryResponse delivery = new GetDeliveryResponse(
-			order.deliveryId(),
-			hub1,
-			hub3,
-			List.of(
-				new GetDeliveryResponse.GetDeliveryRouteResponse(1, hub1, hub2),
-				new GetDeliveryResponse.GetDeliveryRouteResponse(2, hub2, hub3)
-			),
-			"부산시 해운대구 센텀중앙로 97"
+		DeliveryDetailsResponse.DeliveryRouteDto route1 = new DeliveryDetailsResponse.DeliveryRouteDto(
+			UUID.randomUUID(), 1, hub1, hub2
+		);
+		DeliveryDetailsResponse.DeliveryRouteDto route2 = new DeliveryDetailsResponse.DeliveryRouteDto(
+			UUID.randomUUID(), 2, hub2, hub3
+		);
+
+		DeliveryDetailsResponse.DeliveryAgentDto agent1 = new DeliveryDetailsResponse.DeliveryAgentDto(
+			UUID.randomUUID(), "IN_PROGRESS", 1, route1
+		);
+		DeliveryDetailsResponse.DeliveryAgentDto agent2 = new DeliveryDetailsResponse.DeliveryAgentDto(
+			UUID.randomUUID(), "WAITING", 2, route2
+		);
+
+		DeliveryDetailsResponse delivery = new DeliveryDetailsResponse(
+			UUID.randomUUID(),
+			"부산시 해운대구 센텀중앙로 97",
+			List.of(agent1, agent2)
 		);
 
 		// hub 정보
@@ -86,6 +95,7 @@ public class SlackEndpoint {
 
 		// 🏢 Hub 데이터 생성
 		List<GetHubResponse> hubs = new ArrayList<>();
+
 		GetHubResponse startHub = new GetHubResponse(
 			hub1, "서울특별시 센터", "서울특별시 송파구 송파대로 55",
 			BigDecimal.valueOf(37.514575), BigDecimal.valueOf(127.105399), UUID.randomUUID()
@@ -116,7 +126,7 @@ public class SlackEndpoint {
 			orderId,
 			order.orderItems().stream().map(SelectOrderResponse.SelectOrderItemResponse::productName).toList(),
 			order.orderItems().stream().map(SelectOrderResponse.SelectOrderItemResponse::productQuantity).toList(),
-			order.requestDetails(),
+			order.deliveryLimitedAt(),
 			hubs.get(0).name(),
 			hubs.stream().map(GetHubResponse::name).toList(),
 			delivery.destinationAddress()

@@ -8,9 +8,9 @@ public record SelectOrderResponse(
 	UUID ordererId,
 	UUID supplierCompanyId,
 	UUID consumerCompanyId,
-	String requestDetails,
 	Integer orderTotalQuantity,
 	Integer orderTotalAmount,
+	String deliveryLimitedAt,
 	List<SelectOrderItemResponse> orderItems,
 	UUID deliveryId,
 	OrderStatus orderStatus
