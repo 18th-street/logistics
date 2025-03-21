@@ -22,8 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.eighteenthstreet.slack_service.application.dto.SlackMessageResponseDto;
 import com.eighteenthstreet.slack_service.application.service.SlackService;
 import com.eighteenthstreet.slack_service.infrastructure.rabbitmq.SlackEndpoint;
-import com.eighteenthstreet.slack_service.presentation.dto.DeliveryMessageRequestDto;
-import com.eighteenthstreet.slack_service.presentation.dto.OrderMessageRequestDto;
 import com.eighteenthstreet.slack_service.presentation.dto.SendMessageByEmailRequestDto;
 import com.eighteenthstreet.slack_service.presentation.dto.SendMessageRequestDto;
 import com.eighteenthstreet.slack_service.presentation.dto.UpdateSlackMessageRequestDto;
@@ -118,25 +116,9 @@ public class SlackController {
 		return ResponseEntity.ok().build();
 	}
 
-	@Description("For Test")
-	@PostMapping("/both")
-	public ResponseEntity<Void> sendMessageToHubManger(
-		@RequestParam("slackId") String slackId,
-		@RequestBody OrderAndDeliveryRequestDto requestDto
-	) {
-		slackService.sendSlackMessageToHubManager(slackId, requestDto.order, requestDto.delivery);
-		return ResponseEntity.ok().build();
-	}
-
-	public record OrderAndDeliveryRequestDto(
-		OrderMessageRequestDto order,
-		DeliveryMessageRequestDto delivery
-	) {
-	}
-
-	@PostMapping("/test/send")
-	public void test() {
-		slackEndpoint.sendSlackToHubManager(UUID.randomUUID());
+	@PostMapping("/test/send/{orderId}")
+	public void test(@PathVariable("orderId") UUID orderId) {
+		slackEndpoint.sendSlackToHubManager(orderId);
 	}
 
 }

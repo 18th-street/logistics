@@ -8,14 +8,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.eighteenthstreet.slack_service.application.client.DeliveryServiceClient;
+import com.eighteenthstreet.slack_service.application.client.HubServiceClient;
+import com.eighteenthstreet.slack_service.application.client.OrderServiceClient;
+import com.eighteenthstreet.slack_service.application.client.UserServiceClient;
+import com.eighteenthstreet.slack_service.application.dto.DeliveryDetailsResponse;
+import com.eighteenthstreet.slack_service.application.dto.GetHubResponse;
 import com.eighteenthstreet.slack_service.application.dto.OrderDeliveryInfo;
+import com.eighteenthstreet.slack_service.application.dto.SelectOrderResponse;
 import com.eighteenthstreet.slack_service.application.dto.SlackMessageResponseDto;
+import com.eighteenthstreet.slack_service.application.dto.UserResponseDto;
 import com.eighteenthstreet.slack_service.domain.model.SlackMessage;
 import com.eighteenthstreet.slack_service.domain.repository.SlackMessageRepository;
 import com.eighteenthstreet.slack_service.infrastructure.Gemini.AiService;
+import com.eighteenthstreet.slack_service.infrastructure.config.ServletRequestUtil;
 import com.eighteenthstreet.slack_service.infrastructure.slack.SlackClient;
-import com.eighteenthstreet.slack_service.presentation.dto.DeliveryMessageRequestDto;
-import com.eighteenthstreet.slack_service.presentation.dto.OrderMessageRequestDto;
 import com.eighteenthstreet.slack_service.presentation.dto.SendMessageByEmailRequestDto;
 import com.eighteenthstreet.slack_service.presentation.dto.SendMessageRequestDto;
 import com.eighteenthstreet.slack_service.presentation.dto.UpdateSlackMessageRequestDto;
@@ -29,10 +36,15 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class SlackService {
-	private final SlackClient slackClient;
-	private final SlackMessageRepository slackMessageRepository;
-	private final SlackMessageMapper slackMessageMapper;
 	private final AiService aiService;
+	private final ServletRequestUtil util;
+	private final SlackClient slackClient;
+	private final HubServiceClient hubServiceClient;
+	private final UserServiceClient userServiceClient;
+	private final SlackMessageMapper slackMessageMapper;
+	private final OrderServiceClient orderServiceClient;
+	private final DeliveryServiceClient deliveryServiceClient;
+	private final SlackMessageRepository slackMessageRepository;
 
 	@Transactional
 	public void sendSlackMessage(SendMessageRequestDto request) {
@@ -59,16 +71,26 @@ public class SlackService {
 		}
 	}
 
-	private void saveSlackMessage(String receiverId, String message) {
-		try {
-			SlackMessage slackMessage = SlackMessage.builder()
-				.receiverId(receiverId)
-				.message(message)
-				.build();
-			slackMessageRepository.save(slackMessage);
-		} catch (CustomException e) {
-			throw new CustomException(ErrorCode.SLACK_TRANSACTION_FAILED);
+	@Transactional
+	public void sendSlackMessageToManager(String email, OrderDeliveryInfo request) {
+		// email 가져옴
+		String receiverId = slackClient.getSlackIdByEmail(email);
+		log.info("슬랙 ID 추출 : {}", receiverId);
+		if (receiverId == null) {
+			throw new CustomException(ErrorCode.SLACK_ID_EXTRACT_FAILED);
 		}
+		// Gemini API
+		String geminiResponse = aiService.getFinalShippingDeadline(request);
+
+		// 문자 포멧
+		String message = formatSlackMessage(request, geminiResponse);
+		boolean isSent = slackClient.sendMessage(receiverId, message);
+		if (isSent) {
+			saveSlackMessage(receiverId, message);
+		} else {
+			throw new CustomException(ErrorCode.SLACK_SEND_FAILED);
+		}
+
 	}
 
 	public List<SlackMessageResponseDto> getAllSlackMessages() {
@@ -101,70 +123,37 @@ public class SlackService {
 		slackMessage.performSoftDelete();
 	}
 
-	@Transactional
-	public void sendSlackMessageToHubManager(String slackId, OrderMessageRequestDto orderDto,
-		DeliveryMessageRequestDto deliveryDto) {
-		// email 이라고 가정하고,....
-		String receiverId = slackClient.getSlackIdByEmail(slackId);
-		if (receiverId == null) {
-			throw new CustomException(ErrorCode.SLACK_ID_EXTRACT_FAILED);
+	public SelectOrderResponse getOrder(UUID orderId) {
+		try {
+			return orderServiceClient.getOrder(orderId);
+		} catch (CustomException e) {
+			throw new CustomException(ErrorCode.ORDER_GET_API_FAIL);
 		}
-		// Gemini API
-		String geminiResponse = aiService.getFinalShippingDeadline(orderDto, deliveryDto);
-
-		// 문자 포멧
-		String message = formatSlackMessage(orderDto, deliveryDto, geminiResponse);
-		boolean isSent = slackClient.sendMessage(receiverId, message);
-		if (isSent) {
-			saveSlackMessage(receiverId, message);
-		} else {
-			throw new CustomException(ErrorCode.SLACK_SEND_FAILED);
-		}
-
 	}
 
-	private String formatSlackMessage(OrderMessageRequestDto order, DeliveryMessageRequestDto delivery,
-		String geminiResponse) {
-		String deadline = aiService.extractFinalDeadlineMessage(geminiResponse);
-		return String.format(
-			"*📢 발송 허브 담당자 알림 📢*\n" +
-				"*📌 주문 번호:* %s\n" +
-				"*📦 상품 정보:* %s (수량: %d)\n" +
-				"*📝 요청 사항:* %s\n" +
-				"*🚚 발송지:* %s\n" +
-				"*🔁 경유지:* %s\n" +
-				"*🎯 도착지:* %s\n" +
-				// "*📮 배송 담당자:* %s\n" +
-				"--------------------------------------\n" +
-				"📢 *최종 발송 시한:* %s",
-			order.orderId(), order.productName(), order.quantity(),
-			order.requestDetails(), delivery.startHub(), delivery.endHub(),
-			delivery.destinationAddress()
-			// , delivery.userId()
-			, deadline
-		);
+	public DeliveryDetailsResponse getDelivery(UUID deliveryId) {
+		try {
+			return deliveryServiceClient.getDelivery(deliveryId);
+		} catch (CustomException e) {
+			throw new CustomException(ErrorCode.DELIVERY_GET_API_FAIL);
+		}
 	}
 
-	@Transactional
-	public void sendSlackMessageToManager(String email, OrderDeliveryInfo request) {
-		// email 이라고 가정하고,....
-		String receiverId = slackClient.getSlackIdByEmail(email);
-		log.info("슬랙 ID 가져옴 :{}", receiverId);
-		if (receiverId == null) {
-			throw new CustomException(ErrorCode.SLACK_ID_EXTRACT_FAILED);
+	public List<GetHubResponse> getHubByIds(List<UUID> hubIds) {
+		try {
+			return hubServiceClient.getHubsByIds(hubIds);
+		} catch (CustomException e) {
+			throw new CustomException(ErrorCode.HUB_GET_API_FAIL);
 		}
-		// Gemini API
-		String geminiResponse = aiService.getFinalShippingDeadline(request);
+	}
 
-		// 문자 포멧
-		String message = formatSlackMessage(request, geminiResponse);
-		boolean isSent = slackClient.sendMessage(receiverId, message);
-		if (isSent) {
-			saveSlackMessage(receiverId, message);
-		} else {
-			throw new CustomException(ErrorCode.SLACK_SEND_FAILED);
+	public UserResponseDto getUser(UUID userId) {
+		try {
+			String token = util.getAccessTokenFromHeader();
+			return userServiceClient.getUser(userId, token);
+		} catch (CustomException e) {
+			throw new CustomException(ErrorCode.USER_GET_API_FAIL);
 		}
-
 	}
 
 	private String formatSlackMessage(OrderDeliveryInfo orderDeliveryInfo, String geminiResponse) {
@@ -184,7 +173,7 @@ public class SlackService {
 		message.append("\n");
 
 		if (orderDeliveryInfo.requests() != null && !orderDeliveryInfo.requests().isEmpty()) {
-			message.append("*📝 요청 사항:* ").append(orderDeliveryInfo.requests()).append("\n\n");
+			message.append("*📝 고객 요청 배송 마감 시한:* ").append(orderDeliveryInfo.requests()).append("\n\n");
 		}
 
 		message.append("*🚚 발송지:* ").append(orderDeliveryInfo.start()).append("\n");
@@ -202,5 +191,17 @@ public class SlackService {
 		message.append("📢 *최종 발송 시한:* ").append(deadline);
 
 		return message.toString();
+	}
+
+	private void saveSlackMessage(String receiverId, String message) {
+		try {
+			SlackMessage slackMessage = SlackMessage.builder()
+				.receiverId(receiverId)
+				.message(message)
+				.build();
+			slackMessageRepository.save(slackMessage);
+		} catch (CustomException e) {
+			throw new CustomException(ErrorCode.SLACK_TRANSACTION_FAILED);
+		}
 	}
 }
