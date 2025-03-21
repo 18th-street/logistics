@@ -25,6 +25,9 @@ public class DeliveryAgentQueueConfig {
 	@Value("${message.queue.delivery-assigned}")
 	private String queueAssigned;
 
+	@Value("${message.queue.delivery-agent-failed}")
+	private String queueAgentFailed;
+
 	@Bean
 	public TopicExchange exchange() {
 		return new TopicExchange(exchange);
@@ -41,6 +44,11 @@ public class DeliveryAgentQueueConfig {
 	}
 
 	@Bean
+	public Queue queueAgentFailed() {
+		return new Queue(queueAgentFailed);
+	}
+
+	@Bean
 	public Binding bindingRoute() {
 		return BindingBuilder.bind(queueRoute()).to(exchange()).with(queueRoute);
 	}
@@ -48,5 +56,10 @@ public class DeliveryAgentQueueConfig {
 	@Bean
 	public Binding bindingAssigned() {
 		return BindingBuilder.bind(queueRoute()).to(exchange()).with(queueAssigned);
+	}
+
+	@Bean
+	public Binding bindingFailed() {
+		return BindingBuilder.bind(queueAgentFailed()).to(exchange()).with(queueAgentFailed);
 	}
 }

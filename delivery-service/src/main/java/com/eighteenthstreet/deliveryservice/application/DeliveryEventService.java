@@ -2,8 +2,10 @@ package com.eighteenthstreet.deliveryservice.application;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.eighteenthstreet.deliveryservice.domain.event.DeliveryAgentAssignedEvent;
+import com.eighteenthstreet.deliveryservice.domain.event.DeliveryFailedEvent;
 import com.eighteenthstreet.deliveryservice.domain.event.DeliveryRouteCreationFailedEvent;
 import com.eighteenthstreet.deliveryservice.domain.exception.DeliveryNotFoundException;
 import com.eighteenthstreet.deliveryservice.domain.model.Delivery;
@@ -25,9 +27,8 @@ public class DeliveryEventService {
 		log.info("DeliveryAgentEvent 수신 {}", event);
 
 		try {
-			Delivery delivery = deliveryRepository.findById(event.deliveryId()).orElseThrow(
-				() -> new DeliveryNotFoundException(ErrorCode.DELIVERY_NOT_FOUND)
-			);
+			Delivery delivery = deliveryRepository.findById(event.deliveryId())
+				.orElseThrow(() -> new DeliveryNotFoundException(ErrorCode.DELIVERY_NOT_FOUND));
 
 			delivery.setStatus(DeliveryStatus.OUT_FOR_DELIVERY);  // 상태 변경
 
@@ -41,7 +42,28 @@ public class DeliveryEventService {
 	}
 
 	@RabbitListener(queues = "${message.queue.failed}")
+	@Transactional
 	public void handleDeliveryRouteCreationFailed(DeliveryRouteCreationFailedEvent event) {
+		Delivery delivery = deliveryRepository.findById(event.deliveryId()).orElseThrow(
+			() -> new DeliveryNotFoundException(ErrorCode.DELIVERY_NOT_FOUND)
+		);
+
+		delivery.failed();
+		deliveryRepository.save(delivery);
+
 		log.info("배송 경로 생성 실패 이벤트 수신: {}", event);
+	}
+
+	@RabbitListener(queues = "${message.queue.delivery-agent-failed}")
+	@Transactional
+	public void handleDeliveryAgentCreationFailed(DeliveryFailedEvent event) {
+		Delivery delivery = deliveryRepository.findById(event.deliveryId()).orElseThrow(
+			() -> new DeliveryNotFoundException(ErrorCode.DELIVERY_NOT_FOUND)
+		);
+
+		delivery.failed();
+		deliveryRepository.save(delivery);
+
+		log.info("배송 담당자 실패 이벤트 수신: {}", event);
 	}
 }

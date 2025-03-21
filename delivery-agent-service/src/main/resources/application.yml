@@ -35,6 +35,12 @@ spring:
     port: 5672
     username: guest
     password: guest
+    listener:
+      simple:
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 5000ms
 
 
 eureka:
@@ -59,6 +65,7 @@ message:
     delivery: delivery.delivery
     route: delivery.route
     delivery-assigned: delivery.assigned
+    delivery-agent-failed: delivery.agent.failed
   err:
     exchange: delivery.err
     queue:

@@ -50,6 +50,8 @@ message:
     route: delivery.route
     delivery-assigned: delivery.assigned
     failed: delivery.failed
+    delivery-agent-failed: delivery.agent.failed
+
   err:
     exchange: delivery.err
     queue:

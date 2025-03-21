@@ -28,11 +28,8 @@ import lombok.RequiredArgsConstructor;
 public class DeliveryController {
 	private final DeliveryService deliveryService;
 
-	//TODO: 전체적으로 gateWay 가 생기면 jwt 를 받는 헤더를 추가 할 예정, 예외처리도 할 예정
-
 	@PostMapping()
-	public ResponseEntity<CreateDeliveryResponse> createDelivery(
-		@RequestBody CreateDeliveryRequest request) {
+	public ResponseEntity<CreateDeliveryResponse> createDelivery(@RequestBody CreateDeliveryRequest request) {
 		CreateDeliveryResponse response = deliveryService.createDelivery(request);
 
 		return ResponseEntity.ok(response);
