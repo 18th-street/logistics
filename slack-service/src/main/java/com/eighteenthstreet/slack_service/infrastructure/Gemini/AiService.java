@@ -3,6 +3,8 @@ package com.eighteenthstreet.slack_service.infrastructure.Gemini;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -11,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.eighteenthstreet.slack_service.application.dto.OrderDeliveryInfo;
 import com.eighteenthstreet.slack_service.presentation.dto.DeliveryMessageRequestDto;
 import com.eighteenthstreet.slack_service.presentation.dto.OrderMessageRequestDto;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,6 +40,51 @@ public class AiService {
 			delivery.destinationAddress()
 		);
 
+		Map<String, Object> requestBody = new HashMap<>();
+		requestBody.put("contents", List.of(
+			Map.of("parts", List.of(Map.of("text", text)))
+		));
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+
+		// API 요청 생성
+		HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+
+		// API 요청 실행
+		String response = restTemplate.postForObject(GEMINI_API_URL + "?key=" + apiKey, requestEntity, String.class);
+
+		log.info("Gemini Response: {}", response);
+
+		return response;
+	}
+
+	public String getFinalShippingDeadline(OrderDeliveryInfo request) {
+		RestTemplate restTemplate = new RestTemplate();
+
+		// 상품 정보 포맷 (여러 개 가능, 쉼표로 구분)
+		String productDetails = IntStream.range(0, request.productName().size())
+			.mapToObj(i -> String.format("%s (수량: %d)", request.productName().get(i), request.productQuantity().get(i)))
+			.collect(Collectors.joining(", "));
+
+		// 경유지 포맷 (1개 이상 가능)
+		String stoppingText = request.stopping().isEmpty() ? "경유지 없음" : String.join(" -> ", request.stopping());
+
+		// AI에 전달할 프롬프트 생성
+		String text = String.format(
+			"상품: %s, 요청 사항: %s, 출발 허브: %s , 경유 허브: %s , 도착 허브: %s , 도착지 주소: %s, 배송 담당자 근무시간: 9:00-18:00."
+				+ "주어진 정보와 중간에 허브를 경유할 수 있다는 점을 고려해서 최종 발송 시한을 구체적으로 계산해주세요.(요청 사항이 없는 경우 현재 시간을 기준으로 가장 최적 발송 시한 계산)"
+				+ "발송허브 담당자에게 알려줘야 합니다. 답변은 딱 한 줄로 '전달된 정보를 기반으로 도출된 최종 발송 시한은 00월 00일 오전 00시 입니다.' 이런 식으로 답해주세요.",
+			request.orderId(),
+			productDetails,
+			request.requests() != null ? request.requests() : "없음",
+			request.start(),
+			stoppingText,
+			request.destination(),
+			request.destination()
+		);
+
+		// API 요청 바디 생성
 		Map<String, Object> requestBody = new HashMap<>();
 		requestBody.put("contents", List.of(
 			Map.of("parts", List.of(Map.of("text", text)))

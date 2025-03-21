@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.eighteenthstreet.slack_service.application.dto.OrderDeliveryInfo;
 import com.eighteenthstreet.slack_service.application.dto.SlackMessageResponseDto;
 import com.eighteenthstreet.slack_service.domain.model.SlackMessage;
 import com.eighteenthstreet.slack_service.domain.repository.SlackMessageRepository;
@@ -133,12 +134,73 @@ public class SlackService {
 				"*🚚 발송지:* %s\n" +
 				"*🔁 경유지:* %s\n" +
 				"*🎯 도착지:* %s\n" +
-				"*📮 배송 담당자:* %s\n" +
+				// "*📮 배송 담당자:* %s\n" +
 				"--------------------------------------\n" +
 				"📢 *최종 발송 시한:* %s",
 			order.orderId(), order.productName(), order.quantity(),
 			order.requestDetails(), delivery.startHub(), delivery.endHub(),
-			delivery.destinationAddress(), delivery.userId(), deadline
+			delivery.destinationAddress()
+			// , delivery.userId()
+			, deadline
 		);
+	}
+
+	@Transactional
+	public void sendSlackMessageToManager(String email, OrderDeliveryInfo request) {
+		// email 이라고 가정하고,....
+		String receiverId = slackClient.getSlackIdByEmail(email);
+		log.info("슬랙 ID 가져옴 :{}", receiverId);
+		if (receiverId == null) {
+			throw new CustomException(ErrorCode.SLACK_ID_EXTRACT_FAILED);
+		}
+		// Gemini API
+		String geminiResponse = aiService.getFinalShippingDeadline(request);
+
+		// 문자 포멧
+		String message = formatSlackMessage(request, geminiResponse);
+		boolean isSent = slackClient.sendMessage(receiverId, message);
+		if (isSent) {
+			saveSlackMessage(receiverId, message);
+		} else {
+			throw new CustomException(ErrorCode.SLACK_SEND_FAILED);
+		}
+
+	}
+
+	private String formatSlackMessage(OrderDeliveryInfo orderDeliveryInfo, String geminiResponse) {
+		// Gemini 응답에서 최종 발송 시한 추출
+		String deadline = aiService.extractFinalDeadlineMessage(geminiResponse);
+
+		StringBuilder message = new StringBuilder();
+
+		message.append("*📢 발송 허브 담당자 알림 📢*\n");
+		message.append("*📌 주문 번호:* ").append(orderDeliveryInfo.orderId()).append("\n\n");
+
+		message.append("*📦 상품 정보:*\n");
+		for (int i = 0; i < orderDeliveryInfo.productName().size(); i++) {
+			message.append("- ").append(orderDeliveryInfo.productName().get(i))
+				.append(" (수량: ").append(orderDeliveryInfo.productQuantity().get(i)).append(")\n");
+		}
+		message.append("\n");
+
+		if (orderDeliveryInfo.requests() != null && !orderDeliveryInfo.requests().isEmpty()) {
+			message.append("*📝 요청 사항:* ").append(orderDeliveryInfo.requests()).append("\n\n");
+		}
+
+		message.append("*🚚 발송지:* ").append(orderDeliveryInfo.start()).append("\n");
+
+		if (!orderDeliveryInfo.stopping().isEmpty()) {
+			message.append("*🔁 경유지:*\n");
+			for (String hub : orderDeliveryInfo.stopping()) {
+				message.append("- ").append(hub).append("\n");
+			}
+			message.append("\n");
+		}
+
+		message.append("*🎯 도착지:* ").append(orderDeliveryInfo.destination()).append("\n");
+		message.append("--------------------------------------\n");
+		message.append("📢 *최종 발송 시한:* ").append(deadline);
+
+		return message.toString();
 	}
 }
