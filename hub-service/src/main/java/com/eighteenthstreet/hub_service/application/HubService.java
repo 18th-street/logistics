@@ -36,7 +36,6 @@ public class HubService {
 			throw new CustomHubAlreadyExistException(ErrorCode.HUB_ALREADY_EXIST);
 		}
 
-		// 권한 체크 (Master만 생성 가능)
 		Hub hub = Hub.create(request);
 		hubRepository.save(hub);
 
@@ -60,20 +59,15 @@ public class HubService {
 
 	@Transactional(readOnly = true)
 	public GetHubResponse getHub(UUID hubId) {
-		Hub hub = hubRepository.findById(hubId)
+		Hub hub = hubRepository.findByHubIdAndIsDeletedNull(hubId)
 			.orElseThrow(() -> new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND));
-
-		if (Boolean.TRUE.equals(hub.getIsDeleted())) {
-			throw new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND);
-		}
 
 		return GetHubResponse.from(hub);
 	}
 
 	@Transactional
 	public UpdateHubResponse updateHub(UUID hubId, UpdateHubRequest request) {
-		// 권한 체크 (Master만 수정 가능)
-		Hub foundHub = hubRepository.findById(hubId)
+		Hub foundHub = hubRepository.findByHubIdAndIsDeletedNull(hubId)
 			.orElseThrow(() -> new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND));
 
 		foundHub.update(request);
@@ -83,8 +77,7 @@ public class HubService {
 
 	@Transactional
 	public void deleteHub(UUID hubId) {
-		// 권한 체크 (Master만 삭제 가능)
-		Hub foundHub = hubRepository.findById(hubId)
+		Hub foundHub = hubRepository.findByHubIdAndIsDeletedNull(hubId)
 			.orElseThrow(() -> new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND));
 
 		foundHub.performSoftDelete();
