@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.eighteenthstreet.slack_service.application.dto.SlackMessageResponseDto;
 import com.eighteenthstreet.slack_service.application.service.SlackService;
+import com.eighteenthstreet.slack_service.infrastructure.rabbitmq.SlackEndpoint;
 import com.eighteenthstreet.slack_service.presentation.dto.DeliveryMessageRequestDto;
 import com.eighteenthstreet.slack_service.presentation.dto.OrderMessageRequestDto;
 import com.eighteenthstreet.slack_service.presentation.dto.SendMessageByEmailRequestDto;
@@ -36,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1/slacks")
 public class SlackController {
 	private final SlackService slackService;
+	private final SlackEndpoint slackEndpoint;
 
 	@Description(
 		"슬랙 멤버 ID로 슬랙 메시지 전송"
@@ -130,6 +132,11 @@ public class SlackController {
 		OrderMessageRequestDto order,
 		DeliveryMessageRequestDto delivery
 	) {
+	}
+
+	@PostMapping("/test/send")
+	public void test() {
+		slackEndpoint.sendSlackToHubManager(UUID.randomUUID());
 	}
 
 }
