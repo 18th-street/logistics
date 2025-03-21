@@ -28,6 +28,8 @@ ext {
 }
 
 dependencies {
+    // Feign
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
     // 분산추적
     implementation 'org.springframework.boot:spring-boot-starter-actuator'

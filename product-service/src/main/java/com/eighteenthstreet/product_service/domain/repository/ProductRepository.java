@@ -1,5 +1,6 @@
 package com.eighteenthstreet.product_service.domain.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,4 +17,6 @@ public interface ProductRepository {
 	Optional<Product> findById(UUID productId);
 
 	Page<Product> searchByProducts(String query, Pageable pageable);
+
+	List<Product> findByIds(List<UUID> productIds);
 }

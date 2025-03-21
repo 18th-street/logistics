@@ -1,6 +1,5 @@
 package com.eighteenthstreet.hub_service.application.dto;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 import com.eighteenthstreet.hub_service.domain.model.Hub;
@@ -19,8 +18,8 @@ public class CreateHubResponse {
 	private UUID hubId;
 	private String name;
 	private String address;
-	private BigDecimal latitude;
-	private BigDecimal longitude;
+	private Double latitude;
+	private Double longitude;
 
 	public static CreateHubResponse from(Hub hub) {
 		return CreateHubResponse.builder()
