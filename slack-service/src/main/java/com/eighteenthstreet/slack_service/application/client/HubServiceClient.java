@@ -1,4 +1,4 @@
-package com.eighteenthstreet.slack_service.infrastructure.client;
+package com.eighteenthstreet.slack_service.application.client;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,7 +13,7 @@ import com.eighteenthstreet.slack_service.application.dto.GetHubResponse;
 
 @FeignClient(name = "hub-service", url = "http://localhost:19095")
 public interface HubServiceClient {
-	@PostMapping("/api/v1/hub")
+	@PostMapping("/api/v1/hub/ids")
 	List<GetHubResponse> getHubsByIds(@RequestBody List<UUID> hubIds);
 
 	@GetMapping("/api/v1/hub/{hubId}")

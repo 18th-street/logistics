@@ -1,4 +1,4 @@
-package com.eighteenthstreet.slack_service.infrastructure.client;
+package com.eighteenthstreet.slack_service.application.client;
 
 import java.util.UUID;
 
