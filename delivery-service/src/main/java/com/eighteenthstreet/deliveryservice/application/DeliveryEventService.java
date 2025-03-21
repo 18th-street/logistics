@@ -41,7 +41,7 @@ public class DeliveryEventService {
 
 	}
 
-	@RabbitListener(queues = "${message.queue.failed}")
+	@RabbitListener(queues = "${message.queue.delivery-route-failed}")
 	@Transactional
 	public void handleDeliveryRouteCreationFailed(DeliveryRouteCreationFailedEvent event) {
 		Delivery delivery = deliveryRepository.findById(event.deliveryId()).orElseThrow(
