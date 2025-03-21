@@ -18,7 +18,6 @@ import com.eighteenthstreet.deliveryservice.application.dto.CreateDeliveryRespon
 import com.eighteenthstreet.deliveryservice.application.dto.DeliveryAgentDto;
 import com.eighteenthstreet.deliveryservice.application.dto.DeliveryDetailsResponse;
 import com.eighteenthstreet.deliveryservice.application.dto.DeliveryRouteDto;
-import com.eighteenthstreet.deliveryservice.application.dto.GetDeliveryResponse;
 import com.eighteenthstreet.deliveryservice.domain.event.DeliveryCreatedEvent;
 import com.eighteenthstreet.deliveryservice.domain.exception.DeliveryNotFoundException;
 import com.eighteenthstreet.deliveryservice.domain.model.Delivery;
@@ -64,14 +63,6 @@ public class DeliveryService {
 		deliveryRepository.save(delivery);
 	}
 
-	//TODO: hubClient 에서 허브경로 받아와서 저장하고, 배달담당자도 받아와야함
-	public GetDeliveryResponse getDelivery(UUID uuid) {
-		Delivery delivery = deliveryRepository.findById(uuid)
-			.orElseThrow(() -> new DeliveryNotFoundException(ErrorCode.DELIVERY_NOT_FOUND));
-
-		return GetDeliveryResponse.fromEntity(delivery);
-	}
-
 	@Transactional
 	public void deleteDelivery(UUID deliveryId) {
 
@@ -106,7 +97,7 @@ public class DeliveryService {
 	public DeliveryDetailsResponse getDeliveryDetails(UUID deliveryId) {
 		try {
 			// Delivery 존재 여부 확인
-			deliveryRepository.findById(deliveryId)
+			Delivery delivery = deliveryRepository.findById(deliveryId)
 				.orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_NOT_FOUND));
 
 			// 1. DeliveryAgent 조회
@@ -130,7 +121,7 @@ public class DeliveryService {
 				.collect(Collectors.toList());
 
 			// 4. 응답 조합
-			return new DeliveryDetailsResponse(deliveryId, agentsWithRoutes);
+			return new DeliveryDetailsResponse(deliveryId, delivery.getDestinationAddress(), agentsWithRoutes);
 
 		} catch (CustomException e) {
 			log.warn("배달 상세 조회 중 사용자 정의 예외 발생: message={}", e.getMessage());
