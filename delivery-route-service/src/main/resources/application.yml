@@ -43,15 +43,19 @@ spring:
           initial-interval: 5000ms
 
 message:
-  exchange: delivery                   # 기본 익스체인지
+  exchange: logistics                   # 기본 익스체인지
   queue:
-    delivery: delivery.delivery        # 배송 요청 큐
-    route: delivery.route              # 배차 요청 큐
-    failed: delivery.failed            # 실패 이벤트 큐 (delivery-service로 전달)
+    delivery-service: logistics.delivery-service   # 배송 요청 큐
+    delivery-route: logistics.delivery-route            # 배차 요청 큐
+    delivery-route-failed: logistics.route-failed      # 실패 이벤트 큐 (delivery-service로 전달)
   err:
-    exchange: delivery.err
+    exchange: logistics.err
     queue:
-      route: delivery.err.route
+      route: logistics.err.route
+  complete:
+    exchange: logistics.complete
+    queue:
+      order: logistics.complete.order
 
 
 eureka:
