@@ -31,17 +31,17 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class DeliveryRouteService {
 
-	@Value("${message.queue.route}")
+	@Value("${message.queue.delivery-route}")
 	private String queue;
 
-	@Value("${message.queue.failed}")
+	@Value("${message.queue.delivery-route-failed}")
 	private String failedQueue;
 
 	private final DeliveryRouteRepository deliveryRouteRepository;
 	private final RabbitTemplate rabbitTemplate;
 	private final HubRouteClient hubRouteClient;
 
-	@RabbitListener(queues = "${message.queue.delivery}")
+	@RabbitListener(queues = "${message.queue.delivery-service}")
 	@Transactional
 	public void createDeliveryRoute(DeliveryCreatedEvent event) {
 		log.info("######### 배송 요청 받음: {}", event);

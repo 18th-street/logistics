@@ -20,16 +20,16 @@ public class DeliveryQueueConfig {
 	@Value("${message.exchange}")
 	private String exchange;
 
-	@Value("${message.queue.delivery}")
+	@Value("${message.queue.delivery-service}")
 	private String queueDelivery;
 
-	@Value("${message.queue.route}")
+	@Value("${message.queue.delivery-route}")
 	private String queueRoute;
 
 	@Value("${message.queue.delivery-assigned}")
 	private String queueAssigned;
 
-	@Value("${message.queue.failed}")
+	@Value("${message.queue.delivery-route-failed}")
 	private String queueFailed;
 
 	@Value("${message.err.exchange}")

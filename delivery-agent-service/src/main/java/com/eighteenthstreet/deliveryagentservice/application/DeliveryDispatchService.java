@@ -37,7 +37,7 @@ public class DeliveryDispatchService {
 	@Value("${message.queue.delivery-agent-failed}")
 	private String deliveryAssignedFailQueue;
 
-	@RabbitListener(queues = "${message.queue.route}")
+	@RabbitListener(queues = "${message.queue.delivery-route}")
 	public void handleRouteCratedEvent(RouteCreatedEvent event) {
 		log.info("배달담당서비스 요청 받음: {}", event);
 

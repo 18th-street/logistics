@@ -39,7 +39,7 @@ public class DeliveryService {
 	private final DeliveryRouteClient deliveryRouteClient;
 	private final DeliveryAgentClient deliveryAgentClient;
 
-	@Value("${message.queue.delivery}")
+	@Value("${message.queue.delivery-service}")
 	private String queueDelivery;
 
 	public CreateDeliveryResponse createDelivery(CreateDeliveryRequest createDeliveryRequest) {

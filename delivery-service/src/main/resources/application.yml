@@ -44,19 +44,17 @@ spring:
 
 
 message:
-  exchange: delivery
+  exchange: logistics
   queue:
-    delivery: delivery.delivery
-    route: delivery.route
-    delivery-assigned: delivery.assigned
-    failed: delivery.failed
-    delivery-agent-failed: delivery.agent.failed
-
+    delivery-service: logistics.delivery-service
+    delivery-route: logistics.delivery-route
+    delivery-assigned: logistics.assigned
+    delivery-route-failed: logistics.route-failed
+    delivery-agent-failed: logistics.agent-failed
   err:
-    exchange: delivery.err
+    exchange: logistics.err
     queue:
-      route: delivery.err.route
-
+      route: logistics.err.route
 
 eureka:
   client:
