@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.eighteenthstreet.slack_service.application.dto.SelectOrderResponse;
 
-@FeignClient(name = "order-service")
+@FeignClient(name = "order-service", url = "http://localhost:19099")
 public interface OrderServiceClient {
 	@GetMapping("/api/v1/orders/{orderId}")
-	SelectOrderResponse getOrder(@PathVariable UUID orderId);
+	SelectOrderResponse getOrder(@PathVariable("orderId") UUID orderId);
 }
