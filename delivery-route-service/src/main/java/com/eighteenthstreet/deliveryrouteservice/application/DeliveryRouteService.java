@@ -80,9 +80,10 @@ public class DeliveryRouteService {
 			rabbitTemplate.convertAndSend(queue, routeEvent);
 			log.info("##### 배차 요청 보냄: {}", routeEvent);
 
-			// 4. 주문 측에 배달 생성 메세지 보내기
-			OrderDeliveryCompleteMessage orderMessage = new OrderDeliveryCompleteMessage(event.getDeliveryId(),
-				event.getOrderId());
+			// 4. 주문 측에 완료 메세지 보내기
+			OrderDeliveryCompleteMessage orderMessage = new OrderDeliveryCompleteMessage(event.getOrderId(),
+				event.getDeliveryId());
+			log.info("###### 주문 측에 성공 메세지 보냄: {}", orderMessage);
 			rabbitTemplate.convertAndSend(completeOrderQueue, orderMessage);
 
 		} catch (FeignException.NotFound e) {
