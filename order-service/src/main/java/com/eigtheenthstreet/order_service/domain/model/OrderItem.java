@@ -58,7 +58,7 @@ public class OrderItem extends BaseEntity {
 	}
 
 	public void updateQuantityAndTotalPrice(int newQuantity, int productPrice) {
-		this.quantity = newQuantity;
+		this.quantity += newQuantity;
 		this.totalPrice = this.quantity * productPrice;
 	}
 
