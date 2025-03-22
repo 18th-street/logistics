@@ -4,19 +4,19 @@ import java.util.UUID;
 
 import com.eigtheenthstreet.order_service.domain.model.Order;
 
-public record DeliveryMessage(
+public record DeliveryCreatedEvent(
 	UUID orderId,
 	UUID startHubId,
 	UUID endHubId,
 	UUID ordererId,
 	String destinationAddress
 ) {
-	public static DeliveryMessage of(
+	public static DeliveryCreatedEvent of(
 		Order order,
 		UUID startHubId,
 		UUID endHubId
 	) {
-		return new DeliveryMessage(
+		return new DeliveryCreatedEvent(
 			order.getId(),
 			startHubId,
 			endHubId,
