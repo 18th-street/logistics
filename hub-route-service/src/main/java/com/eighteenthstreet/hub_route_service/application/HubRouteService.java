@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.eighteenthstreet.hub_route_service.application.dto.CreateHubRouteRequest;
 import com.eighteenthstreet.hub_route_service.application.dto.GetHubRouteResponse;
@@ -34,12 +35,13 @@ public class HubRouteService {
 	private final HubRouteRepository hubRouteRepository;
 	private final NaverMapService naverMapService;
 
+	@Transactional(readOnly = true)
 	public List<GetHubRouteResponse> findOptimalRoute(UUID departureHubId, UUID arrivalHubId) {
 		// 출발 허브 & 도착 허브 조회
-		Hub departureHub = hubRepository.findById(departureHubId)
+		Hub departureHub = hubRepository.findByHubIdAndIsDeletedNull(departureHubId)
 			.orElseThrow(() -> new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND));
 
-		Hub arrivalHub = hubRepository.findById(arrivalHubId)
+		Hub arrivalHub = hubRepository.findByHubIdAndIsDeletedNull(arrivalHubId)
 			.orElseThrow(() -> new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND));
 
 		// BFS 기반 최단 경로 탐색
@@ -84,11 +86,12 @@ public class HubRouteService {
 		throw new RuntimeException("최적 경로를 찾을 수 없습니다.");
 	}
 
+	@Transactional
 	public GetHubRouteResponse addHubRoute(CreateHubRouteRequest request) {
-		Hub departureHub = hubRepository.findById(request.getDepartureHubId())
+		Hub departureHub = hubRepository.findByHubIdAndIsDeletedNull(request.getDepartureHubId())
 			.orElseThrow(() -> new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND));
 
-		Hub arrivalHub = hubRepository.findById(request.getArrivalHubId())
+		Hub arrivalHub = hubRepository.findByHubIdAndIsDeletedNull(request.getArrivalHubId())
 			.orElseThrow(() -> new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND));
 
 		hubRouteRepository.findByDepartureHubIdAndArrivalHubId(departureHub, arrivalHub)
