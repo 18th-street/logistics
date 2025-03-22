@@ -74,3 +74,11 @@ service:
     secret-key: ${JWT_SECRET_KEY}
     access-expiration: 3600000  # 1시간
     refresh-expiration: 604800000  # 7일
+
+management:
+  zipkin:
+    tracing:
+      endpoint: "http://localhost:9411/api/v2/spans"
+  tracing:
+    sampling:
+      probability: 1.0
