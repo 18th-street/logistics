@@ -40,6 +40,7 @@ public class OrderController {
 	private final JwtUtil jwtUtil;
 	private final OrderService orderService;
 
+	@CheckRole({Role.MASTER, Role.HUB, Role.COMPANY, Role.DELIVERY})
 	@PostMapping()
 	public ResponseEntity<CreateOrderResponse> createOrder(
 		@RequestBody CreateOrderRequest createOrderRequest,
@@ -75,7 +76,7 @@ public class OrderController {
 		@PathVariable UUID orderId
 	) {
 		orderService.cancelOrder(orderId);
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+		return ResponseEntity.status(HttpStatus.ACCEPTED).build();
 	}
 
 	@GetMapping("/{orderId}")
