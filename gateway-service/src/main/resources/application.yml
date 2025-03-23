@@ -60,6 +60,10 @@ spring:
           uri: lb://slack-service
           predicates:
             - Path=/api/v1/slacks/**
+        - id: delivery-agent-service
+          uri: lb://delivery-agent-service
+          predicates:
+            - Path=/api/vi/delivery-agents/**
       discovery:
         locator:
           enabled: true # 동적 라우팅 생성
