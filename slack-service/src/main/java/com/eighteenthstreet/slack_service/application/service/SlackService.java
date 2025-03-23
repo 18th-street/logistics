@@ -22,6 +22,7 @@ import com.eighteenthstreet.slack_service.domain.model.SlackMessage;
 import com.eighteenthstreet.slack_service.domain.repository.SlackMessageRepository;
 import com.eighteenthstreet.slack_service.infrastructure.Gemini.AiService;
 import com.eighteenthstreet.slack_service.infrastructure.config.ServletRequestUtil;
+import com.eighteenthstreet.slack_service.infrastructure.messaging.message.NotificationEvent;
 import com.eighteenthstreet.slack_service.infrastructure.slack.SlackClient;
 import com.eighteenthstreet.slack_service.presentation.dto.SendMessageByEmailRequestDto;
 import com.eighteenthstreet.slack_service.presentation.dto.SendMessageRequestDto;
@@ -71,28 +72,6 @@ public class SlackService {
 		}
 	}
 
-	@Transactional
-	public void sendSlackMessageToManager(String email, OrderDeliveryInfo request) {
-		// email 가져옴
-		String receiverId = slackClient.getSlackIdByEmail(email);
-		log.info("슬랙 ID 추출 : {}", receiverId);
-		if (receiverId == null) {
-			throw new CustomException(ErrorCode.SLACK_ID_EXTRACT_FAILED);
-		}
-		// Gemini API
-		String geminiResponse = aiService.getFinalShippingDeadline(request);
-
-		// 문자 포멧
-		String message = formatSlackMessage(request, geminiResponse);
-		boolean isSent = slackClient.sendMessage(receiverId, message);
-		if (isSent) {
-			saveSlackMessage(receiverId, message);
-		} else {
-			throw new CustomException(ErrorCode.SLACK_SEND_FAILED);
-		}
-
-	}
-
 	public List<SlackMessageResponseDto> getAllSlackMessages() {
 		return slackMessageRepository.findAll().stream()
 			.map(slackMessageMapper::toDto).toList();
@@ -121,6 +100,38 @@ public class SlackService {
 		SlackMessage slackMessage = slackMessageRepository.findById(id).orElseThrow(
 			() -> new CustomException(ErrorCode.SLACK_NOT_FOUND));
 		slackMessage.performSoftDelete();
+	}
+
+	@Transactional
+	public void handleNotificationEvent(NotificationEvent event) {
+		// order 정보
+		SelectOrderResponse order = getOrder(event.orderId());
+		log.info("주문 요청 : {}", order.deliveryLimitedAt());
+
+		// delivery 정보
+		DeliveryDetailsResponse delivery = getDelivery(order.deliveryId());
+		log.info("배달 목적지 : {}", delivery.destinationAddress());
+
+		// hub 정보
+		List<GetHubResponse> hubs = getHubByIds(delivery.getSortedDeliveryRoute());
+		log.info("첫 번째 허브 이름 ({}/{}): {}", 1, hubs.size(), hubs.get(0).name());
+
+		// User 정보
+		UserResponseDto user = getUser(hubs.get(0).userId());
+		log.info("허브관리자 : {}", user.username());
+
+		OrderDeliveryInfo orderDeliveryInfo = new OrderDeliveryInfo(
+			event.orderId(),
+			order.orderItems().stream().map(SelectOrderResponse.SelectOrderItemResponse::productName).toList(),
+			order.orderItems().stream().map(SelectOrderResponse.SelectOrderItemResponse::productQuantity).toList(),
+			order.deliveryLimitedAt(),
+			hubs.get(0).name(),
+			hubs.stream().map(GetHubResponse::name).toList(),
+			delivery.destinationAddress()
+		);
+		// gemini->slack
+		sendSlackMessageToManager(user.email(), orderDeliveryInfo);
+
 	}
 
 	public SelectOrderResponse getOrder(UUID orderId) {
@@ -154,6 +165,27 @@ public class SlackService {
 		} catch (CustomException e) {
 			throw new CustomException(ErrorCode.USER_GET_API_FAIL);
 		}
+	}
+
+	public void sendSlackMessageToManager(String email, OrderDeliveryInfo request) {
+		// email 가져옴
+		String receiverId = slackClient.getSlackIdByEmail(email);
+		log.info("슬랙 ID 추출 : {}", receiverId);
+		if (receiverId == null) {
+			throw new CustomException(ErrorCode.SLACK_ID_EXTRACT_FAILED);
+		}
+		// Gemini API
+		String geminiResponse = aiService.getFinalShippingDeadline(request);
+
+		// 문자 포멧
+		String message = formatSlackMessage(request, geminiResponse);
+		boolean isSent = slackClient.sendMessage(receiverId, message);
+		if (isSent) {
+			saveSlackMessage(receiverId, message);
+		} else {
+			throw new CustomException(ErrorCode.SLACK_SEND_FAILED);
+		}
+
 	}
 
 	private String formatSlackMessage(OrderDeliveryInfo orderDeliveryInfo, String geminiResponse) {
@@ -201,7 +233,7 @@ public class SlackService {
 				.build();
 			slackMessageRepository.save(slackMessage);
 		} catch (CustomException e) {
-			throw new CustomException(ErrorCode.SLACK_TRANSACTION_FAILED);
+			log.error("Slack 저장 중 예외 발생", e);
 		}
 	}
 }
