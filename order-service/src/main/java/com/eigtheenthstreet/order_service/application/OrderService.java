@@ -37,6 +37,7 @@ import com.eigtheenthstreet.order_service.infrastructure.client.ProductServiceCl
 import com.eigtheenthstreet.order_service.infrastructure.client.dto.CreateCompanyResponse;
 import com.eigtheenthstreet.order_service.infrastructure.client.dto.GetBulkProductRequest;
 import com.eigtheenthstreet.order_service.infrastructure.client.dto.GetBulkProductResponse;
+import com.eigtheenthstreet.order_service.infrastructure.client.dto.GetBulkProductsResponse;
 import com.eigtheenthstreet.order_service.infrastructure.messaging.OrderMessagePublisher;
 import com.eigtheenthstreet.order_service.presentation.request.CreateOrderRequest;
 import com.eigtheenthstreet.order_service.presentation.request.UpdateOrderRequest;
@@ -107,10 +108,6 @@ public class OrderService {
 		// 주문 성공 이벤트 배송으로 발행
 		log.info("OrderService에서 주문 생성 성공 이벤트 deliveryQueue로 발행");
 		orderMessagePublisher.publishDeliveryCreated(order, supplierCompany.hubId(), receiverCompany.hubId());
-
-		// 주문 성공 이벤트 슬랙으로 발행
-		log.info("OrderService에서 주문 생성 성공 이벤트 slackQueue로 발행");
-		orderMessagePublisher.publishNotification(order.getId());
 
 		return CreateOrderResponse.from(order.getId());
 	}
@@ -299,11 +296,9 @@ public class OrderService {
 	public void handleDeliveryCompleteCreated(UUID orderId, UUID deliveryId) {
 		Order order = orderDomainService.getOrderById(orderId);
 
-		if (!order.getDeliveryId().equals(deliveryId)) {
-			throw new CustomDeliveryIdMismatchException(ErrorCode.ORDER_DELIVERYID_MISTMATCH);
-		}
-
 		order.updateOrderStatusDelivered(deliveryId);
+
+		orderMessagePublisher.publishNotification(orderId);
 	}
 
 	@Transactional
@@ -370,7 +365,8 @@ public class OrderService {
 		GetBulkProductRequest request = GetBulkProductRequest.from(productIds);
 
 		try {
-			return productServiceClient.getBulkProducts(request);
+			GetBulkProductsResponse bulkProducts = productServiceClient.getBulkProducts(request);
+			return bulkProducts.bulkProductsResponse();
 		} catch (Exception e) {
 			log.error("상품 정보 조회(Bulk API) 실패: {}", e.getMessage());
 			throw new CustomProductBulkNotFoundException(ErrorCode.PRODUCT_BULK_NOT_FOUND);
