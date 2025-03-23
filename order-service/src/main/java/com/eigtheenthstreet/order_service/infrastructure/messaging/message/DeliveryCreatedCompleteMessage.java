@@ -2,7 +2,7 @@ package com.eigtheenthstreet.order_service.infrastructure.messaging.message;
 
 import java.util.UUID;
 
-public record OrderDeliveryCompleteMessage(
+public record DeliveryCreatedCompleteMessage(
 	UUID orderId,
 	UUID deliveryId
 ) {

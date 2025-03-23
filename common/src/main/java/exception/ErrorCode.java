@@ -50,6 +50,7 @@ public enum ErrorCode {
 	ORDER_ITEM_NOT_FOUND(HttpStatus.BAD_REQUEST, "주문 상품 목록을 찾을 수 없습니다.", "O013"),
 	ORDER_COMPANY_GET_API_FAIL(HttpStatus.BAD_REQUEST, "OrderService에서 업체 조회 API 호출을 실패하였습니다.", "O014"),
 	ORDER_PRODUCT_RESTORE_STOCK_FAIL(HttpStatus.BAD_REQUEST, "OrderService에서 상품 재고 복원 API 호출을 실패하였습니다", "O015"),
+	ORDER_DELIVERYID_MISTMATCH(HttpStatus.BAD_REQUEST, "해당 상품의 배송 ID와 일치하지 않습니다.", "O016"),
 
 	// 배달 서비스
 	DELIVERY_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 배달을 찾을 수 없습니다.", "D001"),

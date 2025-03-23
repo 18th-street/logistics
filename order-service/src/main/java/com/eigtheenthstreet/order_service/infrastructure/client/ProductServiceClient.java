@@ -15,7 +15,7 @@ import com.eigtheenthstreet.order_service.infrastructure.client.dto.CreateProduc
 import com.eigtheenthstreet.order_service.infrastructure.client.dto.GetBulkProductRequest;
 import com.eigtheenthstreet.order_service.infrastructure.client.dto.GetBulkProductResponse;
 
-@FeignClient(name = "product-service", url = "http://localhost:19096")
+@FeignClient(name = "product-service")
 public interface ProductServiceClient {
 	@GetMapping("/api/v1/products/{productId}")
 	CreateProductResponse getProduct(@PathVariable UUID productId);
