@@ -109,6 +109,9 @@ public class SlackService {
 		log.info("주문 요청 : {}", order.deliveryLimitedAt());
 
 		// delivery 정보
+		if (order.deliveryId() == null) {
+			throw new CustomException(ErrorCode.DELIVERY_NOT_FOUND);
+		}
 		DeliveryDetailsResponse delivery = getDelivery(order.deliveryId());
 		log.info("배달 목적지 : {}", delivery.destinationAddress());
 
