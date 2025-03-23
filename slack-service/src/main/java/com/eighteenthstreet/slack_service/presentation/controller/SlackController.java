@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.eighteenthstreet.slack_service.application.dto.SlackMessageResponseDto;
 import com.eighteenthstreet.slack_service.application.service.SlackService;
-import com.eighteenthstreet.slack_service.infrastructure.rabbitmq.SlackMessageListener;
+import com.eighteenthstreet.slack_service.infrastructure.messaging.SlackMessageListener;
 import com.eighteenthstreet.slack_service.presentation.dto.SendMessageByEmailRequestDto;
 import com.eighteenthstreet.slack_service.presentation.dto.SendMessageRequestDto;
 import com.eighteenthstreet.slack_service.presentation.dto.UpdateSlackMessageRequestDto;
@@ -116,9 +116,9 @@ public class SlackController {
 		return ResponseEntity.ok().build();
 	}
 
-	@PostMapping("/test/send/{orderId}")
-	public void test(@PathVariable("orderId") UUID orderId) {
-		slackMessageListener.sendSlackToHubManager(orderId);
-	}
+	// @PostMapping("/test/send/{orderId}")
+	// public void test(@PathVariable("orderId") UUID orderId) {
+	// 	slackMessageListener.sendSlackToHubManager(orderId);
+	// }
 
 }
