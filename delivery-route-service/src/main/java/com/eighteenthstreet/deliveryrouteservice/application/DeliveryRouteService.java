@@ -20,6 +20,7 @@ import com.eighteenthstreet.deliveryrouteservice.domain.event.OrderDeliveryCompl
 import com.eighteenthstreet.deliveryrouteservice.domain.exception.DeliveryRouteNotFoundException;
 import com.eighteenthstreet.deliveryrouteservice.domain.model.DeliveryRoute;
 import com.eighteenthstreet.deliveryrouteservice.domain.repository.DeliveryRouteRepository;
+import com.eighteenthstreet.deliveryrouteservice.infrastructure.messaging.DeliveryCreatedErrMessage;
 import com.eighteenthstreet.deliveryrouteservice.presentation.exception.error.CustomException;
 
 import exception.ErrorCode;
@@ -38,8 +39,11 @@ public class DeliveryRouteService {
 	@Value("${message.queue.delivery-route-failed}")
 	private String failedQueue;
 
-	@Value("${message.complete.queue.order}")
+	@Value("${message.complete.queue.delivery.created}")
 	private String completeOrderQueue;
+
+	@Value("${message.err.queue.delivery.created}")
+	private String errOrderCreatedQueue;
 
 	private final DeliveryRouteRepository deliveryRouteRepository;
 	private final RabbitTemplate rabbitTemplate;
@@ -90,9 +94,11 @@ public class DeliveryRouteService {
 			log.error("경로를 찾을 수 없음: startHubId={}, endHubId={}, 오류: {}", event.getStartHubId(), event.getEndHubId(),
 				e.getMessage());
 			sendFailureEvent(event.getDeliveryId(), ErrorCode.DELIVERY_ROUTE_NOT_FOUND);
+			sendFailureOrderEvent(event);
 		} catch (Exception e) {
 			log.error("예상치 못한 오류 발생: event={}, 오류: {}", event, e.getMessage(), e);
 			sendFailureEvent(event.getDeliveryId(), ErrorCode.DELIVERY_ROUTE_CREATION_FAILED);
+			sendFailureOrderEvent(event);
 			throw e;
 		}
 	}
@@ -139,6 +145,12 @@ public class DeliveryRouteService {
 		DeliveryRouteCreationFailedEvent failedEvent = new DeliveryRouteCreationFailedEvent(deliveryId, errorCode);
 		rabbitTemplate.convertAndSend(failedQueue, failedEvent);
 		log.info("배송 경로 생성 실패 이벤트 발송: {}", failedEvent);
+	}
+
+	private void sendFailureOrderEvent(DeliveryCreatedEvent event) {
+		DeliveryCreatedErrMessage message = new DeliveryCreatedErrMessage(event.getOrderId());
+		rabbitTemplate.convertAndSend(errOrderCreatedQueue, message);
+		log.info("배달 생성 실패 이벤트 발송: {}", event);
 	}
 
 	// 실패 이벤트 정의
