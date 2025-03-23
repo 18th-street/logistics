@@ -22,6 +22,8 @@ import com.eighteenthstreet.deliveryservice.domain.event.DeliveryCreatedEvent;
 import com.eighteenthstreet.deliveryservice.domain.exception.DeliveryNotFoundException;
 import com.eighteenthstreet.deliveryservice.domain.model.Delivery;
 import com.eighteenthstreet.deliveryservice.domain.repository.DeliveryRepository;
+import com.eighteenthstreet.deliveryservice.infrastructure.messaging.message.DeliveryCancelledErrMessage;
+import com.eighteenthstreet.deliveryservice.infrastructure.messaging.message.DeliveryCancelledEvent;
 import com.eighteenthstreet.deliveryservice.infrastructure.messaging.message.DeliveryMessage;
 import com.eighteenthstreet.deliveryservice.presentation.exception.error.CustomException;
 import com.eighteenthstreet.deliveryservice.presentation.request.CreateDeliveryRequest;
@@ -42,6 +44,12 @@ public class DeliveryService {
 
 	@Value("${message.queue.delivery-service}")
 	private String queueDelivery;
+
+	@Value("${message.complete.queue.delivery.cancelled}")
+	private String queueCompleteCancelledDelivery;
+
+	@Value("${message.err.queue.delivery.cancelled}")
+	private String queueErrDeliveryCancelled;
 
 	public CreateDeliveryResponse createDelivery(CreateDeliveryRequest createDeliveryRequest) {
 		Delivery delivery = Delivery.createDelivery(createDeliveryRequest);
@@ -83,7 +91,7 @@ public class DeliveryService {
 		Delivery delivery = deliveryRepository.findById(deliveryId)
 			.orElseThrow(() -> new DeliveryNotFoundException(ErrorCode.DELIVERY_NOT_FOUND));
 
-		delivery.cancel();
+		delivery.delete();
 		delivery.softDelete();
 
 		try {
@@ -145,4 +153,41 @@ public class DeliveryService {
 		}
 	}
 
+	@Transactional
+	public void cancelledDelivery(DeliveryCancelledEvent message) {
+		// Delivery 존재 여부 확인
+		Delivery delivery = deliveryRepository.findById(message.deliveryId())
+			.orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_NOT_FOUND));
+
+		delivery.cancel();
+
+		try {
+			// 2. DeliveryRoute 삭제 (Feign Client 호출)
+			ResponseEntity<Map<String, String>> routeResponse = deliveryRouteClient.deleteDeliveryRouteByDeliveryId(
+				message.deliveryId());
+			if (!routeResponse.getStatusCode().is2xxSuccessful()) {
+				throw new CustomException(ErrorCode.DELIVERY_ROUTE_DELETION_FAILED);
+			}
+
+			// 3. DeliveryAgent 삭제 (Feign Client 호출)
+			ResponseEntity<Map<String, String>> agentResponse = deliveryAgentClient.deleteDeliveryAgentByDeliveryId(
+				message.deliveryId());
+			if (!agentResponse.getStatusCode().is2xxSuccessful()) {
+				throw new CustomException(ErrorCode.DELIVERY_AGENT_DELETION_FAILED);
+			}
+
+		} catch (Exception e) {
+			// 배달 삭세 실패하면 메세지 보내기
+			DeliveryCancelledErrMessage cancelledErrMessage = new DeliveryCancelledErrMessage(
+				message.orderId(),
+				e.getMessage()
+			);
+			rabbitTemplate.convertAndSend(queueErrDeliveryCancelled, cancelledErrMessage);
+			log.info(e.getMessage());
+			throw e;
+		}
+
+		// 배달 삭제 성공하면 메세지 보내기
+		rabbitTemplate.convertAndSend(queueCompleteCancelledDelivery, message);
+	}
 }
