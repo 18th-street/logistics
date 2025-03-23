@@ -10,9 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.eighteenthstreet.deliveryrouteservice.application.client.GetHubRouteResponse;
-import com.eighteenthstreet.deliveryrouteservice.application.client.GetHubRoutesResponse;
-import com.eighteenthstreet.deliveryrouteservice.application.client.HubRouteClient;
 import com.eighteenthstreet.deliveryrouteservice.application.dto.DeliveryRouteDto;
 import com.eighteenthstreet.deliveryrouteservice.application.dto.GetDeliveryRouteResponse;
 import com.eighteenthstreet.deliveryrouteservice.domain.event.DeliveryCreatedEvent;
@@ -20,6 +17,9 @@ import com.eighteenthstreet.deliveryrouteservice.domain.event.OrderDeliveryCompl
 import com.eighteenthstreet.deliveryrouteservice.domain.exception.DeliveryRouteNotFoundException;
 import com.eighteenthstreet.deliveryrouteservice.domain.model.DeliveryRoute;
 import com.eighteenthstreet.deliveryrouteservice.domain.repository.DeliveryRouteRepository;
+import com.eighteenthstreet.deliveryrouteservice.infrastructure.client.HubRouteClient;
+import com.eighteenthstreet.deliveryrouteservice.infrastructure.client.dto.GetHubRouteResponse;
+import com.eighteenthstreet.deliveryrouteservice.infrastructure.client.dto.GetHubRoutesResponse;
 import com.eighteenthstreet.deliveryrouteservice.infrastructure.messaging.DeliveryCreatedErrMessage;
 import com.eighteenthstreet.deliveryrouteservice.presentation.exception.error.CustomException;
 
