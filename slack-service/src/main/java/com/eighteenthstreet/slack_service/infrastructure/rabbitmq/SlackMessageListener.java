@@ -3,6 +3,7 @@ package com.eighteenthstreet.slack_service.infrastructure.rabbitmq;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 import com.eighteenthstreet.slack_service.application.dto.DeliveryDetailsResponse;
@@ -18,10 +19,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class SlackEndpoint {
+public class SlackMessageListener {
 	private final SlackService slackService;
 
-	// @RabbitListener(queues = "${message.queue.slack}")
+	@RabbitListener(queues = "${message.queue.slack}")
 	public void sendSlackToHubManager(UUID orderId) {
 		// order 정보
 		SelectOrderResponse order = slackService.getOrder(orderId);
