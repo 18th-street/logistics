@@ -10,6 +10,6 @@ import com.eighteenthstreet.slack_service.application.dto.DeliveryDetailsRespons
 
 @FeignClient(name = "delivery-service")
 public interface DeliveryServiceClient {
-	@GetMapping("/api/vi/deliveries/{id}")
+	@GetMapping("/api/v1/deliveries/{id}")
 	DeliveryDetailsResponse getDelivery(@PathVariable("id") UUID uuid);
 }

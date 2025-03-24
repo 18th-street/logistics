@@ -27,7 +27,7 @@ import auth.Role;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/vi/delivery-agents")
+@RequestMapping("/api/v1/delivery-agents")
 @RequiredArgsConstructor
 public class DeliveryAgentController {
 	private final DeliveryAgentService deliveryAgentService;

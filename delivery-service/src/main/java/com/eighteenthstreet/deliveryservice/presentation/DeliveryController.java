@@ -23,7 +23,7 @@ import com.eighteenthstreet.deliveryservice.presentation.request.UpdateStatusDel
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/vi/deliveries")
+@RequestMapping("/api/v1/deliveries")
 @RequiredArgsConstructor
 public class DeliveryController {
 	private final DeliveryService deliveryService;
