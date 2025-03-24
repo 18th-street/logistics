@@ -47,3 +47,8 @@ management:
       probability: 1.0
 
 status-code: orangeIsTheNewBlack
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+
