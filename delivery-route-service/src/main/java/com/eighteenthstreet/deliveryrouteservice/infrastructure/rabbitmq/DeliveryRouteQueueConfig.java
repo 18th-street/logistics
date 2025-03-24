@@ -33,8 +33,14 @@ public class DeliveryRouteQueueConfig {
 	@Value("${message.err.queue.route}")
 	private String queueErrRoute;
 
-	@Value("${message.complete.queue.order}")
+	@Value("${message.complete.queue.delivery.created}")
 	private String queueCompleteOrder;
+
+	@Value("${message.complete.queue.delivery.cancelled}")
+	private String queueCompleteCancelledOrder;
+
+	@Value("${message.err.queue.delivery.created}")
+	private String queueErrDeliveryCreated;
 
 	@Bean
 	public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
@@ -64,6 +70,16 @@ public class DeliveryRouteQueueConfig {
 	}
 
 	@Bean
+	public Queue queueCompleteCancelledOrder() {
+		return new Queue(queueCompleteCancelledOrder);
+	}
+
+	@Bean
+	public Queue queueErrDeliveryCreated() {
+		return new Queue(queueErrDeliveryCreated);
+	}
+
+	@Bean
 	public Queue queueRoute() {
 		return new Queue(queueRoute); // "delivery.route"
 	}
@@ -89,6 +105,18 @@ public class DeliveryRouteQueueConfig {
 		return BindingBuilder.bind(queueFailed()).to(exchange()).with(queueFailed);
 	}
 
+	@Bean
+	public Binding bindingCompleteOrder() {
+		return BindingBuilder.bind(queueCompleteOrder()).to(completeExchange()).with(queueCompleteOrder);
+	}
+
+	@Bean
+	public Binding bindingQueueCompleteCancelledOrder() {
+		return BindingBuilder.bind(queueCompleteCancelledOrder())
+			.to(completeExchange())
+			.with(queueCompleteCancelledOrder);
+	}
+
 	// 에러 익스체인지
 	@Bean
 	public TopicExchange exchangeErr() {
@@ -108,7 +136,7 @@ public class DeliveryRouteQueueConfig {
 	}
 
 	@Bean
-	public Binding bindingCompleteOrder() {
-		return BindingBuilder.bind(queueCompleteOrder()).to(completeExchange()).with(queueCompleteOrder);
+	public Binding bindingErrDeliveryCreated() {
+		return BindingBuilder.bind(queueErrDeliveryCreated()).to(exchangeErr()).with(queueErrDeliveryCreated);
 	}
 }

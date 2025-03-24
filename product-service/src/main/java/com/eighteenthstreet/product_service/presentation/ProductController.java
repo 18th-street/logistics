@@ -1,6 +1,5 @@
 package com.eighteenthstreet.product_service.presentation;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.PageRequest;
@@ -19,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.eighteenthstreet.product_service.application.ProductService;
-import com.eighteenthstreet.product_service.application.dto.BulkProductResponse;
+import com.eighteenthstreet.product_service.application.dto.BulkProductsResponse;
 import com.eighteenthstreet.product_service.application.dto.CreateProductResponse;
 import com.eighteenthstreet.product_service.application.dto.SelectProductResponse;
 import com.eighteenthstreet.product_service.application.dto.UpdateProductResponse;
@@ -111,8 +110,8 @@ public class ProductController {
 	}
 
 	@PostMapping("/bulk")
-	public ResponseEntity<List<BulkProductResponse>> getBulkProducts(@RequestBody BulkProductRequest request) {
-		List<BulkProductResponse> response = productService.getBulkProducts(request);
+	public ResponseEntity<BulkProductsResponse> getBulkProducts(@RequestBody BulkProductRequest request) {
+		BulkProductsResponse response = productService.getBulkProducts(request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 }

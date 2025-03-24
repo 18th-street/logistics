@@ -3,6 +3,9 @@ package com.eighteenthstreet.product_service.application;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedModel;
@@ -10,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.eighteenthstreet.product_service.application.dto.BulkProductResponse;
+import com.eighteenthstreet.product_service.application.dto.BulkProductsResponse;
 import com.eighteenthstreet.product_service.application.dto.CreateProductResponse;
 import com.eighteenthstreet.product_service.application.dto.SelectCompanyResponse;
 import com.eighteenthstreet.product_service.application.dto.SelectProductResponse;
@@ -37,6 +41,7 @@ public class ProductService {
 	private final CompanyServiceClient companyServiceClient;
 
 	@Transactional
+	@CachePut(cacheNames = "productCache", key = "#result.productId()")
 	public CreateProductResponse registerProduct(CreateProductRequest request) {
 		// 업체 정보 조회
 		UUID hubId = null;
@@ -68,6 +73,8 @@ public class ProductService {
 	}
 
 	@Transactional
+	@CachePut(cacheNames = "productCache", key = "#result.productId", condition = "#result != null")
+	@CacheEvict(cacheNames = "productAllCache", allEntries = true)
 	public UpdateProductResponse updateProduct(UUID productId, UpdateProductRequest request) {
 		// id로 등록된 상품 조회
 		Product foundProduct = productRepository.findById(productId)
@@ -82,6 +89,7 @@ public class ProductService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = {"productAllCache", "productCache"}, key = "#productId")
 	public void deleteProduct(UUID productId) {
 		// id로 등록된 상품 조회
 		Product foundProduct = productRepository.findById(productId)
@@ -92,6 +100,7 @@ public class ProductService {
 	}
 
 	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = "productCache", key = "#productId")
 	public SelectProductResponse getProduct(UUID productId) {
 		// id로 등록된 상품 조회
 		Product foundProduct = productRepository.findById(productId)
@@ -131,12 +140,15 @@ public class ProductService {
 		foundProduct.restoreStock(quantity);
 	}
 
-	public List<BulkProductResponse> getBulkProducts(BulkProductRequest request) {
+	@Cacheable(cacheNames = "productAllCache", key = "getMethodName()")
+	public BulkProductsResponse getBulkProducts(BulkProductRequest request) {
 		List<UUID> productIds = request.productIds();
 		List<Product> products = productRepository.findByIds(productIds);
 
-		return products.stream()
+		List<BulkProductResponse> bulkProducts = products.stream()
 			.map(BulkProductResponse::from)
 			.toList();
+
+		return new BulkProductsResponse(bulkProducts);
 	}
 }
