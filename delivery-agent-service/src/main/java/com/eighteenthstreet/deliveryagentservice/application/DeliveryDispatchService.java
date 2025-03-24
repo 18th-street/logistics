@@ -65,12 +65,12 @@ public class DeliveryDispatchService {
 
 				deliveryAgentRepository.save(assignedAgent);
 				log.info("경로 배차 완료: agentId = {}, route = {}", assignedAgent.getDeliveryAgentId(), route);
-
-				DeliveryAgentAssignedEvent assignedEvent = new DeliveryAgentAssignedEvent(event.deliveryId(),
-					assignedAgent.getDeliveryAgentId());
-				rabbitTemplate.convertAndSend(deliveryAssignedQueue, assignedEvent);
-				log.info("배달 서비스에 이벤트 발송: {}", assignedEvent);
 			}
+
+			DeliveryAgentAssignedEvent assignedEvent = new DeliveryAgentAssignedEvent(event.deliveryId());
+			rabbitTemplate.convertAndSend(deliveryAssignedQueue, assignedEvent);
+			log.info("배달 서비스에 이벤트 발송: {}", assignedEvent);
+
 		} catch (Exception e) {
 			DeliveryFailedEvent failedEvent = new DeliveryFailedEvent(event.deliveryId(),
 				ErrorCode.INVALID_DELIVERY_AGENT);
