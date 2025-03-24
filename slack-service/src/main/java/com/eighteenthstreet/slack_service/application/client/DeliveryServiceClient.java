@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.eighteenthstreet.slack_service.application.dto.DeliveryDetailsResponse;
 
-@FeignClient(name = "delivery-service", url = "http://localhost:19100")
+@FeignClient(name = "delivery-service")
 public interface DeliveryServiceClient {
 	@GetMapping("/api/vi/deliveries/{id}")
 	DeliveryDetailsResponse getDelivery(@PathVariable("id") UUID uuid);

@@ -34,8 +34,16 @@ public class JwtAuthenticationFilter implements GlobalFilter {
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 		String path = exchange.getRequest().getURI().getPath();
+		String internalCallHeader = exchange.getRequest().getHeaders().getFirst("X-Internal-Call");
 
-		if (path.equals("/api/v1/users/signUp") || path.equals("/api/v1/users/signIn")) {
+		// 내부 호출일 경우 인증 스킵
+		if ("true".equalsIgnoreCase(internalCallHeader)) {
+			log.info("내부 호출");
+			return chain.filter(exchange);
+		}
+
+		if (path.equals("/api/v1/users/signUp") || path.equals("/api/v1/users/signIn") || path.startsWith(
+			"/api/v1/users/incall/detail")) {
 			return chain.filter(exchange);
 		}
 
