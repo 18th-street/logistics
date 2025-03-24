@@ -44,6 +44,7 @@ public class DeliveryEventService {
 	@RabbitListener(queues = "${message.queue.delivery-route-failed}")
 	@Transactional
 	public void handleDeliveryRouteCreationFailed(DeliveryRouteCreationFailedEvent event) {
+		log.info("배송 경로 생성 실패 이벤트 수신: {}", event);
 		Delivery delivery = deliveryRepository.findById(event.deliveryId()).orElseThrow(
 			() -> new DeliveryNotFoundException(ErrorCode.DELIVERY_NOT_FOUND)
 		);
@@ -51,7 +52,6 @@ public class DeliveryEventService {
 		delivery.failed();
 		deliveryRepository.save(delivery);
 
-		log.info("배송 경로 생성 실패 이벤트 수신: {}", event);
 	}
 
 	@RabbitListener(queues = "${message.queue.delivery-agent-failed}")

@@ -9,7 +9,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.eighteenthstreet.deliveryagentservice.application.client.HubFeignClient;
 import com.eighteenthstreet.deliveryagentservice.domain.event.DeliveryAgentAssignedEvent;
 import com.eighteenthstreet.deliveryagentservice.domain.event.RouteCreatedEvent;
 import com.eighteenthstreet.deliveryagentservice.domain.exception.InvalidDeliveryAgentException;
@@ -17,6 +16,7 @@ import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgent;
 import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgentStatus;
 import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgentType;
 import com.eighteenthstreet.deliveryagentservice.domain.repository.DeliveryAgentRepository;
+import com.eighteenthstreet.deliveryagentservice.infrastructure.client.HubFeignClient;
 
 import exception.ErrorCode;
 import lombok.RequiredArgsConstructor;

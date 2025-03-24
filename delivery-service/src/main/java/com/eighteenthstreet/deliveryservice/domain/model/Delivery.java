@@ -62,11 +62,15 @@ public class Delivery extends BaseEntity {
 		this.status = deliveryStatus;
 	}
 
-	public void cancel() {
+	public void delete() {
 		if (this.status == DeliveryStatus.OUT_FOR_DELIVERY || this.status == DeliveryStatus.IN_TRANSIT_TO_VENDOR) {
 			throw new InvalidDeliveryException(ErrorCode.INVALID_DELIVERY);
 		}
 
+		this.status = DeliveryStatus.CANCELED;
+	}
+
+	public void cancel() {
 		this.status = DeliveryStatus.CANCELED;
 	}
 
