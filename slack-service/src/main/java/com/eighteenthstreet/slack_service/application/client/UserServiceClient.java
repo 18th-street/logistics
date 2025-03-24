@@ -9,8 +9,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 
 import com.eighteenthstreet.slack_service.application.dto.UserResponseDto;
 
-@FeignClient(name = "user-service", url = "http://localhost:19091")
+@FeignClient(name = "user-service")
 public interface UserServiceClient {
-	@GetMapping("/api/v1/users/{userId}")
-	UserResponseDto getUser(@PathVariable("userId") UUID userId, @RequestHeader("Authorization") String token);
+	@GetMapping("/api/v1/users/incall/detail/{userId}")
+	UserResponseDto getUser(
+		@PathVariable("userId") UUID userId,
+		@RequestHeader("X-Internal-Call") String internalHeader // 추가
+	);
 }
