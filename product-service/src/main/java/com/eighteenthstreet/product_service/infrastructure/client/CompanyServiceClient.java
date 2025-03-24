@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.eighteenthstreet.product_service.application.dto.SelectCompanyResponse;
 
-@FeignClient(name = "company-service", url = "http://localhost:19098")
+@FeignClient(name = "company-service")
 public interface CompanyServiceClient {
 	@GetMapping("/api/v1/companies/{companyId}")
 	SelectCompanyResponse getCompany(@PathVariable UUID companyId);
