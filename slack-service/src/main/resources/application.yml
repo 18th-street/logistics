@@ -1,0 +1,46 @@
+server:
+  port: 19103
+
+spring:
+  application:
+    name: slack-service
+  config:
+    import: optional:file:.env[.properties]
+  profiles:
+    active: local
+  datasource:
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database: postgresql
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    listener:
+      simple:
+        missing-queues-fatal: false # 큐가 없을 경우 오류 발생하지 않도록 설정
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
+
+message:
+  queue:
+    slack: logistics.slack
+
+management:
+  zipkin:
+    tracing:
+      endpoint: "http://localhost:9411/api/v2/spans"
+  tracing:
+    sampling:
+      probability: 1.0
