@@ -17,11 +17,10 @@ public class DeliveryMessageListener {
 	private final DeliveryService deliveryService;
 
 	@RabbitListener(queues = "${message.queue.delivery.created}")
-	public ResponseEntity<CreateDeliveryResponse> createDelivery(DeliveryMessage message) {
+	public void createDelivery(DeliveryMessage message) {
 		log.info("#### Delivery Message 수신 {} ", message);
-		CreateDeliveryResponse response = deliveryService.createMessageDelivery(message);
-
-		return ResponseEntity.ok(response);
+		// CreateDeliveryResponse response = deliveryService.createMessageDelivery(message);
+		deliveryService.createMessageDelivery(message);
 	}
 
 	@RabbitListener(queues = "${message.queue.delivery.cancelled}")
