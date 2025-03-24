@@ -34,6 +34,7 @@ eureka:
       defaultZone: http://localhost:19090/eureka/
 
 message:
+  exchange: logistics
   queue:
     slack: logistics.slack
 
