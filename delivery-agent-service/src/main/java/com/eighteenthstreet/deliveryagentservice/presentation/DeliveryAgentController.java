@@ -21,7 +21,9 @@ import com.eighteenthstreet.deliveryagentservice.application.dto.GetDeliveryAgen
 import com.eighteenthstreet.deliveryagentservice.presentation.request.CreateDeliveryAgentRequest;
 import com.eighteenthstreet.deliveryagentservice.presentation.request.UpdateDeliveryTypeRequest;
 
+import auth.CheckRole;
 import auth.JwtUtil;
+import auth.Role;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -31,6 +33,7 @@ public class DeliveryAgentController {
 	private final DeliveryAgentService deliveryAgentService;
 	private final JwtUtil jwtUtil;
 
+	@CheckRole({Role.MASTER, Role.HUB, Role.COMPANY, Role.DELIVERY})
 	@PostMapping
 	public ResponseEntity<CreateDeliveryAgentResponse> createDeliveryAgent(
 		@RequestBody CreateDeliveryAgentRequest request,

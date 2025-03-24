@@ -52,10 +52,14 @@ message:
     exchange: logistics.err
     queue:
       route: logistics.err.route
+      delivery:
+        created: logistics.err.delivery.created
   complete:
     exchange: logistics.complete
     queue:
-      order: logistics.complete.order
+      delivery:
+        created: logistics.complete.delivery.created
+        cancelled: logistics.complete.delivery.cancelled  # 추가!
 
 
 eureka:

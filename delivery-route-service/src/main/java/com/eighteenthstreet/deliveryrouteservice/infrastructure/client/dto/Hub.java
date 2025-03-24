@@ -1,4 +1,4 @@
-package com.eighteenthstreet.deliveryrouteservice.application.client;
+package com.eighteenthstreet.deliveryrouteservice.infrastructure.client.dto;
 
 import java.util.UUID;
 

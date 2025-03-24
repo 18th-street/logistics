@@ -1,4 +1,4 @@
-package com.eighteenthstreet.deliveryagentservice.application.client;
+package com.eighteenthstreet.deliveryagentservice.infrastructure.client;
 
 import java.util.UUID;
 
