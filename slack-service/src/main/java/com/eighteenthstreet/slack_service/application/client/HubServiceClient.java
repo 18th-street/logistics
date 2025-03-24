@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.eighteenthstreet.slack_service.application.dto.GetHubResponse;
 
-@FeignClient(name = "hub-service", url = "http://localhost:19095")
+@FeignClient(name = "hub-service")
 public interface HubServiceClient {
 	@PostMapping("/api/v1/hub/ids")
 	List<GetHubResponse> getHubsByIds(@RequestBody List<UUID> hubIds);
