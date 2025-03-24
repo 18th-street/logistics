@@ -40,6 +40,7 @@ public class SecurityConfig {
 				authorize -> authorize
 					.requestMatchers("/api/v1/users/signUp").permitAll()
 					.requestMatchers("/api/v1/users/signIn").permitAll()
+					.requestMatchers("/api/v1/users/incall/detail/**").permitAll()
 					.anyRequest().authenticated()
 			)
 			.addFilterBefore(new UserAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

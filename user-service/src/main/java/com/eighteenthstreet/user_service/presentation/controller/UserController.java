@@ -134,6 +134,14 @@ public class UserController {
 	}
 
 	@Description(
+		"사용자 정보 상세 조회 (내부 조회)"
+	)
+	@GetMapping("/incall/detail/{userId}")
+	public ResponseEntity<UserResponseDto> getUserDetailIncall(@PathVariable("userId") UUID userId) {
+		return ResponseEntity.ok(userService.getUserDetailIncall(userId));
+	}
+
+	@Description(
 		"사용자 정보 수정 (마스터용)"
 	)
 	@PatchMapping("/{userId}")
