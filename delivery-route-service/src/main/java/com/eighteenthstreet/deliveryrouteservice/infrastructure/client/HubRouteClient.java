@@ -10,7 +10,7 @@ import com.eighteenthstreet.deliveryrouteservice.infrastructure.client.dto.GetHu
 
 @FeignClient(name = "hub-route-service")
 public interface HubRouteClient {
-	@GetMapping("/api/v1/hub/routes")
+	@GetMapping("/api/v1/routes")
 	GetHubRoutesResponse getHubRoutes(@RequestParam("departureHubId") UUID departureHubId,
 		@RequestParam("arrivalHubId") UUID arrivalHubId);
 }
