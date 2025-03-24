@@ -20,7 +20,7 @@ import com.eighteenthstreet.hub_route_service.application.dto.GetHubRouteRespons
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/hub/routes")
+@RequestMapping("/api/v1/routes")
 @RequiredArgsConstructor
 public class HubRouteController {
 
