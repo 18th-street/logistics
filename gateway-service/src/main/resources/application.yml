@@ -99,4 +99,7 @@ springdoc:
     urls[1]:
       name: Delivery Agent API
       url: http://localhost:19102/api/delivery-agent/v3/api-docs
+    urls[2]:
+      name: Company Agent API
+      url: http://localhost:19098/api/company/v3/api-docs
     use-root-path: true
