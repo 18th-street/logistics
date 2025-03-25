@@ -3,6 +3,7 @@ package com.eighteenthstreet.hub_service.application.dto;
 import java.util.UUID;
 
 import com.eighteenthstreet.hub_service.domain.model.Hub;
+import com.eighteenthstreet.hub_service.domain.model.HubCache;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +24,17 @@ public class GetHubResponse {
 	private UUID userId;
 
 	public static GetHubResponse from(Hub hub) {
+		return GetHubResponse.builder()
+			.hubId(hub.getHubId())
+			.name(hub.getName())
+			.address(hub.getAddress())
+			.latitude(hub.getLatitude())
+			.longitude(hub.getLongitude())
+			.userId(hub.getUserId())
+			.build();
+	}
+
+	public static GetHubResponse fromCahce(HubCache hub) {
 		return GetHubResponse.builder()
 			.hubId(hub.getHubId())
 			.name(hub.getName())

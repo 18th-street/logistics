@@ -1,19 +1,21 @@
 package com.eighteenthstreet.hub_service.application;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedModel;
-import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.eighteenthstreet.hub_service.application.dto.CreateHubResponse;
 import com.eighteenthstreet.hub_service.application.dto.GetHubResponse;
 import com.eighteenthstreet.hub_service.application.dto.UpdateHubResponse;
+import com.eighteenthstreet.hub_service.domain.HubRedisRepository;
 import com.eighteenthstreet.hub_service.domain.HubRepository;
 import com.eighteenthstreet.hub_service.domain.model.Hub;
+import com.eighteenthstreet.hub_service.domain.model.HubCache;
 import com.eighteenthstreet.hub_service.exception.CustomHubAlreadyExistException;
 import com.eighteenthstreet.hub_service.exception.CustomHubNotFoundException;
 import com.eighteenthstreet.hub_service.presentation.request.CreateHubRequest;
@@ -29,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 public class HubService {
 
 	private final HubRepository hubRepository;
+	private final HubRedisRepository hubRedisRepository;
 
 	@Transactional
 	public CreateHubResponse createHub(CreateHubRequest request) {
@@ -59,6 +62,12 @@ public class HubService {
 
 	@Transactional(readOnly = true)
 	public GetHubResponse getHub(UUID hubId) {
+		HubCache cached = hubRedisRepository.findById(hubId);
+
+		if (cached != null) {
+			return GetHubResponse.fromCahce(cached);
+		}
+
 		Hub hub = hubRepository.findByHubIdAndIsDeletedNull(hubId)
 			.orElseThrow(() -> new CustomHubNotFoundException(ErrorCode.HUB_NOT_FOUND));
 
