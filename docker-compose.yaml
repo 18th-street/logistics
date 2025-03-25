@@ -30,6 +30,16 @@ services:
     volumes:
       - redis-data:/data
 
+  zipkin:
+    container_name: zipkin
+    image: openzipkin/zipkin:latest
+    ports:
+      - "9411:9411"
+    networks:
+      - app_network
+    environment:
+      - JAVA_OPTS=-Xms512m -Xmx512m
+
 networks:
   app_network:
     driver: bridge
