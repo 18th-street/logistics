@@ -15,69 +15,27 @@
 
 ## 🚩 프로젝트 목적 / 상세
 
-### B2B 물류 관리 및 배송 시스템 구축을 위한 MSA 기반 플랫폼 개발
+> * MSA 기반 국내 물류 관리 및 배송 시스템 개발
+> * 허브-앤-스포크(Hub and Spoke) 모델을 기반으로 한 B2B 배송 최적화 플랫폼
 
-> 이번 프로젝트의 주요 목표는 MSA(Microservices Architecture) 구조를 기반으로,
-> 전국 단위 물류 센터(Hub)와 배송 경로를 효율적으로 관리하는 물류/배송 최적화 시스템을 개발하는 것입니다.
+- API Gateway 및 Eureka 기반 마이크로서비스 구조
+- Zipkin 기반 분산 추적
+- 물류센터(Hub) 관리
+- 배송 기사 / 배송 경로 관리
+- 상품 / 업체 / 주문 관리
+- 슬랙 연동 알림
 
-### 주요 목적
+## 🏛️ 서비스 구성 및 실행 방법
 
-> * 실제 물류 프로세스를 반영한 허브 간 경로 및 배송 처리 기능 구현
-> * Hub-and-Spoke 모델 기반의 배송 네트워크 최적화
-> * Slack 연동을 통한 실시간 배송 정보 알림 제공
-> * Spring Cloud 기반의 MSA 환경 구성 (Eureka, Gateway, Config, Zipkin 등)
-> * Redis, RabbitMQ, Swagger 등 다양한 기술 스택 적용
-
-### 시스템 특징
-
-> **허브(Hub) 관리 기능**
-> * 전국 17개 광역시·도에 위치한 물류센터의 CRUD 및 검색 기능을 제공하며, 캐싱 및 논리 삭제 전략을 통해 성능과 데이터 일관성을 고려함
-
-> **Hub-to-Hub 경로 탐색 기능**
-> * 허브 간 배송 경로를 BFS 알고리즘 기반으로 최단 경로 탐색을 구현. Hub-and-Spoke 모델 특성상 중앙 허브(경기남부, 대전, 대구)를 거쳐 배송됨
-
-> **지능형 배송 담당자 배정 시스템**
-> * 배송 요청 시 라운드 로빈 기반으로 허브/업체 배송담당자를 자동 배정
-
-> **Slack 메시지 알림 시스템**
-> * 주문 생성 시 AI(Gemini API)를 활용하여 최종 발송 시점을 계산하고, Slack 메시지로 자동 알림 전송
-
-> **MSA 핵심 기술 스택 적용**
-> * Spring Boot 기반 각 마이크로서비스
-> * Eureka로 서비스 디스커버리 관리
-> * API Gateway로 요청 라우팅 및 인증 처리
-> * Zipkin으로 분산 추적 적용
-> * Redis로 데이터 캐싱 처리
-> * RabbitMQ로 주문/배송 처리의 비동기화
-
-## 🏛️ 서비스 구성
-
-![Architecture](Logistics-Architecture.png)
+![Architecture](img_1.png)
 
 ## 🧬 ERD
 
 > PostgreSQL 기반 ERD
 
-![ERD](ERD.png)
+![ERD](img.png)
 
 ## 🛠 기술 스택
-
-<div style="display: flex; justify-content: center;">
-  <img src="https://img.shields.io/badge/Java-007396?&style=flat&logo=java&logoColor=white" style="margin-right: 10px;">
-  <img src="https://img.shields.io/badge/Spring Boot-6DB33F?&style=flat&logo=springboot&logoColor=white" style="margin-right: 10px;">
-  <img src="https://img.shields.io/badge/ApachetTomcat-F8DC75?style=flat&logo=apachetomcat&logoColor=white"style="margin-right: 10px;"/>
-  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=Postgresql&logoColor=white" style="margin-right: 10px;"/>
-  <img src="https://img.shields.io/badge/JPA-6DB33F?style=flat&logo=&logoColor=white" style="margin-right: 10px;"/>
-</div>
-
-<div style="display: flex; justify-content: center;">
-  <img src="https://img.shields.io/badge/Git-F05032?style=flat&logo=git&logoColor=white" style="margin-right: 10px;">
-  <img src="https://img.shields.io/badge/Github-181717?style=flat&logo=github&logoColor=white" style="margin-right: 10px;">
-  <img src="https://img.shields.io/badge/IntelliJ Idea-000000?style=flat&logo=intellijidea&logoColor=white" style="margin-right: 10px;">
-  <img src="https://img.shields.io/badge/Swagger-85EA2D?style=flat&logo=swagger&logoColor=white" style="margin-right: 10px;">
-<img src="https://img.shields.io/badge/Naver-03C75A?style=flat&logo=naver&logoColor=white" style="margin-right: 10px;">
-  <img src="https://img.shields.io/badge/Slack-4A154B?style=flat&logo=slack&logoColor=white" style="margin-right: 10px;">
-</div>
 
 ## 💡 트러블 슈팅 / 핵심 고민
 
@@ -105,9 +63,7 @@
 
 ### 💡 Hub and Spoke 최단 경로 계산
 
-> * Hub and Spoke 방식을 사용했기에 일반 허브는 각 지역의 중앙 허브에만 연동이 되어있고, 중앙 허브는 중앙 허브끼리 연동이 되었다.
-> * 각 허브는 무조건 하나 이상의 허브에 연결이 되어있으므로 최단 경로를 구하는 방법으로 경로를 구해야 한다.
-> * 그러므로 **너비 우선 탐색(BFS)** 알고리즘을 사용하여 구현 하였습니다.
+>
 
 ### 💡 지능형 배차 시스템
 
@@ -126,14 +82,6 @@
 
 ## 📄 API Docs
 
-> * Swagger UI를 통해서 각 서비스 API 문서를 제공합니다.
-> * 각 서비스를 실행 시킨뒤, Gateway Service(19091포트)에 접속하여 API Docs 확인
-
-```bash
-# 루트에서 전체 서비스 실행
-docker-compose up --build
-```
-
-![API_DOCS](api_docs.png)
+> Swagger UI를 통해서 각 서비스 API 문서를 제공합니다.
 
 ![Footer](https://capsule-render.vercel.app/api?type=waving&color=auto&height=200&section=footer)

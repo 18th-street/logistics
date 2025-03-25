@@ -117,4 +117,7 @@ springdoc:
     urls[7]:
       name: User API
       url: http://localhost:19093/api/user/v3/api-docs
+    urls[8]:
+      name: Order API
+      url: http://localhost:19099/api/order/v3/api-docs
     use-root-path: true
