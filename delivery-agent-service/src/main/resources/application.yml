@@ -69,3 +69,13 @@ message:
     exchange: logistics.err
     queue:
       route: logistics.err.route
+
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api/account/v3/api-docs
+  swagger-ui:
+    enabled: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
