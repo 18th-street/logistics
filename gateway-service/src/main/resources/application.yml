@@ -63,7 +63,11 @@ spring:
         - id: delivery-agent-service
           uri: lb://delivery-agent-service
           predicates:
-            - Path=/api/v1/delivery-agents/**
+            - Path=/api/v1/delivery-agents/**, /api/delivery-agent/v3/api-docs/**
+        - id: delivery-service
+          uri: lb://delivery-service
+          predicates:
+            - Path=/api/v1/deliveries/**, /api/delivery/v3/api-docs/**
       discovery:
         locator:
           enabled: true # 동적 라우팅 생성
@@ -86,3 +90,13 @@ management:
   tracing:
     sampling:
       probability: 1.0
+
+springdoc:
+  swagger-ui:
+    urls[0]:
+      name: Delivery API
+      url: http://localhost:19100/api/delivery/v3/api-docs
+    urls[1]:
+      name: Delivery Agent API
+      url: http://localhost:19102/api/delivery-agent/v3/api-docs
+    use-root-path: true
