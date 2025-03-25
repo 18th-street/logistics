@@ -53,7 +53,7 @@ management:
 springdoc:
   api-docs:
     enabled: true
-    path: /v3/api-docs
+    path: /api/product/v3/api-docs
   enable-spring-security: true
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
