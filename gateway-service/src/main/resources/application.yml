@@ -63,7 +63,7 @@ spring:
         - id: delivery-agent-service
           uri: lb://delivery-agent-service
           predicates:
-            - Path=/api/vi/delivery-agents/**
+            - Path=/api/v1/delivery-agents/**
       discovery:
         locator:
           enabled: true # 동적 라우팅 생성
