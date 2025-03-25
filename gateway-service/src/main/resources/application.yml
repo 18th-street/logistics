@@ -114,4 +114,7 @@ springdoc:
     urls[6]:
       name: Slack API
       url: http://localhost:19103/api/slack/v3/api-docs
+    urls[7]:
+      name: User API
+      url: http://localhost:19093/api/user/v3/api-docs
     use-root-path: true
