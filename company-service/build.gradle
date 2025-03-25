@@ -35,6 +35,8 @@ dependencies {
     implementation 'io.micrometer:micrometer-tracing-bridge-brave'
     implementation 'io.github.openfeign:feign-micrometer'
     implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.5'
 }
 
 dependencyManagement {

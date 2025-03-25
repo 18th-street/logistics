@@ -29,6 +29,7 @@ import com.eighteenthstreet.product_service.presentation.request.UpdateProductRe
 
 import auth.CheckRole;
 import auth.Role;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -37,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductController {
 	private final ProductService productService;
 
+	@Operation(summary = "상품 등록", description = "마스터 관리자, 허브 관리자, 배송담당자는 상품을 등록할 수 있습니다.")
 	@CheckRole({Role.MASTER, Role.HUB, Role.COMPANY})
 	@PostMapping()
 	public ResponseEntity<CreateProductResponse> registerProduct(@RequestBody CreateProductRequest request) {
@@ -44,6 +46,7 @@ public class ProductController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
+	@Operation(summary = "상품 수정", description = "마스터 관리자, 허브 관리자, 배송담당자는 상품을 수정할 수 있습니다.")
 	@CheckRole({Role.MASTER, Role.HUB, Role.COMPANY})
 	@PatchMapping("/{productId}")
 	public ResponseEntity<UpdateProductResponse> updateProduct(
@@ -54,6 +57,7 @@ public class ProductController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
+	@Operation(summary = "상품 삭제", description = "마스터 관리자, 허브 관리자는 상품을 삭제할 수 있습니다.")
 	@CheckRole({Role.MASTER, Role.HUB})
 	@DeleteMapping("/{productId}")
 	public ResponseEntity<Void> deleteProduct(@PathVariable UUID productId) {
@@ -61,12 +65,14 @@ public class ProductController {
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
+	@Operation(summary = "상품 조회", description = "모든 사용자는 상품을 조회할 수 있습니다.")
 	@GetMapping("/{productId}")
 	public ResponseEntity<SelectProductResponse> getProduct(@PathVariable UUID productId) {
 		SelectProductResponse response = productService.getProduct(productId);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
+	@Operation(summary = "상품 검색", description = "모든 사용자는 상품을 검색할 수 있습니다.")
 	@GetMapping()
 	public ResponseEntity<PagedModel<SelectProductResponse>> getAllProducts(
 		@RequestParam(name = "page", defaultValue = "0") int page,
@@ -91,6 +97,7 @@ public class ProductController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
+	@Operation(summary = "상품 재고 차감", description = "상품 ID 목록을 전달하여 여러 개의 상품 정보를 한 번에 조회하는 API입니다.")
 	@PutMapping("/{productId}/stock/decrease")
 	public ResponseEntity<Void> decreaseStock(
 		@PathVariable UUID productId,
@@ -100,6 +107,7 @@ public class ProductController {
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
+	@Operation(summary = "상품 재고 복원", description = "주문 취소 시 상품의 재고를 원래 상태로 복원하는 API입니다")
 	@PutMapping("/{productId}/stock/restore")
 	public ResponseEntity<Void> restoreStock(
 		@PathVariable UUID productId,
@@ -109,6 +117,7 @@ public class ProductController {
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
+	@Operation(summary = "상품 Bulk 조회", description = "상품 ID 목록으로 한 번에 여러 개의 상품을 조회할 수 있습니다.")
 	@PostMapping("/bulk")
 	public ResponseEntity<BulkProductsResponse> getBulkProducts(@RequestBody BulkProductRequest request) {
 		BulkProductsResponse response = productService.getBulkProducts(request);
