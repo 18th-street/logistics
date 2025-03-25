@@ -24,6 +24,8 @@ import com.eighteenthstreet.deliveryagentservice.presentation.request.UpdateDeli
 import auth.CheckRole;
 import auth.JwtUtil;
 import auth.Role;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -35,9 +37,10 @@ public class DeliveryAgentController {
 
 	@CheckRole({Role.MASTER, Role.HUB, Role.COMPANY, Role.DELIVERY})
 	@PostMapping
+	@Operation(summary = "새 배달 담당자 생성", description = "제공된 정보로 새 배달 담당자를 생성합니다.")
 	public ResponseEntity<CreateDeliveryAgentResponse> createDeliveryAgent(
-		@RequestBody CreateDeliveryAgentRequest request,
-		@RequestHeader("Authorization") String token) {
+		@RequestBody @Parameter(description = "배달 담당자 정보를 포함한 요청 본문") CreateDeliveryAgentRequest request,
+		@RequestHeader("Authorization") @Parameter(description = "인증을 위한 JWT 토큰") String token) {
 
 		UUID userId = jwtUtil.getUserIdFromToken(token);
 
@@ -46,24 +49,29 @@ public class DeliveryAgentController {
 	}
 
 	@GetMapping("{id}")
-	public ResponseEntity<GetDeliveryAgentResponse> getDeliveryAgent(@PathVariable(name = "id") UUID id) {
+	@Operation(summary = "배달 담당자 조회", description = "UUID로 특정 배달 담당자의 세부 정보를 조회합니다.")
+	public ResponseEntity<GetDeliveryAgentResponse> getDeliveryAgent(
+		@PathVariable(name = "id") @Parameter(description = "배달 담당자의 UUID") UUID id) {
 		GetDeliveryAgentResponse response = deliveryAgentService.getDeliveryAgent(id);
 
 		return ResponseEntity.ok(response);
 	}
 
 	@PatchMapping()
-	public ResponseEntity<Map<String, String>> updateDeliveryAgentType(@RequestBody UpdateDeliveryTypeRequest request) {
+	@Operation(summary = "배달 담당자 타입 수정", description = "기존 배달 담당자의 타입을 수정합니다.")
+	public ResponseEntity<Map<String, String>> updateDeliveryAgentType(
+		@RequestBody @Parameter(description = "수정된 배달 타입을 포함한 요청 본문") UpdateDeliveryTypeRequest request) {
 		deliveryAgentService.updateDeliveryAgentType(request);
 
 		return ResponseEntity.ok(Collections.singletonMap("message", "배달담당자 타입이 변경되었습니다."));
 	}
 
 	@DeleteMapping("{id}")
-	public ResponseEntity<Map<String, String>> deleteDeliveryAgent(@PathVariable("id") UUID id) {
+	@Operation(summary = "배달 담당자 삭제", description = "UUID로 특정 배달 담당자를 삭제합니다.")
+	public ResponseEntity<Map<String, String>> deleteDeliveryAgent(
+		@PathVariable("id") @Parameter(description = "삭제할 배달 담당자의 UUID") UUID id) {
 		deliveryAgentService.deleteDeliveryAgent(id);
 
 		return ResponseEntity.ok(Collections.singletonMap("message", "배달담당자가 삭제되었습니다."));
 	}
-
 }
