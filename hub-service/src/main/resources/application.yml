@@ -50,3 +50,11 @@ management:
   tracing:
     sampling:
       probability: 1.0
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api/hub/v3/api-docs
+  enable-spring-security: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json

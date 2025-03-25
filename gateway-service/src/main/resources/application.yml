@@ -105,4 +105,10 @@ springdoc:
     urls[3]:
       name: Product API
       url: http://localhost:19096/api/product/v3/api-docs
+    urls[4]:
+      name: Hub API
+      url: http://localhost:19095/api/hub/v3/api-docs
+    urls[5]:
+      name: Hub Route API
+      url: http://localhost:19094/api/hub-route/v3/api-docs
     use-root-path: true
