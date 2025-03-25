@@ -9,7 +9,7 @@ import org.springframework.data.web.config.EnableSpringDataWebSupport;
 
 @EnableFeignClients
 @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
-@SpringBootApplication(scanBasePackages = {"auth", "base", "exception", "com.eighteenthstreet.slack_service"})
+@SpringBootApplication(scanBasePackages = {"auth", "base", "exception", "config", "com.eighteenthstreet.slack_service"})
 public class SlackServiceApplication {
 
 	public static void main(String[] args) {

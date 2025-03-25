@@ -47,5 +47,9 @@ management:
       probability: 1.0
 
 springdoc:
-  swagger-ui:
-    path: /swagger-ui
+  api-docs:
+    enabled: true
+    path: /api/slack/v3/api-docs
+  enable-spring-security: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
