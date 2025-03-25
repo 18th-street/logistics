@@ -46,7 +46,7 @@ dependencies {
     implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
 
     //
-    implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.7.0'
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.5'
 }
 
 dependencyManagement {
