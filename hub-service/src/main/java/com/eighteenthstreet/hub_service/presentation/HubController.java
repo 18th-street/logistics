@@ -64,6 +64,8 @@ public class HubController {
 
 		PageRequest pageable = PageRequest.of(page, size);
 
+		log.info(pageable.toString());
+
 		PagedModel<GetHubResponse> response = hubService.searchHubs(pageable, keyword);
 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
