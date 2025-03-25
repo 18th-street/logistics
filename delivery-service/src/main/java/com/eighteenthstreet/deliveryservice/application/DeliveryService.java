@@ -51,6 +51,7 @@ public class DeliveryService {
 	@Value("${message.err.queue.delivery.cancelled}")
 	private String queueErrDeliveryCancelled;
 
+	// 주문 생성 서비스
 	public CreateDeliveryResponse createDelivery(CreateDeliveryRequest createDeliveryRequest) {
 		Delivery delivery = Delivery.createDelivery(createDeliveryRequest);
 
@@ -63,6 +64,7 @@ public class DeliveryService {
 		return CreateDeliveryResponse.fromEntity(delivery);
 	}
 
+	// 메세지 처리하는 서비스
 	public CreateDeliveryResponse createMessageDelivery(DeliveryMessage message) {
 		Delivery delivery = Delivery.createMessageDelivery(message);
 

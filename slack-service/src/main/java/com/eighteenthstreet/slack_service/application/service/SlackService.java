@@ -107,6 +107,7 @@ public class SlackService {
 		// order 정보
 		SelectOrderResponse order = getOrder(event.orderId());
 		log.info("주문 요청 : {}", order.deliveryLimitedAt());
+		log.info("배송 ID : {}", order.deliveryId());
 
 		// delivery 정보
 		if (order.deliveryId() == null) {
@@ -114,10 +115,13 @@ public class SlackService {
 		}
 		DeliveryDetailsResponse delivery = getDelivery(order.deliveryId());
 		log.info("배달 목적지 : {}", delivery.destinationAddress());
+		log.info("허브 Ids : {}", delivery.getSortedDeliveryRoute());
 
 		// hub 정보
 		List<GetHubResponse> hubs = getHubByIds(delivery.getSortedDeliveryRoute());
-		log.info("첫 번째 허브 이름 ({}/{}): {}", 1, hubs.size(), hubs.get(0).name());
+		log.info("허브 : {}", hubs);
+		log.info("허브 개수 : {}", hubs.size());
+		log.info("시작 허브 관리자 ID: {}", hubs.get(0).userId());
 
 		// User 정보
 		UserResponseDto user = getUser(hubs.get(0).userId());
@@ -163,8 +167,9 @@ public class SlackService {
 
 	public UserResponseDto getUser(UUID userId) {
 		try {
-			String token = util.getAccessTokenFromHeader();
-			return userServiceClient.getUser(userId, token);
+			log.info("userId: {}", userId);
+			// String token = util.getAccessTokenFromHeader();
+			return userServiceClient.getUser(userId, "true");
 		} catch (CustomException e) {
 			throw new CustomException(ErrorCode.USER_GET_API_FAIL);
 		}

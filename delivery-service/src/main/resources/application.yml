@@ -43,6 +43,8 @@ spring:
           initial-interval: 5000ms
 
 
+
+
 message:
   exchange: logistics
   queue:

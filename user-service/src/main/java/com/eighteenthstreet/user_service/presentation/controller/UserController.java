@@ -51,17 +51,12 @@ public class UserController {
 	private final UserService userService;
 
 	@Operation(summary = "사용자 유효성 검증", description = "username에 해당하는 사용자의 존재 여부를 반환합니다.")
-	@ApiResponse(responseCode = "200", description = "검증 성공", content = @Content(schema = @Schema(implementation = Boolean.class)))
 	@GetMapping("/valid")
 	public ResponseEntity<Boolean> validation(@RequestParam String username) {
 		return ResponseEntity.ok(userService.validation(username));
 	}
 
 	@Operation(summary = "회원가입", description = "신규 사용자 계정을 생성합니다.")
-	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "회원가입 성공"),
-		@ApiResponse(responseCode = "409", description = "이미 존재하는 사용자명")
-	})
 	@PostMapping("/signUp")
 	public ResponseEntity<Void> signUp(
 		@Valid @RequestBody @Parameter(description = "회원가입 요청 데이터") SignUpRequestDto request) {
@@ -129,6 +124,13 @@ public class UserController {
 	public ResponseEntity<UserResponseDto> getUserDetail(@PathVariable("userId") UUID userId) {
 		return ResponseEntity.ok(userService.getUserDetail(userId));
 	}
+
+	@Operation(summary = "사용자 상세 조회 (내부 조회)", description = "사용자 ID로 특정 사용자 정보를 조회합니다. (내부 조회)")
+	@GetMapping("/incall/detail/{userId}")
+	public ResponseEntity<UserResponseDto> getUserDetailIncall(@PathVariable("userId") UUID userId) {
+		return ResponseEntity.ok(userService.getUserDetailIncall(userId));
+	}
+
 
 	@Operation(summary = "사용자 정보 수정", description = "마스터 권한으로 사용자 정보를 수정합니다.")
 	@PatchMapping("/{userId}")

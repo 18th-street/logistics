@@ -63,6 +63,7 @@ public class DeliveryQueueConfig {
 		return new TopicExchange(exchange);
 	}
 
+	@Bean
 	public Queue queueOrderDelivery() {
 		return new Queue(queueOrderDelivery);
 	}
@@ -124,7 +125,7 @@ public class DeliveryQueueConfig {
 
 	@Bean
 	public Binding bindingAssigned() {
-		return BindingBuilder.bind(queueRoute()).to(exchange()).with(queueAssigned);
+		return BindingBuilder.bind(queueAssigned()).to(exchange()).with(queueAssigned);
 	}
 
 	@Bean
