@@ -1,9 +1,7 @@
 package com.eigtheenthstreet.order_service.application;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -20,12 +18,12 @@ import com.eigtheenthstreet.order_service.application.dto.UpdateOrderResponse;
 import com.eigtheenthstreet.order_service.domain.model.Order;
 import com.eigtheenthstreet.order_service.domain.model.OrderItem;
 import com.eigtheenthstreet.order_service.domain.model.OrderStatus;
-import com.eigtheenthstreet.order_service.domain.repository.OrderItemRepository;
 import com.eigtheenthstreet.order_service.domain.repository.OrderRepository;
 import com.eigtheenthstreet.order_service.domain.service.OrderDomainService;
 import com.eigtheenthstreet.order_service.exception.company.CustomCompanyGetApiFailException;
 import com.eigtheenthstreet.order_service.exception.company.CustomCompanyNotReceiverException;
 import com.eigtheenthstreet.order_service.exception.company.CustomCompanyNotSupplierException;
+import com.eigtheenthstreet.order_service.exception.order.CustomDeliveryIdMismatchException;
 import com.eigtheenthstreet.order_service.exception.order.CustomOrderDeleteNotAllowedException;
 import com.eigtheenthstreet.order_service.exception.order.CustomOrderStatusUpdateNotAllowedException;
 import com.eigtheenthstreet.order_service.exception.order.CustomProductNotForSaleException;
@@ -39,7 +37,8 @@ import com.eigtheenthstreet.order_service.infrastructure.client.ProductServiceCl
 import com.eigtheenthstreet.order_service.infrastructure.client.dto.CreateCompanyResponse;
 import com.eigtheenthstreet.order_service.infrastructure.client.dto.GetBulkProductRequest;
 import com.eigtheenthstreet.order_service.infrastructure.client.dto.GetBulkProductResponse;
-import com.eigtheenthstreet.order_service.infrastructure.messaging.OrderMessageProducer;
+import com.eigtheenthstreet.order_service.infrastructure.client.dto.GetBulkProductsResponse;
+import com.eigtheenthstreet.order_service.infrastructure.messaging.OrderMessagePublisher;
 import com.eigtheenthstreet.order_service.presentation.request.CreateOrderRequest;
 import com.eigtheenthstreet.order_service.presentation.request.UpdateOrderRequest;
 
@@ -54,8 +53,7 @@ public class OrderService {
 	private final OrderRepository orderRepository;
 	private final CompanyServiceClient companyServiceClient;
 	private final ProductServiceClient productServiceClient;
-	private final OrderItemRepository orderItemRepository;
-	private final OrderMessageProducer orderMessageProducer;
+	private final OrderMessagePublisher orderMessagePublisher;
 	private final OrderDomainService orderDomainService;
 
 	@Transactional
@@ -109,11 +107,7 @@ public class OrderService {
 
 		// 주문 성공 이벤트 배송으로 발행
 		log.info("OrderService에서 주문 생성 성공 이벤트 deliveryQueue로 발행");
-		orderMessageProducer.sendToDelivery(order, supplierCompany.hubId(), receiverCompany.hubId());
-
-		// 주문 성공 이벤트 슬랙으로 발행
-		log.info("OrderService에서 주문 생성 성공 이벤트 slackQueue로 발행");
-		orderMessageProducer.sendToSlack(order);
+		orderMessagePublisher.publishDeliveryCreated(order, supplierCompany.hubId(), receiverCompany.hubId());
 
 		return CreateOrderResponse.from(order.getId());
 	}
@@ -139,9 +133,6 @@ public class OrderService {
 		// 상품 정보 조회
 		List<GetBulkProductResponse> bulkProductInfo = getBulkProductInfo(requestedProductIds);
 
-		// 재고 변경 사항 추적
-		Map<UUID, Integer> stockChanges = new HashMap<>();
-
 		for (UpdateOrderRequest.UpdateOrderItemRequest orderItemRequest : request.orderItems()) {
 			// 상품 정보를 조회하여 상품 가격 및 재고 확인
 			GetBulkProductResponse productResponse = bulkProductInfo.stream()
@@ -153,31 +144,15 @@ public class OrderService {
 			validateProduct(productResponse, orderItemRequest.productQuantity());
 
 			// 주문 업데이트
-			int quantityDifference = orderDomainService.updateOrderItem(
+			orderDomainService.updateOrderItem(
 				orderId,
 				orderItemRequest.productId(),
 				orderItemRequest.productQuantity(),
 				productResponse.productPrice()
 			);
 
-			// 재고 차감 또는 복원
-			stockChanges.put(orderItemRequest.productId(), quantityDifference);
-		}
-
-		// 재고 조정
-		for (Map.Entry<UUID, Integer> entry : stockChanges.entrySet()) {
-			Integer quantityDifference = entry.getValue();
-			UUID productId = entry.getKey();
-
-			if (quantityDifference < 0) {
-				// 수량 증가 -> 재고 감소
-				decreaseProductQuantity(productId, Math.abs(quantityDifference));
-			} else if (quantityDifference > 0) {
-				// 수량 감소 -> 재고 복원
-				restoreProductQuantity(productId, quantityDifference);
-			}
-
-			// 변경이 없는 경우 pass
+			// 재고 차감
+			decreaseProductQuantity(orderItemRequest.productId(), orderItemRequest.productQuantity());
 		}
 
 		// 응답 생성
@@ -201,10 +176,15 @@ public class OrderService {
 		// 주문 상품 목록 조회
 		List<OrderItem> foundOrderItems = orderDomainService.getOrderItems(orderId);
 
+		// 재고 복구
+		// 주문 상품 개수만큼 재고 복구 api 호출 -> 주문 상품이 많아질수록 api 호출 횟수 증가 -> 전체 처리 시간 길어짐
+		for (OrderItem foundOrderItem : foundOrderItems) {
+			restoreProductQuantity(foundOrderItem.getProductId(), foundOrderItem.getQuantity());
+		}
+
 		// 주문 상품 삭제
 		for (OrderItem foundOrderItem : foundOrderItems) {
 			foundOrderItem.performSoftDelete();
-			// todo. 재고 복구 로직 추가
 		}
 
 		// 주문 삭제
@@ -227,11 +207,13 @@ public class OrderService {
 		// 주문 상품 삭제
 		for (OrderItem foundOrderItem : foundOrderItems) {
 			foundOrderItem.performSoftDelete();
-			// todo. 재고 복구 로직 추가
 		}
 
 		// 주문 상태 변경
 		foundOrder.cancel();
+
+		// 배송 취소
+		orderMessagePublisher.publishDeliveryCancellation(orderId, foundOrder.getDeliveryId());
 	}
 
 	@Transactional(readOnly = true)
@@ -265,9 +247,6 @@ public class OrderService {
 
 			orderItemsDto.add(selectOrderItemResponse);
 		}
-
-		// todo. 배송 상태 조회
-		//DeliveryResponse delivery = deliveryServiceFeignClient.getDeliveryInfo(orderId);
 
 		return SelectOrderResponse.from(foundOrder, orderItemsDto);
 	}
@@ -313,6 +292,44 @@ public class OrderService {
 		return new PagedModel<>(pageResult);
 	}
 
+	@Transactional
+	public void handleDeliveryCompleteCreated(UUID orderId, UUID deliveryId) {
+		Order order = orderDomainService.getOrderById(orderId);
+
+		order.updateOrderStatusDelivered(deliveryId);
+
+		orderMessagePublisher.publishNotification(orderId);
+	}
+
+	@Transactional
+	public void handleDeliveryErrCreated(UUID orderId) {
+		Order order = orderDomainService.getOrderById(orderId);
+		order.updateOrderStatusDeliveryFailed();
+
+		// 재고 복원
+		restoreStock(order);
+	}
+
+	@Transactional
+	public void handleDeliveryCompleteCancelled(UUID orderId, UUID deliveryId) {
+		Order order = orderDomainService.getOrderById(orderId);
+
+		if (!order.getDeliveryId().equals(deliveryId)) {
+			throw new CustomDeliveryIdMismatchException(ErrorCode.ORDER_DELIVERYID_MISTMATCH);
+		}
+
+		order.updateOrderStatusCanceled();
+
+		// 재고 복원
+		restoreStock(order);
+	}
+
+	@Transactional
+	public void handleDeliveryErrCancelled(UUID orderId) {
+		Order order = orderDomainService.getOrderById(orderId);
+		order.updateOrderStatusDeliveryCancelFailure();
+	}
+
 	private CreateCompanyResponse getCompany(UUID companyId) {
 		try {
 			return companyServiceClient.getCompany(companyId);
@@ -348,12 +365,8 @@ public class OrderService {
 		GetBulkProductRequest request = GetBulkProductRequest.from(productIds);
 
 		try {
-			List<GetBulkProductResponse> bulkProducts = productServiceClient.getBulkProducts(request);
-			for (GetBulkProductResponse bulkProduct : bulkProducts) {
-				System.out.println("bulkProduct.productId() = " + bulkProduct.productId());
-				System.out.println("bulkProduct.productName() = " + bulkProduct.productName());
-			}
-			return bulkProducts;
+			GetBulkProductsResponse bulkProducts = productServiceClient.getBulkProducts(request);
+			return bulkProducts.bulkProductsResponse();
 		} catch (Exception e) {
 			log.error("상품 정보 조회(Bulk API) 실패: {}", e.getMessage());
 			throw new CustomProductBulkNotFoundException(ErrorCode.PRODUCT_BULK_NOT_FOUND);
@@ -370,32 +383,14 @@ public class OrderService {
 		}
 	}
 
-	private List<UUID> getProductIds(
-		List<OrderItem> savedOrderItems,
-		List<UpdateOrderRequest.UpdateOrderItemRequest> newOrderItems
-	) {
-		List<UUID> savedProductIds = savedOrderItems.stream()
-			.map(OrderItem::getProductId)
-			.toList();
-
-		List<UUID> newProductIds = newOrderItems.stream()
-			.map(UpdateOrderRequest.UpdateOrderItemRequest::productId)
-			.toList();
-
-		List<UUID> productIds = new ArrayList<>();
-
-		productIds.addAll(savedProductIds);
-		productIds.addAll(newProductIds);
-
-		return productIds;
-	}
-
 	private void decreaseProductQuantity(UUID productId, int quantity) {
 		if (quantity <= 0) {
+			log.warn("⚠️ [재고 차감 요청 무시] 수량이 0 이하입니다. productId={}, quantity={}", productId, quantity);
 			return;
 		}
 
 		try {
+			log.info("📢 [재고 차감 요청] productId={}, quantity={}", productId, quantity);
 			productServiceClient.decreaseStock(productId, quantity);
 		} catch (Exception e) {
 			log.error("상품 재고 차감 API 요청 실패: {}", e.getMessage());
@@ -413,6 +408,14 @@ public class OrderService {
 		} catch (Exception e) {
 			log.error("상품 재고 복원 API 요청 실패: {}", e.getMessage());
 			throw new CustomProductRestoreStockApiFailException(ErrorCode.ORDER_PRODUCT_RESTORE_STOCK_FAIL);
+		}
+	}
+
+	private void restoreStock(Order order) {
+		List<OrderItem> orderItems = orderDomainService.getOrderItems(order.getId());
+
+		for (OrderItem orderItem : orderItems) {
+			restoreProductQuantity(orderItem.getProductId(), orderItem.getQuantity());
 		}
 	}
 }

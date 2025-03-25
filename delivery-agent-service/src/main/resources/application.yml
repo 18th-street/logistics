@@ -20,7 +20,7 @@ spring:
   jpa:
     defer-datasource-initialization: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
     properties:
       hibernate:
@@ -69,3 +69,13 @@ message:
     exchange: logistics.err
     queue:
       route: logistics.err.route
+
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api/delivery-agent/v3/api-docs
+  swagger-ui:
+    enabled: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json

@@ -28,6 +28,10 @@ ext {
 }
 
 dependencies {
+
+    // Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.7.0'
+
     implementation 'io.jsonwebtoken:jjwt:0.12.6'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
@@ -38,6 +42,12 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // 분산 추적 관련 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+    implementation 'io.github.openfeign:feign-micrometer'
+    implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
 }
 
 dependencyManagement {

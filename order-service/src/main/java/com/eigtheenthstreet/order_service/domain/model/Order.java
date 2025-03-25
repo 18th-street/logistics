@@ -72,8 +72,9 @@ public class Order extends BaseEntity {
 	@OneToMany(mappedBy = "orderId")
 	private List<OrderItem> orderItems = new ArrayList<>();
 
-	public void updateDeliveryId(UUID deliveryId) {
+	public void updateOrderStatusDelivered(UUID deliveryId) {
 		this.deliveryId = deliveryId;
+		this.orderStatus = OrderStatus.DELIVERED;
 	}
 
 	public void updateOrderTotal(List<OrderItem> orderItems) {
@@ -85,14 +86,6 @@ public class Order extends BaseEntity {
 			.mapToInt(OrderItem::getTotalPrice)
 			.sum();
 	}
-
-	// public void addDelivery(UUID deliveryId) {
-	// 	this.deliveryId = deliveryId;
-	// }
-
-	// public void changeOrderStatusFailed() {
-	// 	this.orderStatus = OrderStatus.DELIVERY_FAILED;
-	// }
 
 	public void saveOrderTotalQuantityAndTotalAmount(int totalQuantity, int totalAmount) {
 		this.quantity = totalQuantity;
@@ -106,5 +99,17 @@ public class Order extends BaseEntity {
 
 	public void cancel() {
 		performSoftDelete();
+	}
+
+	public void updateOrderStatusDeliveryFailed() {
+		this.orderStatus = OrderStatus.DELIVERY_FAILED;
+	}
+
+	public void updateOrderStatusCanceled() {
+		this.orderStatus = OrderStatus.CANCELLED;
+	}
+
+	public void updateOrderStatusDeliveryCancelFailure() {
+		this.orderStatus = OrderStatus.DELIVERY_CANCEL_FAILED;
 	}
 }

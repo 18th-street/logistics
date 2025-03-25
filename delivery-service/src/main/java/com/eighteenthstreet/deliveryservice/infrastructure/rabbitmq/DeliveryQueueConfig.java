@@ -20,8 +20,22 @@ public class DeliveryQueueConfig {
 	@Value("${message.exchange}")
 	private String exchange;
 
-	@Value("${message.queue.delivery}")
+	@Value("${message.complete.exchange}")
+	private String completeExchange;
+
+	// 주문으로 부터 수신 받는 메세지
+	@Value("${message.queue.delivery.created}")
 	private String queueOrderDelivery;
+	@Value("${message.queue.delivery.cancelled}")
+	private String queueOrderCancelledDelivery;
+
+	// 배달 삭제시 성공하면 보내주는 메세지
+	@Value("${message.complete.queue.delivery.cancelled}")
+	private String queueCompleteCancelledDelivery;
+
+	// 배달 삭제시 실패하면 보내주는 메세지
+	@Value("${message.err.queue.delivery.cancelled}")
+	private String queueErrCancelledDelivery;
 
 	@Value("${message.queue.delivery-service}")
 	private String queueDelivery;
@@ -49,8 +63,24 @@ public class DeliveryQueueConfig {
 		return new TopicExchange(exchange);
 	}
 
+	@Bean
 	public Queue queueOrderDelivery() {
 		return new Queue(queueOrderDelivery);
+	}
+
+	@Bean
+	public Queue queueOrderCancelledDelivery() {
+		return new Queue(queueOrderCancelledDelivery);
+	}
+
+	@Bean
+	public Queue queueCompleteCancelledDelivery() {
+		return new Queue(queueCompleteCancelledDelivery);
+	}
+
+	@Bean
+	public Queue queueErrCancelledDelivery() {
+		return new Queue(queueErrCancelledDelivery);
 	}
 
 	@Bean
@@ -95,12 +125,17 @@ public class DeliveryQueueConfig {
 
 	@Bean
 	public Binding bindingAssigned() {
-		return BindingBuilder.bind(queueRoute()).to(exchange()).with(queueAssigned);
+		return BindingBuilder.bind(queueAssigned()).to(exchange()).with(queueAssigned);
 	}
 
 	@Bean
 	public Binding bindingFailed() {
 		return BindingBuilder.bind(queueFailed()).to(exchange()).with(queueFailed);
+	}
+
+	@Bean
+	public Binding bindingQueueOrderCancelledDelivery() {
+		return BindingBuilder.bind(queueOrderCancelledDelivery()).to(exchange()).with(queueOrderCancelledDelivery);
 	}
 
 	// 에러 익스체인지
@@ -122,7 +157,25 @@ public class DeliveryQueueConfig {
 	}
 
 	@Bean
+	public Binding bindingErrCancelledDelivery() {
+		return BindingBuilder.bind(queueErrCancelledDelivery()).to(exchangeErr()).with(queueErrCancelledDelivery);
+	}
+
+	@Bean
 	public Binding bindingAssignedFailed() {
 		return BindingBuilder.bind(queueAgentFailed()).to(exchange()).with(queueAgentFailed);
+	}
+
+	// 성공 익스체인지
+	@Bean
+	public TopicExchange completeExchange() {
+		return new TopicExchange(completeExchange);
+	}
+
+	@Bean
+	public Binding bindingQueueCompleteCancelledDelivery() {
+		return BindingBuilder.bind(queueCompleteCancelledDelivery())
+			.to(exchange())
+			.with(queueCompleteCancelledDelivery);
 	}
 }

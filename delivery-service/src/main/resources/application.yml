@@ -43,10 +43,14 @@ spring:
           initial-interval: 5000ms
 
 
+
+
 message:
   exchange: logistics
   queue:
-    delivery: logistics.delivery
+    delivery:
+      created: logistics.delivery.created
+      cancelled: logistics.delivery.cancelled
     delivery-service: logistics.delivery-service
     delivery-route: logistics.delivery-route
     delivery-assigned: logistics.assigned
@@ -56,6 +60,14 @@ message:
     exchange: logistics.err
     queue:
       route: logistics.err.route
+      delivery:
+        created: logistics.err.delivery.created
+        cancelled: logistics.err.delivery.cancelled
+  complete:
+    exchange: logistics.complete
+    queue:
+      delivery:
+        cancelled: logistics.complete.delivery.cancelled
 
 eureka:
   client:
@@ -72,3 +84,12 @@ management:
   tracing:
     sampling:
       probability: 1.0
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api/delivery/v3/api-docs
+  swagger-ui:
+    enabled: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json

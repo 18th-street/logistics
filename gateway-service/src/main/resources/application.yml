@@ -43,7 +43,7 @@ spring:
         - id: hub-route-service
           uri: lb://hub-route-service
           predicates:
-            - Path=/api/v1/hub/routes**
+            - Path=/api/v1/routes/**
         - id: company-service
           uri: lb://company-service
           predicates:
@@ -60,6 +60,14 @@ spring:
           uri: lb://slack-service
           predicates:
             - Path=/api/v1/slacks/**
+        - id: delivery-agent-service
+          uri: lb://delivery-agent-service
+          predicates:
+            - Path=/api/v1/delivery-agents/**
+        - id: delivery-service
+          uri: lb://delivery-service
+          predicates:
+            - Path=/api/v1/deliveries/**
       discovery:
         locator:
           enabled: true # 동적 라우팅 생성
@@ -74,3 +82,39 @@ service:
     secret-key: ${JWT_SECRET_KEY}
     access-expiration: 3600000  # 1시간
     refresh-expiration: 604800000  # 7일
+
+management:
+  zipkin:
+    tracing:
+      endpoint: "http://localhost:9411/api/v2/spans"
+  tracing:
+    sampling:
+      probability: 1.0
+
+springdoc:
+  swagger-ui:
+    urls[0]:
+      name: Delivery API
+      url: http://localhost:19100/api/delivery/v3/api-docs
+    urls[1]:
+      name: Delivery Agent API
+      url: http://localhost:19102/api/delivery-agent/v3/api-docs
+    urls[2]:
+      name: Company API
+      url: http://localhost:19098/api/company/v3/api-docs
+    urls[3]:
+      name: Product API
+      url: http://localhost:19096/api/product/v3/api-docs
+    urls[4]:
+      name: Hub API
+      url: http://localhost:19095/api/hub/v3/api-docs
+    urls[5]:
+      name: Hub Route API
+      url: http://localhost:19094/api/hub-route/v3/api-docs
+    urls[6]:
+      name: Slack API
+      url: http://localhost:19103/api/slack/v3/api-docs
+    urls[7]:
+      name: User API
+      url: http://localhost:19093/api/user/v3/api-docs
+    use-root-path: true

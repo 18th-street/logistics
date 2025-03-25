@@ -51,10 +51,6 @@ public class UserService {
 		return user != null;
 	}
 
-	public boolean isExistUsername(String username) {
-		return userRepository.isExistUsername(username);
-	}
-
 	@Transactional
 	public void signUp(SignUpRequestDto request) {
 		User user = User.builder()
@@ -135,6 +131,14 @@ public class UserService {
 		return userMapper.toUserResponseDto(targetUser);
 	}
 
+	public UserResponseDto getUserDetailIncall(UUID userId) {
+		User targetUser = userRepository.findByUserId(userId);
+		if (targetUser == null) {
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
+		}
+		return userMapper.toUserResponseDto(targetUser);
+	}
+
 	@Transactional
 	public UserResponseDto updateUserInfo(UUID userId, UpdateUserRequestDto request) {
 		User user = userRepository.findByUserId(userId);
@@ -160,8 +164,8 @@ public class UserService {
 	}
 
 	@Transactional
-	public void updateStatus(UpdateStatusRequestDto request) {
-		User user = loginUser();
+	public void updateStatus(UUID userId, UpdateStatusRequestDto request) {
+		User user = userRepository.findByUserId(userId);
 		if (user == null) {
 			throw new CustomException(ErrorCode.USER_NOT_FOUND);
 		}

@@ -30,6 +30,13 @@ spring:
       hibernate:
         format_sql: true
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      username: default
+      password: systempass
+
 eureka:
   client:
     service-url:
@@ -41,3 +48,20 @@ naver:
   api:
     client-id: ${NAVER_CLIENT_ID}
     client-secret: ${NAVER_CLIENT_SECRET}
+
+management:
+  zipkin:
+    tracing:
+      endpoint: "http://localhost:9411/api/v2/spans"
+  tracing:
+    sampling:
+      probability: 1.0
+
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api/hub-route/v3/api-docs
+  enable-spring-security: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json

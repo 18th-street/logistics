@@ -2,7 +2,6 @@ package com.eighteenthstreet.user_service.presentation.controller;
 
 import java.util.UUID;
 
-import org.springframework.context.annotation.Description;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +31,9 @@ import com.eighteenthstreet.user_service.presentation.exceptions.CustomException
 
 import auth.Role;
 import exception.ErrorCode;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,75 +42,65 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
+@Tag(name = "User-Controller", description = "User CRUD API 엔트포인트")
 public class UserController {
 	private final UserService userService;
 
-	@Description(
-		"사용자 유효성 검증"
-	)
+	@Operation(summary = "사용자 유효성 검증", description = "username에 해당하는 사용자의 존재 여부를 반환합니다.")
 	@GetMapping("/valid")
-	public ResponseEntity<Boolean> validation(@RequestParam String username) {
+	public ResponseEntity<Boolean> validation(@Parameter(description = "검증할 사용자 닉네임") @RequestParam String username) {
 		return ResponseEntity.ok(userService.validation(username));
 	}
 
-	@Description(
-		"회원가입"
-	)
+	@Operation(summary = "회원가입", description = "신규 사용자 계정을 생성합니다.")
 	@PostMapping("/signUp")
-	public ResponseEntity<Void> signUp(@Valid @RequestBody SignUpRequestDto request) {
-		if (userService.isExistUsername(request.username())) {
+	public ResponseEntity<Void> signUp(
+		@Valid @RequestBody @Parameter(description = "회원가입 요청 데이터") SignUpRequestDto request) {
+		if (userService.validation(request.username())) {
 			throw new CustomException(ErrorCode.DUPLICATE_USERNAME);
 		}
 		userService.signUp(request);
 		return ResponseEntity.ok().build();
 	}
 
-	@Description(
-		"로그인"
-	)
+	@Operation(summary = "로그인", description = "사용자 로그인 및 토큰 발급")
 	@PostMapping("/signIn")
-	public ResponseEntity<TokenDto> signIn(@Valid @RequestBody SignInRequestDto request) {
+	public ResponseEntity<TokenDto> signIn(
+		@Valid @RequestBody @Parameter(description = "로그인 요청 데이터") SignInRequestDto request) {
 		return ResponseEntity.ok(userService.signIn(request));
 	}
 
-	@Description(
-		"로그아웃"
-	)
+	@Operation(summary = "로그아웃", description = "액세스 토큰을 통해 로그아웃 처리")
 	@PostMapping("/signOut")
 	public ResponseEntity<Void> signOut(@RequestHeader("Authorization") String authorization) {
 		userService.signOut(authorization);
 		return ResponseEntity.ok().build();
 	}
 
-	@Description(
-		"권한 조회 (마스터용)"
-	)
+	@Operation(summary = "권한 조회", description = "마스터 권한으로 특정 사용자의 권한을 조회합니다.")
 	@GetMapping("/{userId}/role")
 	@PreAuthorize("hasRole('MASTER')")
-	public ResponseEntity<Role> getUserRole(@PathVariable("userId") UUID userId) {
+	public ResponseEntity<Role> getUserRole(
+		@Parameter(description = "조회할 사용자 ID") @PathVariable("userId") UUID userId) {
 		Role role = userService.getUserRole(userId);
 		return ResponseEntity.ok(role);
 	}
 
-	@Description(
-		"사용자 정보 전체 조회 (마스터용)"
-	)
+	@Operation(summary = "사용자 전체 조회", description = "마스터 권한으로 모든 사용자 정보를 조회합니다.")
 	@GetMapping
 	@PreAuthorize("hasRole('MASTER')")
 	public ResponseEntity<Page<UserResponseDto>> getAllUsers(Pageable pageable) {
 		return ResponseEntity.ok(userService.getAllUsers(pageable));
 	}
 
-	@Description(
-		"사용자 정보 검색 (마스터용)"
-	)
+	@Operation(summary = "사용자 검색", description = "마스터 권한으로 사용자 이름 기준 검색을 수행합니다.")
 	@GetMapping("/search")
 	@PreAuthorize("hasRole('MASTER')")
 	public ResponseEntity<Page<UserResponseDto>> searchUsers(
-		@RequestParam(name = "name", defaultValue = "") String name,
-		@RequestParam(name = "size", defaultValue = "10") int size,
-		@RequestParam(name = "sort", defaultValue = "createdAt") String sortField,
-		@RequestParam(name = "direction", defaultValue = "DESC") String direction,
+		@Parameter(description = "사용자 이름에서 검색할 단어") @RequestParam(name = "name", defaultValue = "") String name,
+		@Parameter(description = "한 페이지 내에서 볼 개수") @RequestParam(name = "size", defaultValue = "10") int size,
+		@Parameter(description = "정렬 기준") @RequestParam(name = "sort", defaultValue = "createdAt") String sortField,
+		@Parameter(description = "정렬 방식") @RequestParam(name = "direction", defaultValue = "DESC") String direction,
 		Pageable pageable
 	) {
 		if (size != 10 && size != 30 && size != 50) {
@@ -125,55 +117,56 @@ public class UserController {
 		return ResponseEntity.ok(userService.searchUsers(name, customPageable));
 	}
 
-	@Description(
-		"사용자 정보 상세 조회 (본인 및 마스터)"
-	)
+	@Operation(summary = "사용자 상세 조회", description = "사용자 ID로 특정 사용자 정보를 조회합니다. 본인 또는 마스터 권한 필요.")
 	@GetMapping("/{userId}")
-	public ResponseEntity<UserResponseDto> getUserDetail(@PathVariable("userId") UUID userId) {
+	public ResponseEntity<UserResponseDto> getUserDetail(
+		@Parameter(description = "조회할 사용자 ID") @PathVariable("userId") UUID userId) {
 		return ResponseEntity.ok(userService.getUserDetail(userId));
 	}
 
-	@Description(
-		"사용자 정보 수정 (마스터용)"
-	)
+	@Operation(summary = "사용자 상세 조회 (내부 조회)", description = "사용자 ID로 특정 사용자 정보를 조회합니다. (내부 조회)")
+	@GetMapping("/incall/detail/{userId}")
+	public ResponseEntity<UserResponseDto> getUserDetailIncall(
+		@Parameter(description = "조회할 사용자 ID") @PathVariable("userId") UUID userId) {
+		return ResponseEntity.ok(userService.getUserDetailIncall(userId));
+	}
+
+	@Operation(summary = "사용자 정보 수정", description = "마스터 권한으로 사용자 정보를 수정합니다.")
 	@PatchMapping("/{userId}")
 	@PreAuthorize("hasRole('MASTER')")
 	public ResponseEntity<UserResponseDto> updateUserInfo(
-		@PathVariable("userId") UUID userId,
-		@Valid @RequestBody UpdateUserRequestDto request
+		@Parameter(description = "수정할 사용자 ID") @PathVariable("userId") UUID userId,
+		@Valid @RequestBody @Parameter(description = "사용자 정보 수정 요청 데이터") UpdateUserRequestDto request
 	) {
 		return ResponseEntity.ok(userService.updateUserInfo(userId, request));
 	}
 
-	@Description(
-		"사용자 비밀번호 수정 (마스터용)"
-	)
+	@Operation(summary = "비밀번호 수정", description = "마스터 권한으로 사용자의 비밀번호를 수정합니다.")
 	@PatchMapping("/{userId}/change-password")
 	@PreAuthorize("hasRole('MASTER')")
 	public ResponseEntity<Void> changePassword(
-		@PathVariable("userId") UUID userId,
-		@Valid @RequestBody ChangePasswordRequestDto request
+		@Parameter(description = "비밀변호 변경할 사용자 ID") @PathVariable("userId") UUID userId,
+		@Valid @RequestBody @Parameter(description = "비밀번호 변경 요청 데이터") ChangePasswordRequestDto request
 	) {
 		userService.changePassword(userId, request);
 		return ResponseEntity.ok().build();
 	}
 
-	@Description(
-		"상태 변경 (WAITING -> COMPLETE) (마스터용)"
-	)
-	@PatchMapping("/update/status")
+	@Operation(summary = "사용자 상태 변경", description = "마스터 권한으로 사용자 상태를 WAITING에서 COMPLETE로 변경합니다.")
+	@PatchMapping("/{userId}/update-status")
 	@PreAuthorize("hasRole('MASTER')")
-	public ResponseEntity<Void> updateStatus(@RequestBody UpdateStatusRequestDto request) {
-		userService.updateStatus(request);
+	public ResponseEntity<Void> updateStatus(
+		@Parameter(description = "상태 변경할 사용자 ID") @PathVariable("userId") UUID userId,
+		@RequestBody @Parameter(description = "상태 변경을 위한 CODE 번호 데이터") UpdateStatusRequestDto request
+	) {
+		userService.updateStatus(userId, request);
 		return ResponseEntity.ok().build();
 	}
 
-	@Description(
-		"사용자 정보 삭제 (마스터용)"
-	)
+	@Operation(summary = "사용자 삭제", description = "마스터 권한으로 사용자 정보를 삭제합니다.")
 	@DeleteMapping("/{userId}")
 	@PreAuthorize("hasRole('MASTER')")
-	public ResponseEntity<Void> deleteUser(@PathVariable("userId") UUID userId) {
+	public ResponseEntity<Void> deleteUser(@Parameter(description = "삭제할 사용자 ID") @PathVariable("userId") UUID userId) {
 		userService.deleteUser(userId);
 		return ResponseEntity.ok().build();
 	}

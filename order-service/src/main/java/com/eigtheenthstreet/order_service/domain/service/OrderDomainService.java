@@ -66,13 +66,13 @@ public class OrderDomainService {
 	}
 
 	@Transactional
-	public int updateOrderItem(
+	public void updateOrderItem(
 		UUID orderId,
 		UUID productId,
 		int newQuantity,
 		int productPrice
 	) {
-		Order order = findOrderById(orderId);
+		Order order = getOrder(orderId);
 		List<OrderItem> orderItems = order.getOrderItems();
 
 		if (orderItems == null) {
@@ -83,24 +83,18 @@ public class OrderDomainService {
 			.filter(item -> item.getProductId().equals(productId))
 			.findFirst();
 
-		int quantityDifference = 0;
-
 		if (existingOrderItem.isPresent()) {
 			// 기존 상품 업데이트
 			OrderItem orderItem = existingOrderItem.get();
-			int oldQuantity = orderItem.getQuantity();
-			quantityDifference = oldQuantity - newQuantity; // +: 감소, -: 증가
 			orderItem.updateQuantityAndTotalPrice(newQuantity, productPrice);
 		} else {
 			// 새로운 상품 추가
 			OrderItem newOrderItem = OrderItem.create(orderId, productId, newQuantity, productPrice);
 			orderItemRepository.save(newOrderItem);
 			orderItems.add(newOrderItem);
-			quantityDifference = -newQuantity; // 새 상품은 항상 수량 증가
 		}
 
 		order.updateOrderTotal(orderItems);
-		return quantityDifference;
 	}
 
 	@Transactional(readOnly = true)
@@ -121,16 +115,11 @@ public class OrderDomainService {
 		int totalQuantity = orderItems.stream().mapToInt(OrderItem::getQuantity).sum();
 		int totalPrice = orderItems.stream().mapToInt(OrderItem::getTotalPrice).sum();
 
-		Order order = findOrderById(orderId);
+		Order order = getOrder(orderId);
 		order.saveOrderTotalQuantityAndTotalAmount(totalQuantity, totalPrice);
 	}
 
 	private Order getOrder(UUID orderId) {
-		return orderRepository.findById(orderId)
-			.orElseThrow(() -> new CustomOrderNotFoundException(ErrorCode.ORDER_NOT_FOUND));
-	}
-
-	private Order findOrderById(UUID orderId) {
 		return orderRepository.findById(orderId)
 			.orElseThrow(() -> new CustomOrderNotFoundException(ErrorCode.ORDER_NOT_FOUND));
 	}

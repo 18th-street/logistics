@@ -29,6 +29,7 @@ import com.eighteenthstreet.company_service.presentation.request.UpdateCompanyRe
 import auth.CheckRole;
 import auth.JwtUtil;
 import auth.Role;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -38,6 +39,7 @@ public class CompanyController {
 	private final JwtUtil jwtUtil;
 	private final CompanyService companyService;
 
+	@Operation(summary = "업체 등록", description = "마스터 관리자, 허브 관리자는 업체 등록을 할 수 있습니다.")
 	@CheckRole({Role.MASTER, Role.HUB})
 	@PostMapping()
 	public ResponseEntity<CreateCompanyResponse> registerCompany(
@@ -50,6 +52,7 @@ public class CompanyController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
+	@Operation(summary = "업체 수정", description = "마스터 관리자, 허브 관리자, 업체 관리자는 업체 수정을 할 수 있습니다.")
 	@CheckRole({Role.MASTER, Role.HUB, Role.COMPANY})
 	@PatchMapping("/{companyId}")
 	public ResponseEntity<UpdateCompanyResponse> updateCompany(
@@ -60,6 +63,7 @@ public class CompanyController {
 		return ResponseEntity.ok(response);
 	}
 
+	@Operation(summary = "업체 삭제", description = "마스터 관리자, 허브 관리자는 업체 삭제를 할 수 있습니다.")
 	@CheckRole({Role.MASTER, Role.HUB})
 	@DeleteMapping("/{companyId}")
 	public ResponseEntity<Void> deleteCompany(@PathVariable UUID companyId) {
@@ -67,6 +71,7 @@ public class CompanyController {
 		return ResponseEntity.noContent().build();
 	}
 
+	@Operation(summary = "업체 조회", description = "모든 사용자는 업체 조회를 할 수 있습니다.")
 	@ResponseStatus(HttpStatus.OK)
 	@GetMapping("/{companyId}")
 	public ResponseEntity<SelectCompanyResponse> getCompany(@PathVariable UUID companyId) {
@@ -74,6 +79,7 @@ public class CompanyController {
 		return ResponseEntity.ok(response);
 	}
 
+	@Operation(summary = "업체 검색", description = "모든 사용자는 업체 검색을 할 수 있습니다.")
 	@ResponseStatus(HttpStatus.OK)
 	@GetMapping()
 	public ResponseEntity<PagedModel<SelectCompanyResponse>> getAllCompanies(

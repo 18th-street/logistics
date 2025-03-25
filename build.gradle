@@ -93,6 +93,12 @@ project(":hub-route-service") {
     }
 }
 
+project(':slack-service') {
+    dependencies {
+        implementation project(':common')
+    }
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
