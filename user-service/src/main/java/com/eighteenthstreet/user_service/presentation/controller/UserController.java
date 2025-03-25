@@ -33,10 +33,6 @@ import auth.Role;
 import exception.ErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +48,7 @@ public class UserController {
 
 	@Operation(summary = "사용자 유효성 검증", description = "username에 해당하는 사용자의 존재 여부를 반환합니다.")
 	@GetMapping("/valid")
-	public ResponseEntity<Boolean> validation(@RequestParam String username) {
+	public ResponseEntity<Boolean> validation(@Parameter(description = "검증할 사용자 닉네임") @RequestParam String username) {
 		return ResponseEntity.ok(userService.validation(username));
 	}
 
@@ -69,7 +65,8 @@ public class UserController {
 
 	@Operation(summary = "로그인", description = "사용자 로그인 및 토큰 발급")
 	@PostMapping("/signIn")
-	public ResponseEntity<TokenDto> signIn(@Valid @RequestBody SignInRequestDto request) {
+	public ResponseEntity<TokenDto> signIn(
+		@Valid @RequestBody @Parameter(description = "로그인 요청 데이터") SignInRequestDto request) {
 		return ResponseEntity.ok(userService.signIn(request));
 	}
 
@@ -83,7 +80,8 @@ public class UserController {
 	@Operation(summary = "권한 조회", description = "마스터 권한으로 특정 사용자의 권한을 조회합니다.")
 	@GetMapping("/{userId}/role")
 	@PreAuthorize("hasRole('MASTER')")
-	public ResponseEntity<Role> getUserRole(@PathVariable("userId") UUID userId) {
+	public ResponseEntity<Role> getUserRole(
+		@Parameter(description = "조회할 사용자 ID") @PathVariable("userId") UUID userId) {
 		Role role = userService.getUserRole(userId);
 		return ResponseEntity.ok(role);
 	}
@@ -99,10 +97,10 @@ public class UserController {
 	@GetMapping("/search")
 	@PreAuthorize("hasRole('MASTER')")
 	public ResponseEntity<Page<UserResponseDto>> searchUsers(
-		@RequestParam(name = "name", defaultValue = "") String name,
-		@RequestParam(name = "size", defaultValue = "10") int size,
-		@RequestParam(name = "sort", defaultValue = "createdAt") String sortField,
-		@RequestParam(name = "direction", defaultValue = "DESC") String direction,
+		@Parameter(description = "사용자 이름에서 검색할 단어") @RequestParam(name = "name", defaultValue = "") String name,
+		@Parameter(description = "한 페이지 내에서 볼 개수") @RequestParam(name = "size", defaultValue = "10") int size,
+		@Parameter(description = "정렬 기준") @RequestParam(name = "sort", defaultValue = "createdAt") String sortField,
+		@Parameter(description = "정렬 방식") @RequestParam(name = "direction", defaultValue = "DESC") String direction,
 		Pageable pageable
 	) {
 		if (size != 10 && size != 30 && size != 50) {
@@ -121,23 +119,24 @@ public class UserController {
 
 	@Operation(summary = "사용자 상세 조회", description = "사용자 ID로 특정 사용자 정보를 조회합니다. 본인 또는 마스터 권한 필요.")
 	@GetMapping("/{userId}")
-	public ResponseEntity<UserResponseDto> getUserDetail(@PathVariable("userId") UUID userId) {
+	public ResponseEntity<UserResponseDto> getUserDetail(
+		@Parameter(description = "조회할 사용자 ID") @PathVariable("userId") UUID userId) {
 		return ResponseEntity.ok(userService.getUserDetail(userId));
 	}
 
 	@Operation(summary = "사용자 상세 조회 (내부 조회)", description = "사용자 ID로 특정 사용자 정보를 조회합니다. (내부 조회)")
 	@GetMapping("/incall/detail/{userId}")
-	public ResponseEntity<UserResponseDto> getUserDetailIncall(@PathVariable("userId") UUID userId) {
+	public ResponseEntity<UserResponseDto> getUserDetailIncall(
+		@Parameter(description = "조회할 사용자 ID") @PathVariable("userId") UUID userId) {
 		return ResponseEntity.ok(userService.getUserDetailIncall(userId));
 	}
-
 
 	@Operation(summary = "사용자 정보 수정", description = "마스터 권한으로 사용자 정보를 수정합니다.")
 	@PatchMapping("/{userId}")
 	@PreAuthorize("hasRole('MASTER')")
 	public ResponseEntity<UserResponseDto> updateUserInfo(
-		@PathVariable("userId") UUID userId,
-		@Valid @RequestBody UpdateUserRequestDto request
+		@Parameter(description = "수정할 사용자 ID") @PathVariable("userId") UUID userId,
+		@Valid @RequestBody @Parameter(description = "사용자 정보 수정 요청 데이터") UpdateUserRequestDto request
 	) {
 		return ResponseEntity.ok(userService.updateUserInfo(userId, request));
 	}
@@ -146,8 +145,8 @@ public class UserController {
 	@PatchMapping("/{userId}/change-password")
 	@PreAuthorize("hasRole('MASTER')")
 	public ResponseEntity<Void> changePassword(
-		@PathVariable("userId") UUID userId,
-		@Valid @RequestBody ChangePasswordRequestDto request
+		@Parameter(description = "비밀변호 변경할 사용자 ID") @PathVariable("userId") UUID userId,
+		@Valid @RequestBody @Parameter(description = "비밀번호 변경 요청 데이터") ChangePasswordRequestDto request
 	) {
 		userService.changePassword(userId, request);
 		return ResponseEntity.ok().build();
@@ -157,8 +156,8 @@ public class UserController {
 	@PatchMapping("/{userId}/update-status")
 	@PreAuthorize("hasRole('MASTER')")
 	public ResponseEntity<Void> updateStatus(
-		@PathVariable("userId") UUID userId,
-		@RequestBody UpdateStatusRequestDto request
+		@Parameter(description = "상태 변경할 사용자 ID") @PathVariable("userId") UUID userId,
+		@RequestBody @Parameter(description = "상태 변경을 위한 CODE 번호 데이터") UpdateStatusRequestDto request
 	) {
 		userService.updateStatus(userId, request);
 		return ResponseEntity.ok().build();
@@ -167,7 +166,7 @@ public class UserController {
 	@Operation(summary = "사용자 삭제", description = "마스터 권한으로 사용자 정보를 삭제합니다.")
 	@DeleteMapping("/{userId}")
 	@PreAuthorize("hasRole('MASTER')")
-	public ResponseEntity<Void> deleteUser(@PathVariable("userId") UUID userId) {
+	public ResponseEntity<Void> deleteUser(@Parameter(description = "삭제할 사용자 ID") @PathVariable("userId") UUID userId) {
 		userService.deleteUser(userId);
 		return ResponseEntity.ok().build();
 	}
