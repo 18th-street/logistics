@@ -5,11 +5,11 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.eighteenthstreet.deliveryagentservice.application.event.DeliveryAgentEventPublisher;
 import com.eighteenthstreet.deliveryagentservice.domain.event.DeliveryAgentAssignedEvent;
+import com.eighteenthstreet.deliveryagentservice.domain.event.DeliveryFailedEvent;
 import com.eighteenthstreet.deliveryagentservice.domain.event.RouteCreatedEvent;
 import com.eighteenthstreet.deliveryagentservice.domain.exception.InvalidDeliveryAgentException;
 import com.eighteenthstreet.deliveryagentservice.domain.model.DeliveryAgent;
@@ -28,14 +28,9 @@ import lombok.extern.slf4j.Slf4j;
 public class DeliveryDispatchService {
 	private final DeliveryAgentRepository deliveryAgentRepository;
 	private final AtomicInteger roundRobinIdx = new AtomicInteger(0);
-	private final RabbitTemplate rabbitTemplate;
 	private final HubFeignClient hubFeignClient;
-
-	@Value("${message.queue.delivery-assigned}")
-	private String deliveryAssignedQueue;
-
-	@Value("${message.queue.delivery-agent-failed}")
-	private String deliveryAssignedFailQueue;
+	private final DeliveryAgentEventPublisher deliveryAssignedQueue;
+	private final DeliveryAgentEventPublisher deliveryAgentEventPublisher;
 
 	@RabbitListener(queues = "${message.queue.delivery-route}")
 	public void handleRouteCratedEvent(RouteCreatedEvent event) {
@@ -68,14 +63,12 @@ public class DeliveryDispatchService {
 			}
 
 			DeliveryAgentAssignedEvent assignedEvent = new DeliveryAgentAssignedEvent(event.deliveryId());
-			rabbitTemplate.convertAndSend(deliveryAssignedQueue, assignedEvent);
-			log.info("배달 서비스에 이벤트 발송: {}", assignedEvent);
+			deliveryAssignedQueue.publishDeliveryAgentAssignedEvent(assignedEvent);
 
 		} catch (Exception e) {
 			DeliveryFailedEvent failedEvent = new DeliveryFailedEvent(event.deliveryId(),
 				ErrorCode.INVALID_DELIVERY_AGENT);
-			rabbitTemplate.convertAndSend(deliveryAssignedFailQueue, failedEvent);
-			log.error("배차 처리 중 오류 발생: event={}, 오류: {}", event, e.getMessage(), e);
+			deliveryAgentEventPublisher.publishDeliveryFailedEvent(failedEvent, e);
 			throw e;  // 예외 메세지 처리
 		}
 
@@ -96,9 +89,6 @@ public class DeliveryDispatchService {
 		// startHubId가 없거나 허브가 없으면 COMPANY_AGENT만 조회
 		return deliveryAgentRepository.findByDeliveryAgentStatusAndDeliveryAgentType(DeliveryAgentStatus.AVAILABLE,
 			DeliveryAgentType.COMPANY_AGENT);
-	}
-
-	public record DeliveryFailedEvent(UUID deliveryId, ErrorCode errorCode) {
 	}
 }
 
