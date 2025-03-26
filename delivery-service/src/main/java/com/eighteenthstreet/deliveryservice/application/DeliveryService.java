@@ -12,8 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.eighteenthstreet.deliveryservice.application.client.DeliveryAgentClient;
-import com.eighteenthstreet.deliveryservice.application.client.DeliveryRouteClient;
 import com.eighteenthstreet.deliveryservice.application.dto.CreateDeliveryResponse;
 import com.eighteenthstreet.deliveryservice.application.dto.DeliveryAgentDto;
 import com.eighteenthstreet.deliveryservice.application.dto.DeliveryDetailsResponse;
@@ -22,6 +20,8 @@ import com.eighteenthstreet.deliveryservice.domain.event.DeliveryCreatedEvent;
 import com.eighteenthstreet.deliveryservice.domain.exception.DeliveryNotFoundException;
 import com.eighteenthstreet.deliveryservice.domain.model.Delivery;
 import com.eighteenthstreet.deliveryservice.domain.repository.DeliveryRepository;
+import com.eighteenthstreet.deliveryservice.infrastructure.client.DeliveryAgentClient;
+import com.eighteenthstreet.deliveryservice.infrastructure.client.DeliveryRouteClient;
 import com.eighteenthstreet.deliveryservice.infrastructure.messaging.message.DeliveryCancelledErrMessage;
 import com.eighteenthstreet.deliveryservice.infrastructure.messaging.message.DeliveryCancelledEvent;
 import com.eighteenthstreet.deliveryservice.infrastructure.messaging.message.DeliveryMessage;

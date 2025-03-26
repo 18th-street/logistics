@@ -1,4 +1,4 @@
-package com.eighteenthstreet.deliveryservice.application.client;
+package com.eighteenthstreet.deliveryservice.infrastructure.client;
 
 import java.util.List;
 import java.util.Map;
