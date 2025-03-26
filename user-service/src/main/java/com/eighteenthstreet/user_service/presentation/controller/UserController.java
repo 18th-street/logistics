@@ -124,13 +124,6 @@ public class UserController {
 		return ResponseEntity.ok(userService.getUserDetail(userId));
 	}
 
-	@Operation(summary = "사용자 상세 조회 (내부 조회)", description = "사용자 ID로 특정 사용자 정보를 조회합니다. (내부 조회)")
-	@GetMapping("/incall/detail/{userId}")
-	public ResponseEntity<UserResponseDto> getUserDetailIncall(
-		@Parameter(description = "조회할 사용자 ID") @PathVariable("userId") UUID userId) {
-		return ResponseEntity.ok(userService.getUserDetailIncall(userId));
-	}
-
 	@Operation(summary = "사용자 정보 수정", description = "마스터 권한으로 사용자 정보를 수정합니다.")
 	@PatchMapping("/{userId}")
 	@PreAuthorize("hasRole('MASTER')")
