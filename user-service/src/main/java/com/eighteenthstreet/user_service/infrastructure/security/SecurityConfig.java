@@ -25,7 +25,8 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain securityFilterChain(HttpSecurity http,
+		InternalJwtAuthFilter internalJwtAuthFilter) throws Exception {
 		http
 			// basic auth 및 csrf 보안을 사용하지 않음
 			.httpBasic(AbstractHttpConfigurer::disable)
@@ -40,7 +41,6 @@ public class SecurityConfig {
 				authorize -> authorize
 					.requestMatchers("/api/v1/users/signUp").permitAll()
 					.requestMatchers("/api/v1/users/signIn").permitAll()
-					.requestMatchers("/api/v1/users/incall/detail/**").permitAll()
 					.requestMatchers(
 						"/swagger-ui/**",
 						"/swagger-ui.html",
@@ -51,6 +51,7 @@ public class SecurityConfig {
 					).permitAll()
 					.anyRequest().authenticated()
 			)
+			.addFilterBefore(internalJwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(new UserAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 		return http.build();
 	}

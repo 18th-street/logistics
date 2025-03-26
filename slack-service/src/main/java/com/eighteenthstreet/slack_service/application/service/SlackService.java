@@ -169,7 +169,7 @@ public class SlackService {
 		try {
 			log.info("userId: {}", userId);
 			// String token = util.getAccessTokenFromHeader();
-			return userServiceClient.getUser(userId, "true");
+			return userServiceClient.getUserInternal(userId);
 		} catch (CustomException e) {
 			throw new CustomException(ErrorCode.USER_GET_API_FAIL);
 		}

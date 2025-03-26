@@ -40,6 +40,19 @@ services:
     environment:
       - JAVA_OPTS=-Xms512m -Xmx512m
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - app_network
+    environment:
+      RABBITMQ_DEFAULT_USER: quest
+      RABBITMQ_DEFAULT_PASS: quest
+
 networks:
   app_network:
     driver: bridge

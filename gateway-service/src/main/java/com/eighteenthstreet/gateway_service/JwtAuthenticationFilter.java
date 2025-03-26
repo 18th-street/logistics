@@ -5,6 +5,7 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.core.Ordered;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -24,7 +25,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @Component
 @Slf4j
-public class JwtAuthenticationFilter implements GlobalFilter {
+public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 	private final RedisTemplate<String, String> redisTemplate;
 	private final JwtUtil jwtUtil;
 
@@ -34,16 +35,12 @@ public class JwtAuthenticationFilter implements GlobalFilter {
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 		String path = exchange.getRequest().getURI().getPath();
-		String internalCallHeader = exchange.getRequest().getHeaders().getFirst("X-Internal-Call");
 
-		// 내부 호출일 경우 인증 스킵
-		if ("true".equalsIgnoreCase(internalCallHeader)) {
-			log.info("내부 호출");
-			return chain.filter(exchange);
+		if (path.startsWith("/internal/")) {
+			return chain.filter(exchange); // 내부 요청은 인증 스킵
 		}
 
-		if (path.equals("/api/v1/users/signUp") || path.equals("/api/v1/users/signIn") || path.startsWith(
-			"/api/v1/users/incall/detail")) {
+		if (path.equals("/api/v1/users/signUp") || path.equals("/api/v1/users/signIn")) {
 			return chain.filter(exchange);
 		}
 
@@ -124,5 +121,10 @@ public class JwtAuthenticationFilter implements GlobalFilter {
 			.parseSignedClaims(token)
 			.getBody();
 		return claims.get("role", String.class);
+	}
+
+	@Override
+	public int getOrder() {
+		return 0;
 	}
 }

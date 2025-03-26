@@ -131,7 +131,7 @@ public class UserService {
 		return userMapper.toUserResponseDto(targetUser);
 	}
 
-	public UserResponseDto getUserDetailIncall(UUID userId) {
+	public UserResponseDto getUserDetailInternal(UUID userId) {
 		User targetUser = userRepository.findByUserId(userId);
 		if (targetUser == null) {
 			throw new CustomException(ErrorCode.USER_NOT_FOUND);
