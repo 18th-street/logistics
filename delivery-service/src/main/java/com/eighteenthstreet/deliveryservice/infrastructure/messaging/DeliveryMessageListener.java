@@ -19,7 +19,6 @@ public class DeliveryMessageListener {
 	@RabbitListener(queues = "${message.queue.delivery.created}")
 	public void createDelivery(DeliveryMessage message) {
 		log.info("#### Delivery Message 수신 {} ", message);
-		// CreateDeliveryResponse response = deliveryService.createMessageDelivery(message);
 		deliveryService.createMessageDelivery(message);
 	}
 

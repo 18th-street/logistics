@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +14,7 @@ import com.eighteenthstreet.deliveryservice.application.dto.CreateDeliveryRespon
 import com.eighteenthstreet.deliveryservice.application.dto.DeliveryAgentDto;
 import com.eighteenthstreet.deliveryservice.application.dto.DeliveryDetailsResponse;
 import com.eighteenthstreet.deliveryservice.application.dto.DeliveryRouteDto;
+import com.eighteenthstreet.deliveryservice.application.event.DeliveryEventPublisher;
 import com.eighteenthstreet.deliveryservice.domain.event.DeliveryCreatedEvent;
 import com.eighteenthstreet.deliveryservice.domain.exception.DeliveryNotFoundException;
 import com.eighteenthstreet.deliveryservice.domain.model.Delivery;
@@ -37,21 +36,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class DeliveryService {
+
+	private final DeliveryEventPublisher deliveryEventPublisher;
 	private final DeliveryRepository deliveryRepository;
-	private final RabbitTemplate rabbitTemplate;
 	private final DeliveryRouteClient deliveryRouteClient;
 	private final DeliveryAgentClient deliveryAgentClient;
 
-	@Value("${message.queue.delivery-service}")
-	private String queueDelivery;
-
-	@Value("${message.complete.queue.delivery.cancelled}")
-	private String queueCompleteCancelledDelivery;
-
-	@Value("${message.err.queue.delivery.cancelled}")
-	private String queueErrDeliveryCancelled;
-
-	// 주문 생성 서비스
+	// 배달생성
 	public CreateDeliveryResponse createDelivery(CreateDeliveryRequest createDeliveryRequest) {
 		Delivery delivery = Delivery.createDelivery(createDeliveryRequest);
 
@@ -59,22 +50,22 @@ public class DeliveryService {
 
 		DeliveryCreatedEvent event = new DeliveryCreatedEvent(createDeliveryRequest.getStartHubId(),
 			createDeliveryRequest.getEndHubId(), delivery.getDeliveryId(), UUID.randomUUID());
-		log.info("######### Send Message[Delivery] : {}", event);
-		rabbitTemplate.convertAndSend(queueDelivery, event);
+		deliveryEventPublisher.publishDeliveryCreated(event);
+
 		return CreateDeliveryResponse.fromEntity(delivery);
 	}
 
 	// 메세지 처리하는 서비스
-	public CreateDeliveryResponse createMessageDelivery(DeliveryMessage message) {
+	public void createMessageDelivery(DeliveryMessage message) {
 		Delivery delivery = Delivery.createMessageDelivery(message);
 
 		delivery = deliveryRepository.save(delivery);
 
-		DeliveryCreatedEvent event = new DeliveryCreatedEvent(message.startHubId(),
-			message.endHubId(), delivery.getDeliveryId(), message.orderId());
-		log.info("######### Send Message[Delivery Message] : {}", event);
-		rabbitTemplate.convertAndSend(queueDelivery, event);
-		return CreateDeliveryResponse.fromEntity(delivery);
+		DeliveryCreatedEvent event = new DeliveryCreatedEvent(message.startHubId(), message.endHubId(),
+			delivery.getDeliveryId(), message.orderId());
+
+		deliveryEventPublisher.publishDeliveryCreated(event);
+		CreateDeliveryResponse.fromEntity(delivery);
 	}
 
 	@Transactional
@@ -180,16 +171,14 @@ public class DeliveryService {
 
 		} catch (Exception e) {
 			// 배달 삭세 실패하면 메세지 보내기
-			DeliveryCancelledErrMessage cancelledErrMessage = new DeliveryCancelledErrMessage(
-				message.orderId(),
-				e.getMessage()
-			);
-			rabbitTemplate.convertAndSend(queueErrDeliveryCancelled, cancelledErrMessage);
+			DeliveryCancelledErrMessage cancelledErrMessage = new DeliveryCancelledErrMessage(message.orderId(),
+				e.getMessage());
+			deliveryEventPublisher.publishDeliveryCancelledError(cancelledErrMessage);
 			log.info(e.getMessage());
 			throw e;
 		}
 
 		// 배달 삭제 성공하면 메세지 보내기
-		rabbitTemplate.convertAndSend(queueCompleteCancelledDelivery, message);
+		deliveryEventPublisher.publishDeliveryCancelled(message);
 	}
 }
