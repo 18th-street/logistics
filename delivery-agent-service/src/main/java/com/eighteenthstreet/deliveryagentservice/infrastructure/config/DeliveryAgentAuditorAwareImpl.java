@@ -1,4 +1,4 @@
-package com.eighteenthstreet.deliveryagentservice.config;
+package com.eighteenthstreet.deliveryagentservice.infrastructure.config;
 
 import java.util.Optional;
 
