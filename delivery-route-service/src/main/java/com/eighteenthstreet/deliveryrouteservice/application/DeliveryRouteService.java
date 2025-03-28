@@ -5,16 +5,15 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.eighteenthstreet.deliveryrouteservice.application.dto.DeliveryRouteDto;
-import com.eighteenthstreet.deliveryrouteservice.application.dto.GetDeliveryRouteResponse;
+import com.eighteenthstreet.deliveryrouteservice.application.event.DeliveryRouteEventPublisher;
 import com.eighteenthstreet.deliveryrouteservice.domain.event.DeliveryCreatedEvent;
+import com.eighteenthstreet.deliveryrouteservice.domain.event.DeliveryRouteCreationFailedEvent;
 import com.eighteenthstreet.deliveryrouteservice.domain.event.OrderDeliveryCompleteMessage;
-import com.eighteenthstreet.deliveryrouteservice.domain.exception.DeliveryRouteNotFoundException;
+import com.eighteenthstreet.deliveryrouteservice.domain.event.RouteCreatedEvent;
 import com.eighteenthstreet.deliveryrouteservice.domain.model.DeliveryRoute;
 import com.eighteenthstreet.deliveryrouteservice.domain.repository.DeliveryRouteRepository;
 import com.eighteenthstreet.deliveryrouteservice.infrastructure.client.HubRouteClient;
@@ -32,21 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class DeliveryRouteService {
-
-	@Value("${message.queue.delivery-route}")
-	private String queue;
-
-	@Value("${message.queue.delivery-route-failed}")
-	private String failedQueue;
-
-	@Value("${message.complete.queue.delivery.created}")
-	private String completeOrderQueue;
-
-	@Value("${message.err.queue.delivery.created}")
-	private String errOrderCreatedQueue;
-
+	private final DeliveryRouteEventPublisher deliveryRouteEventPublisher;
 	private final DeliveryRouteRepository deliveryRouteRepository;
-	private final RabbitTemplate rabbitTemplate;
 	private final HubRouteClient hubRouteClient;
 
 	@RabbitListener(queues = "${message.queue.delivery-service}")
@@ -81,14 +67,12 @@ public class DeliveryRouteService {
 
 			// 3. 배차 시작하라고 메시지 보내기
 			RouteCreatedEvent routeEvent = new RouteCreatedEvent(event.getDeliveryId(), routeInfos);
-			rabbitTemplate.convertAndSend(queue, routeEvent);
-			log.info("##### 배차 요청 보냄: {}", routeEvent);
+			deliveryRouteEventPublisher.publishRouteCreated(routeEvent);
 
 			// 4. 주문 측에 완료 메세지 보내기
 			OrderDeliveryCompleteMessage orderMessage = new OrderDeliveryCompleteMessage(event.getOrderId(),
 				event.getDeliveryId());
-			log.info("###### 주문 측에 성공 메세지 보냄: {}", orderMessage);
-			rabbitTemplate.convertAndSend(completeOrderQueue, orderMessage);
+			deliveryRouteEventPublisher.publishOrderDeliveryComplete(orderMessage);
 
 		} catch (FeignException.NotFound e) {
 			log.error("경로를 찾을 수 없음: startHubId={}, endHubId={}, 오류: {}", event.getStartHubId(), event.getEndHubId(),
@@ -103,13 +87,6 @@ public class DeliveryRouteService {
 		}
 	}
 
-	public GetDeliveryRouteResponse getDeliveryRoutes(UUID deliveryAgentId) {
-		DeliveryRoute deliveryRoute = deliveryRouteRepository.findById(deliveryAgentId)
-			.orElseThrow(() -> new DeliveryRouteNotFoundException(ErrorCode.DELIVERY_ROUTE_NOT_FOUND));
-
-		return GetDeliveryRouteResponse.fromEntity(deliveryRoute);
-	}
-
 	@Transactional(readOnly = true)
 	public List<DeliveryRouteDto> getDeliveryRoutesByDeliveryId(UUID deliveryId) {
 		List<DeliveryRoute> routes = deliveryRouteRepository.findByDeliveryId(deliveryId);
@@ -117,14 +94,6 @@ public class DeliveryRouteService {
 			.map(route -> new DeliveryRouteDto(route.getDeliveryRouteId(), route.getSequence(), route.getStartHubId(),
 				route.getEndHubId()))
 			.toList();
-	}
-
-	@Transactional
-	public void deleteDeliveryRoute(UUID deliveryAgentId) {
-		DeliveryRoute deliveryRoute = deliveryRouteRepository.findById(deliveryAgentId)
-			.orElseThrow(() -> new DeliveryRouteNotFoundException(ErrorCode.DELIVERY_ROUTE_NOT_FOUND));
-
-		deliveryRoute.softDelete();
 	}
 
 	// Feign 호출용 서비스
@@ -143,23 +112,12 @@ public class DeliveryRouteService {
 
 	private void sendFailureEvent(UUID deliveryId, ErrorCode errorCode) {
 		DeliveryRouteCreationFailedEvent failedEvent = new DeliveryRouteCreationFailedEvent(deliveryId, errorCode);
-		rabbitTemplate.convertAndSend(failedQueue, failedEvent);
-		log.info("배송 경로 생성 실패 이벤트 발송: {}", failedEvent);
+		deliveryRouteEventPublisher.publishDeliveryRouteCreationFailed(failedEvent);
 	}
 
 	private void sendFailureOrderEvent(DeliveryCreatedEvent event) {
 		DeliveryCreatedErrMessage message = new DeliveryCreatedErrMessage(event.getOrderId());
-		rabbitTemplate.convertAndSend(errOrderCreatedQueue, message);
-		log.info("배달 생성 실패 이벤트 발송: {}", event);
+		deliveryRouteEventPublisher.publishDeliveryCreatedError(message);
 	}
 
-	// 실패 이벤트 정의
-	record DeliveryRouteCreationFailedEvent(UUID deliveryId, ErrorCode errorCode) {
-	}
-
-	// 이벤트 정의
-	record RouteCreatedEvent(UUID deliveryId, List<RouteInfo> routes) {
-		record RouteInfo(UUID routeId, int sequence, UUID startHubId, UUID endHubId) {
-		}
-	}
 }

@@ -1,4 +1,4 @@
-package com.eighteenthstreet.deliveryservice.application;
+package com.eighteenthstreet.deliveryservice.application.event;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class DeliveryEventService {
+public class DeliveryEventHandler {
 	private final DeliveryRepository deliveryRepository;
 
 	@RabbitListener(queues = "${message.queue.delivery-assigned}")
